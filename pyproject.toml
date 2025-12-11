@@ -57,12 +57,11 @@ replace = "{new_version}"
 [[tool.bumpversion.files]]
 filename = "CHANGELOG.md"
 regex = true
-search = "^## "
+search = "\\A## "
 replace = """## {new_version} ({now:%Y-%m-%d})
 [Compare the full difference.](https://github.com/egohygiene/ubi/compare/{current_version}...{new_version})
 
 ## """
-
 
 # ---------------------------------------------------------
 # Developer tooling config (unchanged)

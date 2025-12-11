@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.4 (2025-12-11)
+[Compare the full difference.](https://github.com/egohygiene/ubi/compare/0.1.3...0.1.4)
+
 ## 0.1.3 (2025-12-11)
 [Compare the full difference.](https://github.com/egohygiene/ubi/compare/0.1.2...0.1.3)
 
@@ -24,12 +27,4 @@
 [Compare the full difference.](https://github.com/egohygiene/ubi/tree/0.1.0)
 
 ### Added
-- Initial release of UBI (Universal Base Image)
-- XDG-aligned filesystem with `/opt/universal/*` hierarchy
-- Standardized environment variables for reproducible builds
-- Pre-configured locale, timezone, and editor settings
-- Python, Node.js, and Rust runtime configs
-- Telemetry opt-outs
-- GHCR distribution
-- VERSION file
-- Initial CI pipeline
+- Initial UBI release, environment layout, etc.

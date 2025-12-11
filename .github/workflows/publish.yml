@@ -9,12 +9,6 @@ on:
       - master
     tags:
         - "*"        # trigger publish on ANY tag push
-    paths:
-      - ".devcontainer/**"
-      - "scripts/**"
-      - "VERSION"
-      - ".github/workflows/publish.yml"
-      - "Dockerfile"
   workflow_dispatch:
 
 jobs:

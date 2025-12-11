@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.1.3 - 2025-12-11
+
+
 ## 0.1.2 - 2025-02-11
 ### Changed
 - Version bump and changelog automation testing.
@@ -28,7 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Versioning pipeline with VERSION file
 - Initial CHANGELOG
 
-[Unreleased]: https://github.com/egohygiene/ubi/compare/0.1.2...HEAD
+[Unreleased]
+
+## 0.1.3 - 2025-12-11
+: https://github.com/egohygiene/ubi/compare/0.1.3...HEAD
 [0.1.2]: https://github.com/egohygiene/ubi/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/egohygiene/ubi/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/egohygiene/ubi/tree/0.1.0

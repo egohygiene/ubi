@@ -49,8 +49,8 @@ replace = "{new_version}"
 # Insert a new version heading under [Unreleased]
 [[tool.bumpversion.files]]
 filename = "CHANGELOG.md"
-search = "## \\[Unreleased\\]"
-replace = """## [Unreleased]
+search = "[Unreleased]"
+replace = """[Unreleased]
 
 ## {new_version} - {now:%Y-%m-%d}
 """

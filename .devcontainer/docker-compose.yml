@@ -1,0 +1,79 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+######################################################################
+# docker-compose configuration for the devcontainer
+#
+# The dev service builds the image defined in Dockerfile and mounts the
+# repository into /workspace. The container is kept running with a
+# "sleep infinity" command so that VS Code can attach to it.
+######################################################################
+
+# Define common labels for Docker objects
+x-labels: &labels
+  labels:
+    app.name: ${PROJECT_NAME:-profile}-development
+    app.scope: ${PROJECT_NAME:-profile}-development
+
+# Shared settings for all services
+x-settings: &settings # Restart containers unless stopped manually
+  restart: unless-stopped
+  # Environment variables for all services
+  environment:
+    - TZ=${TZ:-UTC}
+  # Use a common .env file for environment variables
+  # env_file:
+  #   - .env.devcontainer
+  # Allow access to the host machine from the container
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  # Init system for graceful shutdown
+  init: true
+  # Pull policy for images
+  pull_policy: missing
+  # Attach the container to the project network
+  networks:
+    default:
+      aliases:
+        - ${PROJECT_NAME:-profile}-development-network
+  # Use a specific platform for compatibility
+  platform: linux/amd64
+  # Apply the common labels to all services
+  <<: *labels
+
+# Define the Docker network for all services
+networks:
+  default:
+    # Name of the Docker network, based on the project name
+    name: ${PROJECT_NAME:-profile}-development-network
+    # Use the bridge driver for the network (https://docs.docker.com/compose/networking/)
+    driver: bridge
+    # Allows containers to manually attach to this network
+    attachable: true
+    # Custom options for bridge network driver
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+    <<: *labels
+
+# Define named volumes for persistent data storage
+# volumes:
+#   portainer_data:
+#     name: portainer_data
+#     <<: *labels
+
+services:
+  development:
+    container_name: ${PROJECT_NAME:-profile}-development
+    hostname: ${PROJECT_NAME:-profile}-development
+    build:
+      context: ..
+      target: final
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      # Mount the repository so that changes on the host are reflected inside the container
+      - ..:/workspace:cached
+    command: sleep infinity
+    privileged: true # required for docker-in-docker
+    user: vscode
+    <<: *settings

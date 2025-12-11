@@ -1,0 +1,77 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "🔼 Bump UBI Version"
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: "Choose version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  bump-version:
+    name: "🔖 Bump Version"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write       # allow pushing commits + tags
+      pull-requests: read
+      id-token: write
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Checkout code and tags
+      # -------------------------------------------------------------
+      - name: 🛎️ Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # REQUIRED for tag creation
+
+      # -------------------------------------------------------------
+      # 2. Install bump-my-version
+      # -------------------------------------------------------------
+      - name: 📦 Install bump-my-version
+        run: |
+          pip install bump-my-version
+
+      # -------------------------------------------------------------
+      # 3. Bump the version
+      # -------------------------------------------------------------
+      - name: 🔧 Bump version
+        id: bump
+        uses: callowayproject/bump-my-version@master
+        env:
+          BUMPVERSION_TAG: "true"   # automatically creates git tag
+        with:
+          args: ${{ inputs.bump-type }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # -------------------------------------------------------------
+      # 4. Push commit + tag
+      # -------------------------------------------------------------
+      - name: 🚀 Push bump commit + tag
+        if: steps.bump.outputs.bumped == 'true'
+        run: |
+          git push origin HEAD
+          git push origin --tags
+
+      # -------------------------------------------------------------
+      # 5. Report what happened
+      # -------------------------------------------------------------
+      - name: 📣 Report
+        if: steps.bump.outputs.bumped == 'true'
+        run: |
+          echo "Version was bumped!"
+          echo "From: ${{ steps.bump.outputs.previous-version }}"
+          echo "To:   ${{ steps.bump.outputs.current-version }}"
+
+      - name: ℹ️ No bump detected
+        if: steps.bump.outputs.bumped != 'true'
+        run: echo "Nothing was bumped."

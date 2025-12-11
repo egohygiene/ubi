@@ -16,6 +16,10 @@ jobs:
   validate-changelog:
     name: Validate CHANGELOG Updates
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: read
 
     steps:
       # -------------------------------------------------------------

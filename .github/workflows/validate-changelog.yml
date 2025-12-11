@@ -1,0 +1,89 @@
+name: Validate CHANGELOG
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - "VERSION"
+      - ".devcontainer/**"
+      - "scripts/**"
+      - "Dockerfile"
+      - "CHANGELOG.md"
+
+jobs:
+  validate-changelog:
+    name: Validate CHANGELOG Updates
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history to compare changes
+
+      # -------------------------------------------------------------
+      # 2. Get list of changed files
+      # -------------------------------------------------------------
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            VERSION
+            .devcontainer/**
+            scripts/**
+            Dockerfile
+
+      # -------------------------------------------------------------
+      # 3. Check if CHANGELOG was updated
+      # -------------------------------------------------------------
+      - name: Check CHANGELOG update
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "The following files have changed:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          # Check if CHANGELOG.md was modified in this PR
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "CHANGELOG.md"; then
+            echo "✅ CHANGELOG.md has been updated"
+            
+            # Verify that the Unreleased section has content
+            if grep -A 20 "## \[Unreleased\]" CHANGELOG.md | grep -q "^### "; then
+              echo "✅ Changes found in Unreleased section"
+            else
+              echo "⚠️ Warning: Unreleased section appears empty"
+              echo "Please add your changes to the [Unreleased] section in CHANGELOG.md"
+              exit 1
+            fi
+          else
+            echo "❌ CHANGELOG.md has not been updated"
+            echo ""
+            echo "This PR modifies VERSION, Dockerfile, or scripts/ but does not update CHANGELOG.md"
+            echo "Please add an entry to the [Unreleased] section in CHANGELOG.md describing your changes"
+            echo ""
+            echo "Changed files:"
+            echo "${{ steps.changed-files.outputs.all_changed_files }}"
+            exit 1
+          fi
+
+      # -------------------------------------------------------------
+      # 4. Validate VERSION and CHANGELOG correlation
+      # -------------------------------------------------------------
+      - name: Validate VERSION changes
+        if: contains(steps.changed-files.outputs.all_changed_files, 'VERSION')
+        run: |
+          echo "VERSION file has been modified"
+          
+          # Check if CHANGELOG was also updated
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "CHANGELOG.md"; then
+            echo "✅ Both VERSION and CHANGELOG.md have been updated"
+          else
+            echo "❌ VERSION file was changed but CHANGELOG.md was not updated"
+            echo "When bumping the version, you must also update CHANGELOG.md"
+            exit 1
+          fi

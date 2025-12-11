@@ -139,6 +139,10 @@ Every release publishes multiple tags to GHCR:
 
 **Recommendation**: Use specific version tags (e.g., `0.1.0`) in production and `latest` for development.
 
+### Changelog
+
+For detailed release notes and change history, see the [CHANGELOG.md](./CHANGELOG.md).
+
 ---
 
 ## 🏗️ Architecture
@@ -191,6 +195,7 @@ Contributions are welcome! Here's how you can help:
 - Keep changes minimal and focused
 - Update documentation for any environment changes
 - Bump the `VERSION` file according to SemVer for breaking or feature changes
+- Update the [CHANGELOG.md](./CHANGELOG.md) with your changes under the `[Unreleased]` section
 - Test your changes locally before submitting
 
 ---

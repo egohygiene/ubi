@@ -46,11 +46,14 @@
         "addWords": false
       }
     },
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-        "source.fixAll": "always"
+      "source.fixAll": "never",
+      "source.organizeImports": "never",
+      "source.formatDocument": "never",
     },
+      // Prevent any extension from formatting CHANGELOG.md specifically:
+    "editor.formatOnSaveMode": "modifications",
+
     "prettier.useEditorConfig": true,
     "prettier.configPath": "${workspaceFolder}/config/.prettier.config.mjs",
     "[javascript]": {
@@ -66,7 +69,8 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[markdown]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": null,
+      "editor.formatOnSave": false
     },
     "[yaml]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"

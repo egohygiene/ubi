@@ -17,7 +17,7 @@ build-backend = "poetry.core.masonry.api"
 # Version bumping configuration (bump-my-version)
 # ---------------------------------------------------------
 [tool.bumpversion]
-current_version = "0.1.1"
+current_version = "0.1.2"
 
 # SemVer parsing
 parse = "^(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)$"

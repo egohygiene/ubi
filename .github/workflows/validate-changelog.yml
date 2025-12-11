@@ -52,8 +52,8 @@ jobs:
           if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "CHANGELOG.md"; then
             echo "✅ CHANGELOG.md has been updated"
             
-            # Verify that the Unreleased section has content
-            if grep -A 20 "## \[Unreleased\]" CHANGELOG.md | grep -q "^### "; then
+            # Verify that the Unreleased section has content (category headers with items)
+            if grep -A 20 "## \[Unreleased\]" CHANGELOG.md | grep -E "^### (Added|Changed|Deprecated|Removed|Fixed|Security)" -A 5 | grep -q "^- "; then
               echo "✅ Changes found in Unreleased section"
             else
               echo "⚠️ Warning: Unreleased section appears empty"

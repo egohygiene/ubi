@@ -1,13 +1,16 @@
+<!-- markdownlint-disable MD033 MD041 -->
+<div align="center">
+
 # 🌐 UBI - Universal Base Image
 
-**The foundational developer platform for all Ego Hygiene projects**
+## The foundational developer platform for all Ego Hygiene projects
 
 Your all-in-one dev environment: reproducible builds, universal tooling, and cohesive DX. 🛠️✨
 
-[![Build & Publish](https://github.com/egohygiene/ubi/actions/workflows/publish.yml/badge.svg)](https://github.com/egohygiene/ubi/actions/workflows/publish.yml)
-[![Latest Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/egohygiene/ubi/blob/main/VERSION)
-[![Container Registry](https://img.shields.io/badge/ghcr.io-egohygiene%2Fubi-brightgreen.svg)](https://ghcr.io/egohygiene/ubi)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build & Publish][build-badge]][build-link]
+[![Latest Version][version-badge]][version-link]
+[![Container Registry][registry-badge]][registry-link]
+[![License: MIT][license-badge]][license-link]
 
 ---
 
@@ -28,10 +31,10 @@ UBI is distributed via GitHub Container Registry (GHCR) and consumed by other re
 
 ## ✨ Features
 
-- 🗂️ **Fully XDG-Aligned Filesystem**  
+- 🗂️ **Fully XDG-Aligned Filesystem**
   Adheres to the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) for predictable configuration and data locations.
 
-- 📁 **`/opt/universal/*` Hierarchy**  
+- 📁 **`/opt/universal/*` Hierarchy**
   Standardized paths for binaries, configs, caches, logs, and more:
   - `/opt/universal/bin` - Universal binaries
   - `/opt/universal/config` - Configuration files (XDG_CONFIG_HOME)
@@ -42,7 +45,7 @@ UBI is distributed via GitHub Container Registry (GHCR) and consumed by other re
   - `/opt/universal/apps` - Application resources
   - And more...
 
-- ⚙️ **Predictable Runtime Environment**  
+- ⚙️ **Predictable Runtime Environment**
   Pre-configured environment variables for consistent behavior across:
   - Locale and timezone settings
   - Editor and pager preferences (VS Code, less)
@@ -50,17 +53,17 @@ UBI is distributed via GitHub Container Registry (GHCR) and consumed by other re
   - Python, Node.js, and Rust configurations
   - Telemetry opt-outs for privacy
 
-- 🎛️ **Configurable via Build Arguments**  
+- 🎛️ **Configurable via Build Arguments**
   Customize behavior at build time with Docker ARGs for locale, timezone, editor preferences, and more.
 
-- 🔄 **Reproducible Builds & Semantic Versioning**  
+- 🔄 **Reproducible Builds & Semantic Versioning**
   Every release is tagged with a semantic version, ensuring immutable and auditable deployments.
 
-- 📦 **Distributed via GHCR**  
-  Pull from GitHub Container Registry for fast, reliable access:  
+- 📦 **Distributed via GHCR**
+  Pull from GitHub Container Registry for fast, reliable access:
   `ghcr.io/egohygiene/ubi`
 
-- 🚀 **Optimized for Developer Experience**  
+- 🚀 **Optimized for Developer Experience**
   Sensible defaults that "just work" — less configuration, more productivity.
 
 ---
@@ -123,11 +126,7 @@ UBI follows **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 
 ### Version File
 
-The current version is defined in the [`VERSION`](./VERSION) file at the root of this repository:
-
-```
-0.1.0
-```
+The current version is defined in the [`VERSION`](./VERSION) file at the root of this repository (for example `0.1.0`):
 
 ### Tags
 
@@ -206,6 +205,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 Built with ❤️ by the [Ego Hygiene](https://github.com/egohygiene) team.
 
 Special thanks to:
+
 - [Microsoft DevContainers](https://github.com/devcontainers) for the excellent base image
 - The [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/) community
 - All contributors who help make UBI better
@@ -227,3 +227,18 @@ Special thanks to:
 Made with 🛠️ by Ego Hygiene | Powered by 🌐 Universal Base Image
 
 </div>
+
+</div>
+
+<!-- Badge References -->
+[build-badge]: https://img.shields.io/github/actions/workflow/status/egohygiene/ubi/publish.yml?style=for-the-badge
+[build-link]: https://github.com/egohygiene/ubi/actions/workflows/publish.yml
+
+[version-badge]: https://img.shields.io/github/v/tag/egohygiene/ubi?sort=semver&style=for-the-badge
+[version-link]: https://github.com/egohygiene/ubi/tags
+
+[registry-badge]: https://img.shields.io/badge/ghcr.io-egohygiene%2Fubi-brightgreen.svg?style=for-the-badge
+[registry-link]: https://ghcr.io/egohygiene/ubi
+
+[license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge
+[license-link]: https://opensource.org/licenses/MIT

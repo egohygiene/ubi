@@ -1,3 +1,5 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Publish UBI Image
 
 on:
@@ -19,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read        # allow checkout
-      packages: write       # allow pushing to GHCR
+      contents: write     # required for pushing Git tags
+      packages: write     # required for pushing GHCR packages
 
     steps:
       # -------------------------------------------------------------
@@ -40,7 +42,8 @@ jobs:
             exit 1
           fi
 
-          VERSION_CONTENT=$(cat VERSION)
+          VERSION_CONTENT=$(cat VERSION | tr -d '[:space:]')
+
           if [ -z "$VERSION_CONTENT" ]; then
             echo "ERROR: VERSION file is empty."
             exit 1
@@ -62,7 +65,7 @@ jobs:
       # -------------------------------------------------------------
       # 4. Extract metadata (tags + labels)
       # -------------------------------------------------------------
-      - name: Extract metadata (tags, labels)
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -76,7 +79,7 @@ jobs:
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
 
       # -------------------------------------------------------------
-      # 5. Build and push the image
+      # 5. Build & Push the UBI Image
       # -------------------------------------------------------------
       - name: Build and Push UBI Image
         uses: docker/build-push-action@v5
@@ -89,7 +92,27 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       # -------------------------------------------------------------
-      # 6. Display output tags in CI logs for clarity
+      # 6. Create & Push Git Tag for VERSION
+      # -------------------------------------------------------------
+      - name: Create Git Tag
+        if: success()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          VERSION=${{ steps.version.outputs.version }}
+
+          # Check if tag already exists (avoid failure if re-running workflow)
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists — skipping creation."
+          else
+            echo "Creating git tag: $VERSION"
+            git tag "$VERSION"
+            git push origin "$VERSION"
+          fi
+
+      # -------------------------------------------------------------
+      # 7. Display final tag list for clarity
       # -------------------------------------------------------------
       - name: Show published tags
         run: |

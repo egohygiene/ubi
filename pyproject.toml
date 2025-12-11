@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ubi"
-version = "0.1.0"
-description = "Universal Base Image for Ego Hygiene projects. Provides a reproducible development platform with standardized tooling, XDG paths, and environment configuration."
+version = "0.1.3"
+description = "Universal Base Image (UBI) for Ego Hygiene projects. Provides a reproducible development platform with standardized tooling, XDG paths, UX defaults, and environment configuration."
 license = "MIT"
 readme = "README.md"
 package-mode = false
@@ -13,8 +13,9 @@ python = "^3.12"
 requires = ["poetry-core>=1.5"]
 build-backend = "poetry.core.masonry.api"
 
+
 # ---------------------------------------------------------
-# Version bumping configuration (bump-my-version)
+# bump-my-version configuration
 # ---------------------------------------------------------
 [tool.bumpversion]
 current_version = "0.1.3"
@@ -23,53 +24,53 @@ current_version = "0.1.3"
 parse = "^(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)$"
 serialize = ["{major}.{minor}.{patch}"]
 
-# Patterns for searching/replacing versions
+# Replacement logic
 search = "{current_version}"
 replace = "{new_version}"
 regex = false
-ignore_missing_version = false
+ignore_missing_version = true
 
 # Commit changes automatically
 commit = true
 message = "chore: bump version to {new_version}"
 allow_dirty = false
 
-# Tagging handled by the release workflow, so keep off here
+# Tagging handled by CI publish workflow — keep disabled
 tag = false
 sign_tags = false
 tag_name = "{new_version}"
 tag_message = "Bump version: {current_version} → {new_version}"
 
-# Files whose versions should be updated
+# ---------------------------------------------------------
+# Files to update
+# ---------------------------------------------------------
+
+# 1. VERSION file (source of truth)
 [[tool.bumpversion.files]]
 filename = "VERSION"
 search = "{current_version}"
 replace = "{new_version}"
 
-# Insert a new version heading under [Unreleased]
+# 2. CHANGELOG insertion (inline block format like bump-my-version repo)
+#    This inserts the new version section ABOVE the existing top entry,
+#    matching exactly the style used by upstream bump-my-version.
 [[tool.bumpversion.files]]
 filename = "CHANGELOG.md"
-search = "[Unreleased]"
-replace = """[Unreleased]
+regex = true
+search = "^## "
+replace = """## {new_version} ({now:%Y-%m-%d})
+[Compare the full difference.](https://github.com/egohygiene/ubi/compare/{current_version}...{new_version})
 
-## {new_version} - {now:%Y-%m-%d}
-"""
+## """
 
-# Update GitHub compare link for Unreleased
-[[tool.bumpversion.files]]
-filename = "CHANGELOG.md"
-search = "{current_version}...HEAD"
-replace = "{new_version}...HEAD"
 
 # ---------------------------------------------------------
-# Future development tooling (Black, Ruff, etc.)
-# Included here so your devcontainer can install runtimes
-# and progressively enhance UBI with Python-based tooling.
+# Developer tooling config (unchanged)
 # ---------------------------------------------------------
 
 [tool.black]
 line-length = 88
-include = '\.pyi?$'
+include = '\\.pyi?$'
 exclude = '''
 /(
     \.git

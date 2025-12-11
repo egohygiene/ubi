@@ -1,0 +1,107 @@
+[tool.poetry]
+name = "ubi"
+version = "0.1.0"
+description = "Universal Base Image for Ego Hygiene projects. Provides a reproducible development platform with standardized tooling, XDG paths, and environment configuration."
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[build-system]
+requires = ["poetry-core>=1.5"]
+build-backend = "poetry.core.masonry.api"
+
+# ---------------------------------------------------------
+# Version bumping configuration (bump-my-version)
+# ---------------------------------------------------------
+[tool.bumpversion]
+current_version = "0.1.0"
+
+# SemVer parsing
+parse = "^(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)$"
+serialize = ["{major}.{minor}.{patch}"]
+
+# Patterns for searching/replacing versions
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+
+# Commit changes automatically
+commit = true
+message = "chore: bump version to {new_version}"
+allow_dirty = false
+
+# Tagging handled by the release workflow, so keep off here
+tag = false
+sign_tags = false
+tag_name = "{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+
+# Files whose versions should be updated
+[[tool.bumpversion.files]]
+filename = "VERSION"
+search = "{current_version}"
+replace = "{new_version}"
+
+# ---------------------------------------------------------
+# Future development tooling (Black, Ruff, etc.)
+# Included here so your devcontainer can install runtimes
+# and progressively enhance UBI with Python-based tooling.
+# ---------------------------------------------------------
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.ruff_cache
+    | \.pytest_cache
+    | \.tox
+    | \.cache
+    | \.venv
+    | venv
+    | dist
+    | build
+)/
+'''
+
+[tool.ruff]
+cache-dir = ".cache/.ruff_cache"
+line-length = 88
+respect-gitignore = true
+target-version = "py312"
+src = ["."]
+required-version = ">=0.1.0"
+fix = false
+show-fixes = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+extend-select = ["B", "Q"]
+fixable = [
+    "A", "ANN", "ARG", "B", "BLE", "C", "COM", "D", "DTZ", "E", "EM", "ERA",
+    "EXE", "F", "FBT", "G", "I", "ICN", "INP", "ISC", "N", "PD", "PGH", "PIE",
+    "PL", "PT", "PTH", "Q", "RET", "RUF", "S", "SIM", "T", "TID", "TRY",
+    "UP", "W", "YTT"
+]
+ignore = []
+task-tags = ["TODO", "FIXME", "XXX", "HACK"]
+typing-modules = []
+unfixable = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-decorators = ["typing.overload"]
+
+[tool.ruff.lint.flake8-bandit]
+hardcoded-tmp-directory = ["/tmp", "/var/tmp", "/dev/shm"]
+
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id"]
+
+[tool.ruff.lint.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = false

@@ -54,16 +54,18 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # -------------------------------------------------------------
-      # 4. Push commit + tag
+      # 4. Push bump commit + tag (handled cleanly by GitHub Push Action)
       # -------------------------------------------------------------
-      - name: 🚀 Push bump commit + tag
+      - name: 🚀 Push bump commit + tags
         if: steps.bump.outputs.bumped == 'true'
-        run: |
-          git push origin HEAD
-          git push origin --tags
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          tags: true
 
       # -------------------------------------------------------------
-      # 5. Report what happened
+      # 5. Report result
       # -------------------------------------------------------------
       - name: 📣 Report
         if: steps.bump.outputs.bumped == 'true'
@@ -72,6 +74,3 @@ jobs:
           echo "From: ${{ steps.bump.outputs.previous-version }}"
           echo "To:   ${{ steps.bump.outputs.current-version }}"
 
-      - name: ℹ️ No bump detected
-        if: steps.bump.outputs.bumped != 'true'
-        run: echo "Nothing was bumped."

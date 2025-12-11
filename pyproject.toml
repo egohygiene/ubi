@@ -46,6 +46,27 @@ filename = "VERSION"
 search = "{current_version}"
 replace = "{new_version}"
 
+# Insert a new version heading under [Unreleased]
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "## \\[Unreleased\\]"
+replace = """## [Unreleased]
+
+## {new_version} - {now:%Y-%m-%d}
+"""
+
+# Update GitHub compare link for Unreleased
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "{current_version}...HEAD"
+replace = "{new_version}...HEAD"
+
+# Update compare link for the previous version's link entry
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "{current_version}...{current_version}"
+replace = "{current_version}...{new_version}"
+
 # ---------------------------------------------------------
 # Future development tooling (Black, Ruff, etc.)
 # Included here so your devcontainer can install runtimes

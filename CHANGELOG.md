@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- CHANGELOG.md file following Keep a Changelog format
+- PR template reminding contributors to update VERSION and CHANGELOG
+- GitHub Actions workflow to validate CHANGELOG updates
+- README links to CHANGELOG for release history
+
 ### Changed
 ### Deprecated
 ### Removed

@@ -191,7 +191,7 @@ jobs:
             )
             
             for dir in "${TEST_DIRS[@]}"; do
-              TEST_FILE="$dir/.test-write-$$"
+              TEST_FILE="$dir/.test-write-${RANDOM}"
               if ! touch "$TEST_FILE" 2>/dev/null; then
                 echo "❌ FAIL: vscode user cannot write to $dir"
                 exit 1
@@ -283,7 +283,7 @@ jobs:
             
             # Test touch and file creation
             echo "Testing touch command..."
-            TEST_FILE="/tmp/test-file-$$"
+            TEST_FILE="/tmp/test-file-${RANDOM}"
             touch "$TEST_FILE"
             if [ ! -f "$TEST_FILE" ]; then
               echo "❌ FAIL: touch command did not create file"
@@ -308,7 +308,7 @@ jobs:
             
             # Test directory creation and navigation
             echo "Testing mkdir and cd commands..."
-            TEST_DIR="/tmp/test-dir-$$"
+            TEST_DIR="/tmp/test-dir-${RANDOM}"
             mkdir -p "$TEST_DIR"
             cd "$TEST_DIR"
             if [ "$(pwd)" != "$TEST_DIR" ]; then
@@ -326,7 +326,7 @@ jobs:
       # 6. Generate test summary and upload artifacts
       # -------------------------------------------------------------
       - name: 📋 Generate Test Summary
-        if: always()
+        if: success()
         run: |
           {
             echo "## 🧪 UBI Image Test Summary"

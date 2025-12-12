@@ -77,7 +77,7 @@ jobs:
       # 5. Run Trivy vulnerability scanner
       # -------------------------------------------------------------
       - name: 🔍 Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: ubi:local-${{ steps.version.outputs.version }}
           format: 'sarif'
@@ -99,7 +99,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 📋 Generate human-readable report
         if: always()
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: ubi:local-${{ steps.version.outputs.version }}
           format: 'table'

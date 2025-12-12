@@ -180,10 +180,7 @@
       "moby": true,
       
       // Enable BuildKit by default (modern Docker builder)
-      "enableNonRootDocker": true,
-      
-      // Use 'vscode' user for Docker access
-      "dockerDefaultAddressPool": []
+      "enableNonRootDocker": true
     },
 
     // --------------------------------------------------------------
@@ -258,11 +255,8 @@
       // Install Yarn package manager
       "installYarnUsingApt": true,
       
-      // Node version manager to use ("nvm" or "none")
-      "nodeGypDependencies": true,
-      
-      // Install pnpm package manager
-      "nvmInstallPath": "/usr/local/share/nvm"
+      // NVM (Node Version Manager) version to install
+      "nvmVersion": "latest"
     }
   },
 

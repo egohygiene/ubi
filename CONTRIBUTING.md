@@ -163,6 +163,21 @@ pip install bump-my-version
 
 #### Bump Commands
 
+**Always test with a dry-run first (recommended!):**
+
+```bash
+# Dry-run to preview a patch bump (0.1.5 → 0.1.6)
+bump-my-version bump patch --dry-run --verbose
+
+# Dry-run to preview a minor bump (0.1.5 → 0.2.0)
+bump-my-version bump minor --dry-run --verbose
+
+# Dry-run to preview a major bump (0.1.5 → 1.0.0)
+bump-my-version bump major --dry-run --verbose
+```
+
+**After verifying the dry-run, execute the actual bump:**
+
 ```bash
 # Bump patch version (0.1.5 → 0.1.6)
 bump-my-version bump patch
@@ -172,9 +187,6 @@ bump-my-version bump minor
 
 # Bump major version (0.1.5 → 1.0.0)
 bump-my-version bump major
-
-# Dry-run to preview changes (recommended!)
-bump-my-version bump patch --dry-run --verbose
 ```
 
 #### What Happens During a Bump

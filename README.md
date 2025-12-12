@@ -8,6 +8,7 @@
 Your all-in-one dev environment: reproducible builds, universal tooling, and cohesive DX. 🛠️✨
 
 [![Build & Publish][build-badge]][build-link]
+[![Security Scan][security-badge]][security-link]
 [![Latest Version][version-badge]][version-link]
 [![Container Registry][registry-badge]][registry-link]
 [![License: MIT][license-badge]][license-link]
@@ -247,6 +248,113 @@ Evaluate base image updates when:
 
 ---
 
+## 🔒 Security Scanning
+
+UBI includes automated container vulnerability scanning using [Trivy](https://github.com/aquasecurity/trivy) to ensure supply chain security and detect CVEs in the base image and dependencies.
+
+### How It Works
+
+The Trivy scanner runs automatically on:
+
+- **Pull Requests**: Every PR is scanned to catch vulnerabilities before merging
+- **Push to main**: Scans verify security after each merge
+- **Weekly Schedule**: Every Monday at 00:00 UTC for continuous monitoring
+- **Manual Trigger**: Can be run on-demand via GitHub Actions
+
+### What Gets Scanned
+
+- Base image layers and OS packages
+- Installed system dependencies
+- Known CVEs from the [National Vulnerability Database (NVD)](https://nvd.nist.gov/)
+
+### CI/CD Integration
+
+The workflow:
+
+1. Builds the UBI image from the Dockerfile
+2. Scans it with Trivy for vulnerabilities
+3. **Fails the build** if critical or high-severity CVEs are found
+4. Uploads results to GitHub Security tab (SARIF format)
+5. Generates a human-readable report available as an artifact
+
+### Viewing Scan Results
+
+**GitHub Security Tab**: View all detected vulnerabilities at:  
+[`https://github.com/egohygiene/ubi/security/code-scanning`](https://github.com/egohygiene/ubi/security/code-scanning)
+
+**Workflow Artifacts**: Download detailed reports from the [Trivy Scan workflow](https://github.com/egohygiene/ubi/actions/workflows/trivy-scan.yml) runs.
+
+### Running Trivy Locally
+
+To scan the UBI image locally before pushing changes:
+
+#### 1. Install Trivy
+
+```bash
+# macOS
+brew install trivy
+
+# Linux
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update && sudo apt-get install trivy
+
+# Or use Docker
+docker pull aquasec/trivy:latest
+```
+
+#### 2. Build the Image Locally
+
+```bash
+docker build -f .devcontainer/Dockerfile -t ubi:local .
+```
+
+#### 3. Scan the Image
+
+```bash
+# Basic scan (CRITICAL and HIGH only)
+trivy image --severity CRITICAL,HIGH ubi:local
+
+# Detailed scan (all severities)
+trivy image ubi:local
+
+# Generate a report
+trivy image --format table --output trivy-report.txt ubi:local
+
+# Or using Docker
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  aquasec/trivy:latest image --severity CRITICAL,HIGH ubi:local
+```
+
+#### 4. Scan Published Images
+
+```bash
+# Scan the latest published image
+trivy image ghcr.io/egohygiene/ubi:latest
+
+# Scan a specific version
+trivy image ghcr.io/egohygiene/ubi:0.1.5
+```
+
+### Addressing Vulnerabilities
+
+If the scan detects vulnerabilities:
+
+1. **Review the findings**: Check if they're false positives or real issues
+2. **Update dependencies**: Bump versions of affected packages if patches are available
+3. **Update base image**: Check if a newer version of the DevContainers base image has fixes
+4. **Document exceptions**: If a vulnerability can't be fixed immediately, document why and track it
+
+### Security Best Practices
+
+- **Pin base image versions** with digests for reproducibility (already implemented)
+- **Regularly update** the base image to get security patches
+- **Monitor the Security tab** for new vulnerabilities
+- **Subscribe to notifications** for the repository to get alerts
+- **Review weekly scan results** to stay proactive
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:
@@ -304,6 +412,9 @@ Made with 🛠️ by Ego Hygiene | Powered by 🌐 Universal Base Image
 <!-- Badge References -->
 [build-badge]: https://img.shields.io/github/actions/workflow/status/egohygiene/ubi/publish.yml?style=for-the-badge
 [build-link]: https://github.com/egohygiene/ubi/actions/workflows/publish.yml
+
+[security-badge]: https://img.shields.io/github/actions/workflow/status/egohygiene/ubi/trivy-scan.yml?style=for-the-badge&label=security
+[security-link]: https://github.com/egohygiene/ubi/actions/workflows/trivy-scan.yml
 
 [version-badge]: https://img.shields.io/github/v/tag/egohygiene/ubi?sort=semver&style=for-the-badge
 [version-link]: https://github.com/egohygiene/ubi/tags

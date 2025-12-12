@@ -1,0 +1,1365 @@
+{
+  // ==================================================================
+  // Dev Container Configuration Schema
+  // ==================================================================
+  // This enables IntelliSense and validation in VS Code for the
+  // complete Dev Container specification. The schema documents all
+  // available fields, their types, and expected values.
+  //
+  // Reference: https://containers.dev/implementors/json_reference/
+  // Schema: https://github.com/devcontainers/spec
+  // ==================================================================
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+
+  // ==================================================================
+  // Container Identity & Metadata
+  // ==================================================================
+  // The 'name' field provides a human-readable identifier for this
+  // development container. This name appears in:
+  // - VS Code's Remote Explorer
+  // - Docker Desktop container lists
+  // - Dev Container status bar
+  //
+  // Best Practice: Use descriptive, project-specific names that help
+  // identify the container's purpose at a glance.
+  // ==================================================================
+  "name": "UBI - Universal Base Image Development",
+
+  // ==================================================================
+  // Build Configuration
+  // ==================================================================
+  // The 'build' section defines how to construct the development
+  // container image from a Dockerfile. This replaces the simpler
+  // 'image' property when you need custom build steps.
+  //
+  // Why use 'build' instead of 'image'?
+  // - Customization: Build from source with specific args
+  // - Reproducibility: Version-controlled Dockerfile ensures consistency
+  // - Flexibility: Multi-stage builds with target selection
+  // - Development: Test changes before publishing images
+  //
+  // Alternative: Use "image": "ghcr.io/egohygiene/ubi:latest" to pull
+  // a pre-built image instead of building locally.
+  // ==================================================================
+  "build": {
+    // --------------------------------------------------------------
+    // Build Context
+    // --------------------------------------------------------------
+    // The 'context' defines the base directory for the Docker build.
+    // All COPY/ADD commands in the Dockerfile are relative to this.
+    //
+    // ".." means the parent directory (repository root), allowing
+    // the Dockerfile to access files from the entire repository.
+    //
+    // Why ".."?
+    // - The Dockerfile is in .devcontainer/
+    // - We need access to repository files like pyproject.toml
+    // - Workspace should mount at repository root, not .devcontainer
+    // --------------------------------------------------------------
+    "context": "..",
+
+    // --------------------------------------------------------------
+    // Dockerfile Path
+    // --------------------------------------------------------------
+    // Path to the Dockerfile, relative to 'context' (not the
+    // devcontainer.json location).
+    //
+    // Since context is "..", the Dockerfile at
+    // .devcontainer/Dockerfile becomes ".devcontainer/Dockerfile"
+    // relative to the repository root.
+    // --------------------------------------------------------------
+    "dockerfile": ".devcontainer/Dockerfile",
+
+    // --------------------------------------------------------------
+    // Build Arguments (ARG in Dockerfile)
+    // --------------------------------------------------------------
+    // These values are passed to the Dockerfile as ARG variables
+    // during the build process. They allow customization without
+    // modifying the Dockerfile itself.
+    //
+    // Usage in Dockerfile:
+    //   ARG BUILD_DATE
+    //   LABEL org.opencontainers.image.created="${BUILD_DATE}"
+    //
+    // Note: Build args are evaluated at build time only. For runtime
+    // configuration, use 'containerEnv' or 'remoteEnv' instead.
+    //
+    // Current Configuration:
+    // - Most environment variables are defined in the Dockerfile
+    // - Add build-time customizations here as needed
+    // - Examples: version tags, build metadata, feature flags
+    // --------------------------------------------------------------
+    "args": {
+      // Example: Pass build timestamp for image metadata
+      // "BUILD_DATE": "${localEnv:BUILD_DATE}",
+      
+      // Example: Override default locale at build time
+      // "LANG": "en_US.UTF-8",
+      
+      // Example: Customize Python behavior during image build
+      // "PIP_NO_CACHE_DIR": "1"
+    },
+
+    // --------------------------------------------------------------
+    // Multi-Stage Build Target
+    // --------------------------------------------------------------
+    // When using multi-stage Dockerfiles (multiple FROM statements),
+    // 'target' specifies which stage to build.
+    //
+    // Our Dockerfile stages:
+    //   1. 'base' - Minimal foundation with pinned base image
+    //   2. 'environment' - Environment variables and directory setup
+    //   3. 'final' - Complete dev environment (default)
+    //
+    // Why specify 'final'?
+    // - Explicitly documents the intended build target
+    // - Prevents accidental builds of intermediate stages
+    // - Enables CI/CD to build different stages for different purposes
+    //
+    // Example: Build only 'base' stage for minimal testing:
+    //   "target": "base"
+    // --------------------------------------------------------------
+    "target": "final",
+
+    // --------------------------------------------------------------
+    // Build Options
+    // --------------------------------------------------------------
+    // Additional Docker build options. These are passed directly to
+    // 'docker build' or 'podman build'.
+    //
+    // Common options:
+    // - "--no-cache": Force rebuild without using cache layers
+    // - "--pull": Always pull the latest base image
+    // - "--progress=plain": Show full build output (useful for CI)
+    // - "--platform=linux/amd64": Force specific architecture
+    //
+    // Note: Use sparingly in devcontainer.json. Most options are
+    // better configured in docker-compose.yml or left as defaults.
+    // --------------------------------------------------------------
+    "options": [
+      // Example: Force no-cache builds (useful for debugging)
+      // "--no-cache",
+      
+      // Example: Always pull latest base image
+      // "--pull"
+    ]
+  },
+
+  // ==================================================================
+  // Container Features
+  // ==================================================================
+  // Features are pre-packaged, reusable units of configuration that
+  // add tools, runtimes, or capabilities to your container.
+  //
+  // They are maintained by the community and follow a standard schema.
+  // Reference: https://containers.dev/features
+  //
+  // Why use Features?
+  // - Modularity: Add tools without modifying the Dockerfile
+  // - Reusability: Share configuration across projects
+  // - Maintenance: Features are updated by maintainers
+  // - Discovery: Browse available features at https://containers.dev
+  //
+  // Format: "feature-id": { options }
+  // - Empty {} means use default options
+  // - Specify options to customize behavior
+  //
+  // Note: Our Dockerfile already includes most common tools.
+  // Features listed here are for future extensibility and documentation.
+  // ==================================================================
+  "features": {
+    // --------------------------------------------------------------
+    // Common Utilities
+    // --------------------------------------------------------------
+    // Adds frequently used CLI tools and utilities.
+    // Already included in the base devcontainers/base image, but
+    // explicitly listed here for:
+    // - Documentation of available tools
+    // - Version pinning and control
+    // - Easy customization of installed packages
+    //
+    // Included tools: zsh, git, curl, wget, jq, vim, nano, etc.
+    // Reference: https://github.com/devcontainers/features/tree/main/src/common-utils
+    // --------------------------------------------------------------
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      // Install zsh as an alternative shell
+      "installZsh": true,
+      
+      // Don't install Oh My Zsh (we manage shell configs separately)
+      "installOhMyZsh": false,
+      
+      // Don't upgrade packages automatically (reproducibility)
+      "upgradePackages": false,
+      
+      // Use 'vscode' user (matches our Dockerfile)
+      "username": "vscode",
+      
+      // User UID (matches base image default)
+      "userUid": "automatic",
+      
+      // User GID (matches base image default)
+      "userGid": "automatic",
+      
+      // Configure git to use the VS Code credential helper
+      "configureZshAsDefaultShell": false
+    },
+
+    // --------------------------------------------------------------
+    // Docker-in-Docker (DinD)
+    // --------------------------------------------------------------
+    // Enables running Docker commands inside the dev container.
+    // Required for:
+    // - Building container images during development
+    // - Running docker-compose for testing
+    // - Testing containerized applications
+    // - CI/CD pipeline development
+    //
+    // Security Note: Requires 'privileged: true' in runArgs or
+    // docker-compose.yml. This grants significant access to the host.
+    // Only use in trusted development environments.
+    //
+    // Alternative: Use 'docker-outside-of-docker' feature to share
+    // the host's Docker daemon (more secure, but limited).
+    //
+    // Reference: https://github.com/devcontainers/features/tree/main/src/docker-in-docker
+    // --------------------------------------------------------------
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      // Docker version to install (or "latest")
+      "version": "latest",
+      
+      // Install Docker Compose plugin
+      "dockerDashComposeVersion": "v2",
+      
+      // Install Docker Buildx plugin (for multi-platform builds)
+      "installDockerBuildx": true,
+      
+      // Install Docker Compose Switch (compatibility wrapper)
+      "installDockerComposeSwitch": true,
+      
+      // Configure Docker to start automatically
+      "moby": true,
+      
+      // Enable BuildKit by default (modern Docker builder)
+      "enableNonRootDocker": true,
+      
+      // Use 'vscode' user for Docker access
+      "dockerDefaultAddressPool": []
+    },
+
+    // --------------------------------------------------------------
+    // Git (Version Control System)
+    // --------------------------------------------------------------
+    // Ensures Git is installed and configured properly.
+    // The base image includes Git, but this feature ensures:
+    // - Latest stable version
+    // - PPA support for updates
+    // - Consistent configuration across environments
+    //
+    // Reference: https://github.com/devcontainers/features/tree/main/src/git
+    // --------------------------------------------------------------
+    "ghcr.io/devcontainers/features/git:1": {
+      // Git version to install
+      "version": "latest",
+      
+      // Install Git LFS for large file support
+      "ppa": true
+    },
+
+    // --------------------------------------------------------------
+    // Python Development Environment
+    // --------------------------------------------------------------
+    // Installs Python runtime and common development tools.
+    // Our Dockerfile environment is already Python-friendly, but
+    // this feature ensures:
+    // - Multiple Python versions available
+    // - pip, venv, and pipx pre-configured
+    // - Consistent tool paths and permissions
+    //
+    // Reference: https://github.com/devcontainers/features/tree/main/src/python
+    // --------------------------------------------------------------
+    "ghcr.io/devcontainers/features/python:1": {
+      // Python version (or "latest", "3.12", etc.)
+      "version": "3.12",
+      
+      // Install pip and setuptools
+      "installTools": true,
+      
+      // Optimize Python for development (enable assertions, etc.)
+      "optimize": false,
+      
+      // Enable Python user site-packages directory
+      "enableShared": false,
+      
+      // Install common Python tools: black, mypy, pylint, etc.
+      "installJupyterlab": false,
+      
+      // Configure default Python version
+      "configureGitSafeDirectory": true
+    },
+
+    // --------------------------------------------------------------
+    // Node.js & npm Development Environment
+    // --------------------------------------------------------------
+    // Installs Node.js runtime, npm, and yarn.
+    // Useful for:
+    // - JavaScript/TypeScript projects
+    // - Frontend build tools
+    // - npm-based CLI tools (prettier, eslint, etc.)
+    //
+    // Note: Only include if your project uses Node.js tooling.
+    // Remove if unnecessary to keep the container lean.
+    //
+    // Reference: https://github.com/devcontainers/features/tree/main/src/node
+    // --------------------------------------------------------------
+    "ghcr.io/devcontainers/features/node:1": {
+      // Node.js version ("lts", "latest", "18", etc.)
+      "version": "lts",
+      
+      // Install Yarn package manager
+      "installYarnUsingApt": true,
+      
+      // Node version manager to use ("nvm" or "none")
+      "nodeGypDependencies": true,
+      
+      // Install pnpm package manager
+      "nvmInstallPath": "/usr/local/share/nvm"
+    }
+  },
+
+  // ==================================================================
+  // Lifecycle Hooks & Commands
+  // ==================================================================
+  // Dev Containers support lifecycle hooks that run at different
+  // stages of the container lifecycle:
+  //
+  // 1. initializeCommand - Runs on host before container creation
+  // 2. onCreateCommand - Runs once when container is created
+  // 3. updateContentCommand - Runs when container is rebuilt or repo changes
+  // 4. postCreateCommand - Runs after container creation (every time)
+  // 5. postStartCommand - Runs after container starts (every time)
+  // 6. postAttachCommand - Runs after VS Code attaches (every time)
+  //
+  // Best Practices:
+  // - Use onCreateCommand for one-time setup (e.g., clone repos)
+  // - Use postCreateCommand for reinstallable setup (e.g., npm install)
+  // - Use postStartCommand for runtime services (e.g., start database)
+  // - Keep commands idempotent when possible
+  // ==================================================================
+
+  // --------------------------------------------------------------
+  // Initialize Command (Host Machine)
+  // --------------------------------------------------------------
+  // Runs on the host machine before the container is created.
+  // Useful for:
+  // - Pre-flight checks
+  // - Downloading large dependencies to shared cache
+  // - Generating files that should exist before build
+  //
+  // Note: This command has NO access to the container or its filesystem.
+  // It runs in the host shell (bash, PowerShell, etc.)
+  // --------------------------------------------------------------
+  "initializeCommand": {
+    // Format: { "command-name": ["executable", "arg1", "arg2"] }
+    // Use array format for cross-platform compatibility
+    
+    // Example: Verify Docker is running
+    // "verify-docker": ["docker", "info"],
+    
+    // Example: Pre-download large dependencies
+    // "cache-deps": ["docker", "pull", "mcr.microsoft.com/devcontainers/base:2.1.2"]
+  },
+
+  // --------------------------------------------------------------
+  // On Create Command (First Run Only)
+  // --------------------------------------------------------------
+  // Runs once when the container is first created.
+  // Does NOT run on subsequent container starts.
+  //
+  // Use for:
+  // - Cloning additional repositories
+  // - Generating SSH keys or credentials
+  // - One-time database initialization
+  // - Downloading large datasets
+  //
+  // Note: This command persists in the container's state. If you
+  // rebuild the container, it will run again.
+  // --------------------------------------------------------------
+  "onCreateCommand": {
+    // Example: Initialize git submodules
+    // "init-submodules": ["git", "submodule", "update", "--init", "--recursive"],
+    
+    // Example: Generate SSH key for the vscode user
+    // "generate-ssh-key": ["ssh-keygen", "-t", "ed25519", "-f", "~/.ssh/id_ed25519", "-N", ""]
+  },
+
+  // --------------------------------------------------------------
+  // Update Content Command (Content Changes)
+  // --------------------------------------------------------------
+  // Runs when container content changes, such as:
+  // - Rebuilding the container
+  // - Pulling new commits
+  // - Switching branches
+  //
+  // Use for:
+  // - Updating dependencies after requirement file changes
+  // - Rebuilding generated code
+  // - Refreshing database schemas
+  //
+  // Note: This is mutually exclusive with postCreateCommand.
+  // Only one should be defined to avoid confusion.
+  // --------------------------------------------------------------
+  "updateContentCommand": {
+    // Example: Reinstall Python dependencies
+    // "install-deps": ["pip", "install", "-r", "requirements.txt"],
+    
+    // Example: Rebuild project after content changes
+    // "rebuild": ["npm", "run", "build"]
+  },
+
+  // --------------------------------------------------------------
+  // Post Create Command (Every Container Creation)
+  // --------------------------------------------------------------
+  // Runs after the container is created, every time.
+  // Unlike onCreateCommand, this runs on rebuilds too.
+  //
+  // Use for:
+  // - Installing project dependencies (npm install, pip install)
+  // - Setting up databases or services
+  // - Configuring tools or permissions
+  //
+  // Best Practice: Keep this idempotent and fast. Users run it
+  // frequently during development.
+  //
+  // Note: This is mutually exclusive with updateContentCommand.
+  // Choose one based on your workflow preference.
+  // --------------------------------------------------------------
+  "postCreateCommand": {
+    // Example: Install Python dependencies with Poetry
+    // "install-python-deps": ["poetry", "install", "--no-root"],
+    
+    // Example: Install Node.js dependencies
+    // "install-node-deps": ["npm", "install"],
+    
+    // Example: Run database migrations
+    // "migrate-db": ["python", "manage.py", "migrate"]
+  },
+
+  // --------------------------------------------------------------
+  // Post Start Command (Every Container Start)
+  // --------------------------------------------------------------
+  // Runs every time the container starts (including after stops).
+  //
+  // Use for:
+  // - Starting background services (database, Redis, etc.)
+  // - Mounting network drives
+  // - Updating dynamic configuration
+  //
+  // Best Practice: Ensure commands are idempotent and fail gracefully
+  // if services are already running.
+  // --------------------------------------------------------------
+  "postStartCommand": {
+    // Example: Start PostgreSQL service
+    // "start-postgres": ["sudo", "service", "postgresql", "start"],
+    
+    // Example: Start Redis in background
+    // "start-redis": ["redis-server", "--daemonize", "yes"],
+    
+    // Example: Display welcome message
+    // "welcome": ["echo", "🚀 Development container started successfully!"]
+  },
+
+  // --------------------------------------------------------------
+  // Post Attach Command (Every VS Code Attach)
+  // --------------------------------------------------------------
+  // Runs every time VS Code attaches to the container.
+  // This happens more frequently than postStartCommand.
+  //
+  // Use for:
+  // - Displaying status information
+  // - Activating virtual environments
+  // - Setting up terminal state
+  //
+  // Best Practice: Keep this extremely fast and lightweight.
+  // --------------------------------------------------------------
+  "postAttachCommand": {
+    // Example: Activate Python virtual environment
+    // "activate-venv": ["echo", "source .venv/bin/activate >> ~/.bashrc"],
+    
+    // Example: Display git status
+    // "git-status": ["git", "status", "--short"]
+  },
+
+  // ==================================================================
+  // Container Runtime Configuration
+  // ==================================================================
+  // These settings control how the container behaves at runtime.
+  // ==================================================================
+
+  // --------------------------------------------------------------
+  // Container User Identity
+  // --------------------------------------------------------------
+  // 'remoteUser' specifies which user VS Code should run as inside
+  // the container. This affects:
+  // - File ownership of created files
+  // - Permission for commands in integrated terminal
+  // - Default user for debugging sessions
+  //
+  // Our Dockerfile creates and configures the 'vscode' user with:
+  // - Proper permissions for /workspace and /opt/universal
+  // - Sudo access without password (for package installation)
+  // - Consistent UID/GID for file sharing with host
+  //
+  // Alternative: "root" - Run as root (not recommended for security)
+  // Alternative: "node" - If using Node.js base image
+  // --------------------------------------------------------------
+  "remoteUser": "vscode",
+
+  // --------------------------------------------------------------
+  // Container User Override
+  // --------------------------------------------------------------
+  // 'containerUser' overrides the USER directive in the Dockerfile.
+  // Typically, you should NOT set this unless you need to override
+  // the Dockerfile's default user.
+  //
+  // Difference from 'remoteUser':
+  // - containerUser: User for container processes (PID 1, services)
+  // - remoteUser: User for VS Code operations (terminal, debugging)
+  //
+  // Best Practice: Let the Dockerfile define the container user,
+  // and use remoteUser for VS Code. Only set containerUser if
+  // you need different users for different purposes.
+  // --------------------------------------------------------------
+  "containerUser": "vscode",
+
+  // --------------------------------------------------------------
+  // Update Remote User UID
+  // --------------------------------------------------------------
+  // When true, automatically updates the container user's UID/GID
+  // to match the local user's UID/GID on the host.
+  //
+  // Why this matters:
+  // - File ownership matches between host and container
+  // - No permission issues when editing mounted files
+  // - Consistent file permissions across team members
+  //
+  // Note: Requires rebuilding the container. Uses the 'vscode'
+  // user as defined in remoteUser.
+  //
+  // Trade-off: Adds slight delay to container startup, but ensures
+  // proper file permissions for mounted volumes.
+  // --------------------------------------------------------------
+  "updateRemoteUserUID": true,
+
+  // --------------------------------------------------------------
+  // Override Container Command
+  // --------------------------------------------------------------
+  // When true, overrides the CMD directive in the Dockerfile.
+  // The container will run indefinitely (as VS Code needs).
+  //
+  // Default: true (recommended for dev containers)
+  //
+  // Set to false if your Dockerfile's CMD should run as-is.
+  // Useful for containers that act as services or have specific
+  // startup behavior defined in the Dockerfile.
+  //
+  // Our Dockerfile CMD: ["bash", "-lc", "sleep infinity"]
+  // This is already designed for dev container usage, so
+  // overrideCommand can be either true or false.
+  // --------------------------------------------------------------
+  "overrideCommand": true,
+
+  // --------------------------------------------------------------
+  // Shutdown Action
+  // --------------------------------------------------------------
+  // Controls what happens to the container when VS Code closes.
+  //
+  // Options:
+  // - "none": Leave the container running
+  // - "stopContainer": Stop the container (preserves state)
+  // - "stopCompose": Stop all docker-compose services
+  //
+  // Recommendation: "stopContainer" for:
+  // - Resource efficiency (CPU, memory)
+  // - Faster next startup (container state preserved)
+  // - Clean shutdown of services
+  //
+  // Use "none" if you want services to keep running for background
+  // tasks or testing outside VS Code.
+  // --------------------------------------------------------------
+  "shutdownAction": "stopContainer",
+
+  // --------------------------------------------------------------
+  // Container Environment Variables
+  // --------------------------------------------------------------
+  // 'containerEnv' sets environment variables inside the container.
+  // These are available to:
+  // - All processes in the container
+  // - Shell sessions
+  // - Running applications
+  //
+  // Difference from Dockerfile ENV:
+  // - containerEnv: Set at runtime, can reference host env vars
+  // - Dockerfile ENV: Set at build time, baked into image
+  //
+  // Use containerEnv for:
+  // - User-specific configuration
+  // - Secrets (use ${localEnv:SECRET_KEY} to pass from host)
+  // - Dynamic values that change per developer
+  //
+  // Note: Most environment variables are already set in the Dockerfile
+  // for consistency. Add here only for runtime customization.
+  // --------------------------------------------------------------
+  "containerEnv": {
+    // Example: Override workspace location
+    // "WORKSPACE_HOME": "/workspace",
+    
+    // Example: Pass secrets from host environment
+    // "API_KEY": "${localEnv:API_KEY}",
+    
+    // Example: Development-specific overrides
+    // "DEBUG": "true",
+    // "LOG_LEVEL": "debug",
+    
+    // Example: VS Code specific configuration
+    // "VSCODE_WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+  },
+
+  // --------------------------------------------------------------
+  // Remote Environment Variables (VS Code Only)
+  // --------------------------------------------------------------
+  // 'remoteEnv' sets environment variables specifically for VS Code's
+  // remote operations. These affect:
+  // - VS Code extensions
+  // - Integrated terminal
+  // - Debug sessions
+  //
+  // Difference from containerEnv:
+  // - containerEnv: Available to all container processes
+  // - remoteEnv: Only available to VS Code and its spawned processes
+  //
+  // Use remoteEnv for:
+  // - Extension-specific configuration
+  // - PATH modifications for VS Code terminal
+  // - Variables that shouldn't affect background services
+  //
+  // Note: remoteEnv has higher precedence than containerEnv for
+  // VS Code operations.
+  // --------------------------------------------------------------
+  "remoteEnv": {
+    // Example: Add custom binaries to PATH for VS Code terminal
+    // "PATH": "${containerEnv:PATH}:/opt/universal/bin",
+    
+    // Example: Configure VS Code extensions
+    // "VSCODE_EXTENSION_CONFIG": "/workspace/.vscode/extensions.json",
+    
+    // Example: Set workspace-relative paths
+    // "PROJECT_ROOT": "${containerWorkspaceFolder}"
+  },
+
+  // --------------------------------------------------------------
+  // Mount Configuration
+  // --------------------------------------------------------------
+  // 'mounts' allows you to bind mount additional directories from
+  // the host into the container. Format:
+  //
+  // "source=/host/path,target=/container/path,type=bind,consistency=cached"
+  //
+  // Mount types:
+  // - bind: Direct host directory mount
+  // - volume: Named Docker volume
+  // - tmpfs: Temporary in-memory filesystem
+  //
+  // Consistency modes (Docker for Mac/Windows):
+  // - cached: Host authoritative (best for code)
+  // - delegated: Container authoritative (best for build output)
+  // - consistent: Full synchronization (slower)
+  //
+  // Use cases:
+  // - Share SSH keys: source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,readonly
+  // - Share Git config: source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,readonly
+  // - Persist cache: type=volume,source=npm-cache,target=/home/vscode/.npm
+  // - Temporary workspace: type=tmpfs,target=/tmp/workspace
+  //
+  // Security Note: Be cautious mounting sensitive directories.
+  // Use readonly when possible to prevent accidental modifications.
+  // --------------------------------------------------------------
+  "mounts": [
+    // Example: Share host SSH keys (readonly for security)
+    // "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly",
+    
+    // Example: Share Git configuration from host
+    // "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly",
+    
+    // Example: Persistent volume for package caches (faster rebuilds)
+    // "type=volume,source=ubi-devcontainer-npm-cache,target=/home/vscode/.npm",
+    // "type=volume,source=ubi-devcontainer-pip-cache,target=/home/vscode/.cache/pip",
+    
+    // Example: Mount host Docker socket (alternative to docker-in-docker)
+    // "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
+  ],
+
+  // --------------------------------------------------------------
+  // Docker Run Arguments
+  // --------------------------------------------------------------
+  // 'runArgs' passes additional arguments to 'docker run' or
+  // 'docker create' when starting the container.
+  //
+  // Common arguments:
+  // - "--privileged": Grant extended privileges (required for DinD)
+  // - "--cap-add=SYS_PTRACE": Enable debugging capabilities
+  // - "--security-opt=seccomp=unconfined": Disable seccomp (for debugging)
+  // - "--network=host": Use host networking (useful for testing)
+  // - "--add-host=host.docker.internal:host-gateway": Access host from container
+  // - "--init": Use tini as PID 1 (handles signals properly)
+  // - "--memory=4g": Set memory limit
+  // - "--cpus=2": Set CPU limit
+  //
+  // Security Note: Be cautious with --privileged and security-opt.
+  // These reduce container isolation and should only be used when
+  // necessary (e.g., for Docker-in-Docker).
+  //
+  // Note: Some runArgs are already set in docker-compose.yml.
+  // Settings here take precedence over docker-compose.
+  // --------------------------------------------------------------
+  "runArgs": [
+    // Enable init system for proper signal handling
+    "--init",
+    
+    // Grant privileged mode for Docker-in-Docker
+    // Required by the docker-in-docker feature
+    // Security Trade-off: Grants significant access to host
+    // Only use in trusted development environments
+    "--privileged",
+    
+    // Add host.docker.internal alias for host access
+    // Useful for accessing host services from container
+    "--add-host=host.docker.internal:host-gateway",
+    
+    // Security options for debugging
+    // Uncomment if you need to debug with tools like gdb, strace
+    // "--cap-add=SYS_PTRACE",
+    // "--security-opt=seccomp=unconfined",
+    
+    // Resource limits (uncomment to enable)
+    // "--memory=4g",
+    // "--cpus=2"
+  ],
+
+  // --------------------------------------------------------------
+  // Docker Compose File
+  // --------------------------------------------------------------
+  // When using docker-compose for multi-container setups, specify
+  // the compose file(s) and the service to use as the dev container.
+  //
+  // Benefits of using docker-compose:
+  // - Multi-container development (app + database + redis)
+  // - Shared networks between services
+  // - Volume management
+  // - Service dependencies
+  //
+  // Alternative: Remove dockerComposeFile and use 'build' directly
+  // for single-container setups (simpler configuration).
+  //
+  // Our Setup: We have docker-compose.yml for flexibility, but
+  // it's primarily a wrapper around the Dockerfile. You can use
+  // either approach.
+  // --------------------------------------------------------------
+  "dockerComposeFile": "docker-compose.yml",
+
+  // --------------------------------------------------------------
+  // Docker Compose Service
+  // --------------------------------------------------------------
+  // The specific service in docker-compose.yml to use as the
+  // development container.
+  //
+  // Required when dockerComposeFile is specified.
+  //
+  // Our docker-compose.yml defines:
+  // - "development": Main dev container service
+  //
+  // VS Code will attach to this service and ignore other services
+  // (unless you manually start them).
+  // --------------------------------------------------------------
+  "service": "development",
+
+  // --------------------------------------------------------------
+  // Workspace Folder (Inside Container)
+  // --------------------------------------------------------------
+  // 'workspaceFolder' specifies the default working directory
+  // inside the container. VS Code opens this location by default.
+  //
+  // This should match:
+  // - The 'volumes' mount point in docker-compose.yml
+  // - The WORKDIR in your Dockerfile (if set)
+  // - The root of your project in the container
+  //
+  // Our Setup: docker-compose.yml mounts ".." to "/workspace",
+  // so workspaceFolder is "/workspace".
+  //
+  // Best Practice: Use a consistent workspace location across
+  // all projects (e.g., /workspace, /workspaces/<project-name>).
+  // --------------------------------------------------------------
+  "workspaceFolder": "/workspace",
+
+  // --------------------------------------------------------------
+  // Workspace Mount Configuration
+  // --------------------------------------------------------------
+  // 'workspaceMount' provides explicit control over how the
+  // workspace is mounted into the container.
+  //
+  // Format: "source=/host/path,target=/container/path,type=bind,consistency=cached"
+  //
+  // Note: This is optional when using docker-compose, as the
+  // mount is defined in docker-compose.yml. Only use if you need
+  // to override the compose file's configuration.
+  //
+  // Our Setup: Mounting is handled by docker-compose.yml, so
+  // workspaceMount is not needed here.
+  // --------------------------------------------------------------
+  // "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+
+  // ==================================================================
+  // VS Code Customizations
+  // ==================================================================
+  // The 'customizations' object contains editor-specific settings.
+  // Currently, only VS Code is supported, but the structure allows
+  // for other editors in the future (e.g., JetBrains, vim).
+  //
+  // Why customize here vs. workspace settings?
+  // - Container-specific: Only applies inside dev container
+  // - Portable: Shared across all developers
+  // - Separate concerns: Dev environment vs. project preferences
+  // ==================================================================
+  "customizations": {
+    "vscode": {
+      // ------------------------------------------------------------
+      // VS Code Extensions
+      // ------------------------------------------------------------
+      // Extensions to install automatically when the container is
+      // created. Format: "publisher.extension-id"
+      //
+      // Best Practices:
+      // - Include language support extensions (Python, Go, etc.)
+      // - Include linters and formatters for consistency
+      // - Include productivity extensions your team uses
+      // - Avoid heavy extensions that slow down VS Code
+      //
+      // Extension Discovery:
+      // - Browse: https://marketplace.visualstudio.com/vscode
+      // - Find ID: Right-click extension in VS Code → Copy Extension ID
+      //
+      // Version Pinning: Add @version to pin specific versions:
+      //   "ms-python.python@2023.10.0"
+      //
+      // Note: Extensions listed in .vscode/extensions.json are
+      // recommendations for local development. Extensions here are
+      // automatically installed in the container.
+      // ------------------------------------------------------------
+      "extensions": [
+        // ----------------------------------------------------------
+        // Language Support
+        // ----------------------------------------------------------
+        // Python development essentials
+        "ms-python.python",              // Python IntelliSense, debugging, linting
+        "ms-python.vscode-pylance",      // Fast Python language server
+        "ms-python.black-formatter",     // Black code formatter
+        "ms-python.isort",               // Import sorting
+        
+        // Node.js and JavaScript
+        "dbaeumer.vscode-eslint",        // ESLint integration
+        "esbenp.prettier-vscode",        // Prettier code formatter
+        
+        // Shell scripting
+        "timonwong.shellcheck",          // ShellCheck linting
+        "foxundermoon.shell-format",     // Shell script formatting
+        
+        // Markup and data formats
+        "redhat.vscode-yaml",            // YAML language support with schema validation
+        "tamasfe.even-better-toml",      // TOML language support
+        "DavidAnson.vscode-markdownlint", // Markdown linting
+        
+        // ----------------------------------------------------------
+        // Container and DevOps Tools
+        // ----------------------------------------------------------
+        "ms-azuretools.vscode-docker",   // Docker support (Dockerfiles, compose)
+        "ms-vscode-remote.remote-containers", // Dev Containers extension
+        "github.vscode-github-actions",  // GitHub Actions workflow support
+        
+        // ----------------------------------------------------------
+        // Code Quality and Linting
+        // ----------------------------------------------------------
+        "streetsidesoftware.code-spell-checker", // Spell checking in code/comments
+        "editorconfig.editorconfig",     // EditorConfig support
+        
+        // ----------------------------------------------------------
+        // Git and Version Control
+        // ----------------------------------------------------------
+        "donjayamanne.githistory",       // Git history visualization
+        "eamodio.gitlens",               // Advanced Git integration (optional)
+        
+        // ----------------------------------------------------------
+        // Productivity and UI
+        // ----------------------------------------------------------
+        "johnpapa.vscode-peacock",       // Workspace color theming
+        "wmaurer.change-case",           // Quick case conversion
+        "usernamehw.errorlens",          // Inline error highlighting
+        "xyz.local-history",             // Local file history
+        
+        // ----------------------------------------------------------
+        // Testing and Debugging
+        // ----------------------------------------------------------
+        "hbenl.vscode-test-explorer",    // Test Explorer UI
+        "littlefoxteam.vscode-python-test-adapter", // Python test adapter
+        
+        // ----------------------------------------------------------
+        // Schema and Validation
+        // ----------------------------------------------------------
+        "remcohaszing.schemastore",      // JSON Schema Store integration
+        
+        // ----------------------------------------------------------
+        // Task and Automation
+        // ----------------------------------------------------------
+        "task.vscode-task",              // Task runner support
+        
+        // ----------------------------------------------------------
+        // Additional Tools
+        // ----------------------------------------------------------
+        "irongeek.vscode-env",           // .env file support
+        "codezombiech.gitignore"         // .gitignore file support
+      ],
+
+      // ------------------------------------------------------------
+      // VS Code Settings
+      // ------------------------------------------------------------
+      // Settings that apply specifically inside the dev container.
+      // These override user settings and workspace settings.
+      //
+      // Structure matches settings.json format.
+      //
+      // Use Cases:
+      // - Enforce team coding standards
+      // - Configure extensions for container environment
+      // - Set container-specific paths and tools
+      // - Override settings that differ in container vs. host
+      //
+      // Note: Some settings are already in .vscode/settings.json.
+      // Settings here take precedence inside the container.
+      // ------------------------------------------------------------
+      "settings": {
+        // --------------------------------------------------------
+        // Terminal Configuration
+        // --------------------------------------------------------
+        // Set default shell for integrated terminal
+        "terminal.integrated.defaultProfile.linux": "bash",
+        
+        // Shell profiles available in terminal dropdown
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "/bin/zsh",
+            "icon": "terminal"
+          },
+          "sh": {
+            "path": "/bin/sh",
+            "icon": "terminal"
+          }
+        },
+        
+        // Terminal font settings
+        "terminal.integrated.fontSize": 14,
+        "terminal.integrated.fontFamily": "MesloLGS NF, 'Courier New', monospace",
+        "terminal.integrated.lineHeight": 1.2,
+        
+        // Terminal behavior
+        "terminal.integrated.scrollback": 10000,
+        "terminal.integrated.enableBell": false,
+        "terminal.integrated.cursorBlinking": true,
+        "terminal.integrated.cursorStyle": "line",
+        
+        // --------------------------------------------------------
+        // Editor Configuration
+        // --------------------------------------------------------
+        // Editor appearance
+        "editor.fontSize": 14,
+        "editor.fontFamily": "'Fira Code', 'Droid Sans Mono', 'monospace', monospace",
+        "editor.fontLigatures": true,
+        "editor.lineHeight": 1.6,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": true,
+        
+        // Editor behavior
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": false,
+        "editor.trimAutoWhitespace": true,
+        "editor.renderWhitespace": "boundary",
+        "editor.rulers": [80, 120],
+        "editor.wordWrap": "off",
+        "editor.minimap.enabled": true,
+        "editor.bracketPairColorization.enabled": true,
+        "editor.guides.bracketPairs": true,
+        
+        // Code actions on save
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        
+        // --------------------------------------------------------
+        // Files Configuration
+        // --------------------------------------------------------
+        "files.encoding": "utf8",
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true,
+        
+        // Auto-save configuration
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        
+        // File exclusions from explorer and search
+        "files.exclude": {
+          "**/.git": true,
+          "**/.DS_Store": true,
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.pytest_cache": true,
+          "**/.ruff_cache": true,
+          "**/node_modules": true,
+          "**/dist": true,
+          "**/build": true,
+          "**/.venv": true
+        },
+        
+        // --------------------------------------------------------
+        // Python Configuration
+        // --------------------------------------------------------
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": true,
+        
+        // Python linting
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": false,
+        "python.linting.mypyEnabled": true,
+        "python.linting.lintOnSave": true,
+        
+        // Python formatting
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        
+        // Black formatter settings
+        "black-formatter.args": [
+          "--line-length=88"
+        ],
+        
+        // isort settings
+        "isort.args": [
+          "--profile=black"
+        ],
+        
+        // Python testing
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.pytestArgs": [
+          "tests",
+          "-v",
+          "--color=yes"
+        ],
+        
+        // --------------------------------------------------------
+        // Git Configuration
+        // --------------------------------------------------------
+        "git.enabled": true,
+        "git.autorefresh": true,
+        "git.autofetch": true,
+        "git.confirmSync": false,
+        "git.enableSmartCommit": true,
+        "git.suggestSmartCommit": false,
+        
+        // --------------------------------------------------------
+        // Docker Configuration
+        // --------------------------------------------------------
+        "docker.dockerodeOptions": {
+          "socketPath": "/var/run/docker.sock"
+        },
+        
+        // --------------------------------------------------------
+        // Prettier Configuration
+        // --------------------------------------------------------
+        "prettier.requireConfig": true,
+        "prettier.useEditorConfig": true,
+        
+        // --------------------------------------------------------
+        // ShellCheck Configuration
+        // --------------------------------------------------------
+        "shellcheck.enable": true,
+        "shellcheck.run": "onSave",
+        "shellcheck.executablePath": "/usr/bin/shellcheck",
+        
+        // --------------------------------------------------------
+        // YAML Configuration
+        // --------------------------------------------------------
+        "[yaml]": {
+          "editor.defaultFormatter": "redhat.vscode-yaml",
+          "editor.formatOnSave": true
+        },
+        "yaml.schemas": {
+          "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml",
+          "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "docker-compose*.yml"
+        },
+        
+        // --------------------------------------------------------
+        // JSON Configuration
+        // --------------------------------------------------------
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        
+        // --------------------------------------------------------
+        // Markdown Configuration
+        // --------------------------------------------------------
+        "[markdown]": {
+          "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+          "editor.formatOnSave": false,
+          "editor.wordWrap": "on"
+        },
+        
+        // --------------------------------------------------------
+        // Search Configuration
+        // --------------------------------------------------------
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/bower_components": true,
+          "**/.git": true,
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.pytest_cache": true,
+          "**/.ruff_cache": true,
+          "**/dist": true,
+          "**/build": true,
+          "**/coverage": true,
+          "**/.venv": true
+        }
+      }
+    }
+  },
+
+  // ==================================================================
+  // Port Forwarding Configuration
+  // ==================================================================
+  // 'forwardPorts' defines which container ports should be forwarded
+  // to the host machine, making them accessible via localhost.
+  //
+  // Use Cases:
+  // - Web servers (3000, 8000, 8080)
+  // - Databases (5432 for PostgreSQL, 3306 for MySQL)
+  // - APIs and microservices
+  // - Development servers (webpack dev server, vite, etc.)
+  //
+  // Format: Array of port numbers or port ranges
+  //   [3000, 8000, "5432:5433"] - Forward 5432 to host port 5433
+  //
+  // Automatic Port Detection: VS Code can auto-detect ports from
+  // running processes. This list supplements auto-detection.
+  //
+  // Best Practice: List commonly used ports here for documentation,
+  // even if auto-detection would find them.
+  // ==================================================================
+  "forwardPorts": [
+    // Example: Web development servers
+    // 3000,  // Next.js / React dev server
+    // 8000,  // Python HTTP server / Django
+    // 8080,  // Alternative HTTP server
+    // 5173,  // Vite dev server
+    
+    // Example: Databases
+    // 5432,  // PostgreSQL
+    // 3306,  // MySQL
+    // 6379,  // Redis
+    // 27017, // MongoDB
+    
+    // Example: Other services
+    // 9229,  // Node.js debugging
+    // 5678   // Python debugging (debugpy)
+  ],
+
+  // --------------------------------------------------------------
+  // Port Attributes
+  // --------------------------------------------------------------
+  // 'portsAttributes' provides metadata and behavior for forwarded
+  // ports. Each port can have:
+  //
+  // - label: Human-readable name (shows in Ports view)
+  // - protocol: "http" or "https" (creates clickable links)
+  // - onAutoForward: Action when port is auto-detected
+  //   - "notify" - Show notification
+  //   - "openBrowser" - Open in browser automatically
+  //   - "openPreview" - Open in VS Code simple browser
+  //   - "silent" - Forward silently
+  // - requireLocalPort: Use specific host port (rarely needed)
+  // - elevateIfNeeded: Request elevated permissions if needed
+  //
+  // Format: { "port": { attributes } }
+  // --------------------------------------------------------------
+  "portsAttributes": {
+    // Example: Web server configuration
+    // "3000": {
+    //   "label": "Next.js Dev Server",
+    //   "protocol": "http",
+    //   "onAutoForward": "openBrowser"
+    // },
+    // "8000": {
+    //   "label": "Django Development Server",
+    //   "protocol": "http",
+    //   "onAutoForward": "notify"
+    // },
+    
+    // Example: Database configuration
+    // "5432": {
+    //   "label": "PostgreSQL Database",
+    //   "onAutoForward": "silent"
+    // },
+    
+    // Example: Debugging configuration
+    // "9229": {
+    //   "label": "Node.js Debug Port",
+    //   "onAutoForward": "silent"
+    // }
+  },
+
+  // ==================================================================
+  // Advanced Container Configuration
+  // ==================================================================
+
+  // --------------------------------------------------------------
+  // Privileged Container Mode
+  // --------------------------------------------------------------
+  // SECURITY WARNING: Grants container extensive access to host.
+  //
+  // Required for: Docker-in-Docker, system-level debugging
+  // Risks: Container breakout, host system access
+  //
+  // Alternative: Use docker-outside-of-docker (mount host Docker socket)
+  //
+  // Note: Already set in runArgs above. Listed here for documentation.
+  // --------------------------------------------------------------
+  // "privileged": true,
+
+  // --------------------------------------------------------------
+  // Init Process
+  // --------------------------------------------------------------
+  // When true, runs an init process (tini) as PID 1 inside the
+  // container. Benefits:
+  // - Proper signal handling (SIGTERM, SIGINT)
+  // - Zombie process reaping
+  // - Graceful shutdown
+  //
+  // Recommendation: true for dev containers (default behavior)
+  //
+  // Note: Already set in runArgs above. Listed here for reference.
+  // --------------------------------------------------------------
+  "init": true,
+
+  // --------------------------------------------------------------
+  // Capabilities (Fine-grained Privileges)
+  // --------------------------------------------------------------
+  // Add or drop Linux capabilities for more precise security control
+  // than the all-or-nothing 'privileged' flag.
+  //
+  // Common capabilities:
+  // - SYS_PTRACE: Required for debugging (gdb, strace)
+  // - NET_ADMIN: Network configuration
+  // - SYS_ADMIN: Mount filesystems, etc.
+  //
+  // Format:
+  //   "capAdd": ["SYS_PTRACE", "NET_ADMIN"]
+  //   "capDrop": ["ALL"]  // Drop all, then add specific ones
+  //
+  // Best Practice: Use capabilities instead of privileged when possible.
+  // --------------------------------------------------------------
+  // "capAdd": ["SYS_PTRACE"],
+
+  // --------------------------------------------------------------
+  // Security Options
+  // --------------------------------------------------------------
+  // Security-related options passed to Docker.
+  //
+  // Common options:
+  // - "seccomp=unconfined": Disable seccomp profile (needed for some debuggers)
+  // - "apparmor=unconfined": Disable AppArmor profile
+  // - "label=disable": Disable SELinux labels
+  //
+  // SECURITY WARNING: These options reduce container isolation.
+  // Only use when necessary for specific debugging scenarios.
+  //
+  // Format: Array of strings
+  // --------------------------------------------------------------
+  // "securityOpt": ["seccomp=unconfined"],
+
+  // ==================================================================
+  // Host Platform Requirements
+  // ==================================================================
+  // Document minimum requirements for running this dev container.
+  // These are not enforced, but serve as documentation.
+  //
+  // Note: This is a proposed field, not yet in official spec.
+  // Included here for forward compatibility and documentation.
+  // ==================================================================
+
+  // --------------------------------------------------------------
+  // Host Requirements (Documentation)
+  // --------------------------------------------------------------
+  // Minimum requirements for developers using this dev container:
+  //
+  // - OS: macOS 11+, Windows 10+, Linux (kernel 4.x+)
+  // - Docker: 20.10+ or Podman 3.0+
+  // - Memory: 4GB RAM minimum, 8GB recommended
+  // - Storage: 10GB free space for images and volumes
+  // - VS Code: 1.75+ with Remote Containers extension
+  //
+  // Optional but recommended:
+  // - Git 2.30+ (for commit signing, sparse checkout)
+  // - Docker Compose 2.0+ (for multi-container setups)
+  // --------------------------------------------------------------
+
+  // ==================================================================
+  // Comments and Documentation
+  // ==================================================================
+  // This devcontainer.json is intentionally verbose and fully
+  // documented to serve as:
+  //
+  // 1. Living Documentation: Every configuration point is explained
+  // 2. Template: Can be copied to other Ego Hygiene projects
+  // 3. Learning Resource: Teaches devcontainer concepts
+  // 4. Future-Proof: Includes placeholders for common scenarios
+  //
+  // Maintenance Notes:
+  // - Keep comments up-to-date when making changes
+  // - Document the "why" not just the "what"
+  // - Include examples for common modifications
+  // - Reference official docs for complex features
+  //
+  // Resources:
+  // - Dev Container Spec: https://containers.dev/
+  // - Schema Reference: https://containers.dev/implementors/json_reference/
+  // - Features: https://containers.dev/features
+  // - Templates: https://containers.dev/templates
+  // ==================================================================
+}

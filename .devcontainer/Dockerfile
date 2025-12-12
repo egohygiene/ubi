@@ -28,7 +28,7 @@
 #        --format='{{index .RepoDigests 0}}'
 #   4. Update the FROM line below with the new version and digest
 #   5. Test the build thoroughly before committing
-#   6. Update CHANGELOG.md with the base image version change
+#   6. Document the change in your PR description
 #
 # CURRENT VERSION: 2.1.2
 # CURRENT DIGEST: sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4

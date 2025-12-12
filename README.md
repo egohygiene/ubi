@@ -232,7 +232,7 @@ docker run -it --rm ubi:test bash
 #### 5. Update Documentation and Changelog
 
 - Update the base image version in `README.md` (Architecture > Key Components)
-- Add an entry to `CHANGELOG.md` under the `[Unreleased]` section
+- Document the base image update in `CHANGELOG.md` by creating a new version section or note the change in your PR description for the maintainers to include in the next release
 - Document any breaking changes or notable updates from the upstream base image
 
 #### 6. When to Update
@@ -260,7 +260,7 @@ Contributions are welcome! Here's how you can help:
 - Keep changes minimal and focused
 - Update documentation for any environment changes
 - Bump the `VERSION` file according to SemVer for breaking or feature changes
-- Update the [CHANGELOG.md](./CHANGELOG.md) with your changes under the `[Unreleased]` section
+- Document your changes in your PR description; the CHANGELOG.md is updated automatically during releases
 - Test your changes locally before submitting
 
 ---

@@ -18,7 +18,9 @@
 # UPDATING: To update the base image version:
 #   1. Check for new releases at:
 #      https://github.com/devcontainers/images/releases
-#      https://mcr.microsoft.com/v2/devcontainers/base/tags/list
+#      Or query available tags:
+#      curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | \
+#        jq -r '.tags[] | select(. | test("^[0-9]+\\.[0-9]+"))' | sort -V
 #   2. Pull the new version locally:
 #      docker pull mcr.microsoft.com/devcontainers/base:<version>
 #   3. Get the digest:

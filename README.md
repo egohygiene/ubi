@@ -187,9 +187,18 @@ UBI's base image is pinned to a specific version with a digest for reproducibili
 
 Visit the official sources to find the latest stable version:
 - **GitHub Releases**: [devcontainers/images releases](https://github.com/devcontainers/images/releases)
-- **MCR Tag List**: Query available tags:
+- **MCR Tag List**: Query available tags from the Microsoft Container Registry API:
   ```bash
+  # List all available tags (returns JSON)
   curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | jq -r '.tags[]'
+  
+  # Or filter for version tags only
+  curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | \
+    jq -r '.tags[] | select(. | test("^[0-9]+\\.[0-9]+"))' | sort -V | tail -10
+  ```
+- **Docker Hub Alternative**: Search directly with Docker:
+  ```bash
+  docker search mcr.microsoft.com/devcontainers/base
   ```
 
 #### 2. Pull and Inspect the New Version

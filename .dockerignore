@@ -39,7 +39,6 @@ reports/
 *.swp
 *.swo
 *~
-.editorconfig
 
 ######################################################################
 # Python
@@ -75,8 +74,10 @@ yarn-debug.log*
 yarn-error.log*
 .npm
 .yarn
-package-lock.json
-yarn.lock
+# Note: package-lock.json and yarn.lock are kept for reproducible builds
+# Uncomment if not using Node.js:
+# package-lock.json
+# yarn.lock
 
 ######################################################################
 # Cache Directories
@@ -93,8 +94,10 @@ temp/
 # Development Output
 ######################################################################
 dev-output/
-*.log
-logs/
+# Note: This project commits workflow logs - be specific about exclusions
+# Exclude log directories but not individual log files
+logs/*
+!logs/*.log
 
 ######################################################################
 # OS Files

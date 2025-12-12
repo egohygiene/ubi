@@ -44,15 +44,15 @@ jobs:
             exit 1
           fi
 
-          VERSION_CONTENT=$(cat VERSION | tr -d '[:space:]')
+          VERSION_CONTENT=$(tr -d '[:space:]' < VERSION)
 
           if [ -z "$VERSION_CONTENT" ]; then
             echo "❌ ERROR: VERSION file is empty."
             exit 1
           fi
 
-          echo "VERSION=$VERSION_CONTENT" >> $GITHUB_ENV
-          echo "version=$VERSION_CONTENT" >> $GITHUB_OUTPUT
+          echo "VERSION=${VERSION_CONTENT}" >> "$GITHUB_ENV"
+          echo "version=${VERSION_CONTENT}" >> "$GITHUB_OUTPUT"
 
       # -------------------------------------------------------------
       # 3. Set up Docker Buildx (for efficient image building)
@@ -125,19 +125,25 @@ jobs:
       - name: 📊 Display scan summary
         if: always()
         run: |
-          echo "## 🔒 Trivy Vulnerability Scan Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** ubi:local-${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 🔒 Trivy Vulnerability Scan Summary"
+            echo ""
+            echo "**Image:** ubi:local-${{ steps.version.outputs.version }}"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
           
           if [ -f trivy-report.txt ]; then
-            echo "### Scan Results" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat trivy-report.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            {
+              echo "### Scan Results"
+              echo '```'
+              cat trivy-report.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "⚠️ Report file not generated" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ Report file not generated" >> "$GITHUB_STEP_SUMMARY"
           fi
           
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📥 Download the full report from the workflow artifacts." >> $GITHUB_STEP_SUMMARY
+          {
+            echo ""
+            echo "📥 Download the full report from the workflow artifacts."
+          } >> "$GITHUB_STEP_SUMMARY"

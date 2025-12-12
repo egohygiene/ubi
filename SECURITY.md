@@ -93,7 +93,10 @@ We are committed to addressing security issues promptly:
 | **Initial Response** | Within 48 hours       |
 | **Triage**           | Within 5 business days|
 | **Fix Development**  | Depends on severity   |
-| **Patch Release**    | - Critical: 1-3 days<br>- High: 1-2 weeks<br>- Medium: 2-4 weeks<br>- Low: Next scheduled release |
+| **Patch Release** (Critical)    | 1-3 days |
+| **Patch Release** (High)        | 1-2 weeks |
+| **Patch Release** (Medium)      | 2-4 weeks |
+| **Patch Release** (Low)         | Next scheduled release |
 | **Public Disclosure**| After patch is released, or 90 days from report (whichever comes first) |
 
 **Note**: Timelines may vary based on complexity, severity, and available resources. We will keep you informed throughout the process.
@@ -131,7 +134,7 @@ We kindly ask security researchers to:
 
 - **Trivy Documentation**: [https://aquasecurity.github.io/trivy/](https://aquasecurity.github.io/trivy/)
 - **CVE Database**: [https://nvd.nist.gov/](https://nvd.nist.gov/)
-- **CNCF Security Best Practices**: [https://www.cncf.io/blog/2021/10/06/security-best-practices-for-cloud-native-applications/](https://www.cncf.io/blog/2021/10/06/security-best-practices-for-cloud-native-applications/)
+- **CNCF Cloud Native Security**: [https://www.cncf.io/projects/security/](https://www.cncf.io/projects/security/)
 - **GitHub Security Advisories**: [https://docs.github.com/en/code-security/security-advisories](https://docs.github.com/en/code-security/security-advisories)
 
 ---

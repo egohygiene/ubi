@@ -90,7 +90,43 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       # -------------------------------------------------------------
-      # 6. Display final tag list for clarity
+      # 6. Generate SBOM (Software Bill of Materials)
+      # -------------------------------------------------------------
+      - name: 🧾 Generate SBOM with Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}
+          format: spdx-json
+          output-file: ubi-sbom.spdx.json
+
+      # -------------------------------------------------------------
+      # 7. Upload SBOM as workflow artifact
+      # -------------------------------------------------------------
+      - name: 📤 Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubi-sbom-${{ steps.version.outputs.version }}
+          path: ubi-sbom.spdx.json
+          retention-days: 90
+
+      # -------------------------------------------------------------
+      # 8. Display SBOM generation summary
+      # -------------------------------------------------------------
+      - name: 📊 Display SBOM summary
+        if: always()
+        run: |
+          {
+            echo "## 🧾 SBOM Generation Summary"
+            echo ""
+            echo "**Image:** ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}"
+            echo "**Format:** SPDX-JSON"
+            echo "**File:** ubi-sbom.spdx.json"
+            echo ""
+            echo "📥 Download the SBOM from the workflow artifacts."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # -------------------------------------------------------------
+      # 9. Display final tag list for clarity
       # -------------------------------------------------------------
       - name: 📋 Show published tags
         run: |

@@ -150,7 +150,7 @@ UBI is built on top of the official [Microsoft DevContainers base image](https:/
 
 ### Key Components
 
-1. **Base Image**: `mcr.microsoft.com/devcontainers/base:latest`
+1. **Base Image**: `mcr.microsoft.com/devcontainers/base:2.1.2` (pinned with digest for reproducibility)
 2. **Environment Configuration**: Extensive ENV vars for consistent behavior
 3. **XDG Directory Structure**: `/opt/universal/*` hierarchy
 4. **Build Arguments**: Customizable settings at build time
@@ -178,6 +178,63 @@ docker build -f .devcontainer/Dockerfile -t ubi:local .
 2. Update your devcontainer to use `ubi:local`
 3. Rebuild your devcontainer and test your changes
 4. Once validated, update `VERSION` and push to trigger a new release
+
+### Updating the Base Image
+
+UBI's base image is pinned to a specific version with a digest for reproducibility and stability. To update it:
+
+#### 1. Check for New Releases
+
+Visit the official sources to find the latest stable version:
+- **GitHub Releases**: [devcontainers/images releases](https://github.com/devcontainers/images/releases)
+- **MCR Tag List**: Query available tags:
+  ```bash
+  curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | jq -r '.tags[]'
+  ```
+
+#### 2. Pull and Inspect the New Version
+
+```bash
+# Pull the desired version
+docker pull mcr.microsoft.com/devcontainers/base:<version>
+
+# Get the digest
+docker inspect mcr.microsoft.com/devcontainers/base:<version> \
+  --format='{{index .RepoDigests 0}}'
+```
+
+#### 3. Update the Dockerfile
+
+Edit `.devcontainer/Dockerfile` and update the `FROM` line with:
+- The new version tag
+- The corresponding digest (from step 2)
+- The `LAST UPDATED` date in the comment block
+
+#### 4. Test Thoroughly
+
+```bash
+# Build with no cache to ensure clean build
+docker build -f .devcontainer/Dockerfile -t ubi:test . --no-cache
+
+# Test the container
+docker run -it --rm ubi:test bash
+```
+
+#### 5. Update Documentation and Changelog
+
+- Update the base image version in `README.md` (Architecture > Key Components)
+- Add an entry to `CHANGELOG.md` under the `[Unreleased]` section
+- Document any breaking changes or notable updates from the upstream base image
+
+#### 6. When to Update
+
+Evaluate base image updates when:
+- **Security patches** are released (high priority)
+- **New stable versions** are available (evaluate breaking changes)
+- **Quarterly review** (best practice for staying current)
+- **CI/CD issues** arise from upstream changes (investigate and update if needed)
+
+**Note**: Always review the [devcontainers release notes](https://github.com/devcontainers/images/releases) before updating to understand what's changing.
 
 ---
 

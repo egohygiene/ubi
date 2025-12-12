@@ -1,0 +1,360 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "🧪 Image Testing Workflow"
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "*"  # trigger on any tagged release
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-image:
+    name: "🔍 Test UBI Image (Environment, XDG, Sanity Checks)"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------------
+      # 2. Read VERSION file
+      # -------------------------------------------------------------
+      - name: Read VERSION
+        id: version
+        run: |
+          if [ ! -f VERSION ]; then
+            echo "❌ ERROR: VERSION file is missing."
+            exit 1
+          fi
+
+          VERSION_CONTENT=$(tr -d '[:space:]' < VERSION)
+
+          if [ -z "$VERSION_CONTENT" ]; then
+            echo "❌ ERROR: VERSION file is empty."
+            exit 1
+          fi
+
+          echo "VERSION=${VERSION_CONTENT}" >> "$GITHUB_ENV"
+          echo "version=${VERSION_CONTENT}" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 3. Set up Docker Buildx (for efficient image building)
+      # -------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -------------------------------------------------------------
+      # 4. Build the UBI Image (without pushing)
+      # -------------------------------------------------------------
+      - name: 🛠️ Build UBI Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .devcontainer/Dockerfile
+          load: true  # Load image into local Docker for testing
+          tags: ubi:test-${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # -------------------------------------------------------------
+      # 5. Run container-level smoke tests
+      # -------------------------------------------------------------
+      - name: 🧪 Test 1 - Validate Universal Directory Structure
+        run: |
+          echo "Testing /opt/universal/* directories existence..."
+          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+            set -e
+            echo "Checking required directories..."
+            
+            REQUIRED_DIRS=(
+              "/opt/universal"
+              "/opt/universal/bin"
+              "/opt/universal/toolbox"
+              "/opt/universal/cache"
+              "/opt/universal/logs"
+              "/opt/universal/config"
+              "/opt/universal/lib"
+              "/opt/universal/locks"
+              "/opt/universal/fonts"
+              "/opt/universal/runtime"
+              "/opt/universal/apps"
+              "/opt/universal/reports"
+            )
+            
+            for dir in "${REQUIRED_DIRS[@]}"; do
+              if [ ! -d "$dir" ]; then
+                echo "❌ FAIL: Directory $dir does not exist"
+                exit 1
+              fi
+              echo "✅ PASS: $dir exists"
+            done
+            
+            echo "All required directories exist!"
+          '
+
+      - name: 🧪 Test 2 - Validate XDG Environment Variables
+        run: |
+          echo "Testing XDG environment variables..."
+          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+            set -e
+            echo "Checking XDG environment variables..."
+            
+            # Expected values
+            EXPECTED_XDG_CONFIG_HOME="/opt/universal/config"
+            EXPECTED_XDG_CACHE_HOME="/opt/universal/cache"
+            EXPECTED_XDG_DATA_HOME="/opt/universal/toolbox"
+            EXPECTED_XDG_STATE_HOME="/opt/universal/runtime"
+            
+            # Check XDG_CONFIG_HOME
+            if [ "$XDG_CONFIG_HOME" != "$EXPECTED_XDG_CONFIG_HOME" ]; then
+              echo "❌ FAIL: XDG_CONFIG_HOME is \"$XDG_CONFIG_HOME\", expected \"$EXPECTED_XDG_CONFIG_HOME\""
+              exit 1
+            fi
+            echo "✅ PASS: XDG_CONFIG_HOME=$XDG_CONFIG_HOME"
+            
+            # Check XDG_CACHE_HOME
+            if [ "$XDG_CACHE_HOME" != "$EXPECTED_XDG_CACHE_HOME" ]; then
+              echo "❌ FAIL: XDG_CACHE_HOME is \"$XDG_CACHE_HOME\", expected \"$EXPECTED_XDG_CACHE_HOME\""
+              exit 1
+            fi
+            echo "✅ PASS: XDG_CACHE_HOME=$XDG_CACHE_HOME"
+            
+            # Check XDG_DATA_HOME
+            if [ "$XDG_DATA_HOME" != "$EXPECTED_XDG_DATA_HOME" ]; then
+              echo "❌ FAIL: XDG_DATA_HOME is \"$XDG_DATA_HOME\", expected \"$EXPECTED_XDG_DATA_HOME\""
+              exit 1
+            fi
+            echo "✅ PASS: XDG_DATA_HOME=$XDG_DATA_HOME"
+            
+            # Check XDG_STATE_HOME
+            if [ "$XDG_STATE_HOME" != "$EXPECTED_XDG_STATE_HOME" ]; then
+              echo "❌ FAIL: XDG_STATE_HOME is \"$XDG_STATE_HOME\", expected \"$EXPECTED_XDG_STATE_HOME\""
+              exit 1
+            fi
+            echo "✅ PASS: XDG_STATE_HOME=$XDG_STATE_HOME"
+            
+            # Check that XDG variables point to existing directories
+            if [ ! -d "$XDG_CONFIG_HOME" ]; then
+              echo "❌ FAIL: XDG_CONFIG_HOME points to non-existent directory: $XDG_CONFIG_HOME"
+              exit 1
+            fi
+            echo "✅ PASS: XDG_CONFIG_HOME points to existing directory"
+            
+            if [ ! -d "$XDG_CACHE_HOME" ]; then
+              echo "❌ FAIL: XDG_CACHE_HOME points to non-existent directory: $XDG_CACHE_HOME"
+              exit 1
+            fi
+            echo "✅ PASS: XDG_CACHE_HOME points to existing directory"
+            
+            if [ ! -d "$XDG_DATA_HOME" ]; then
+              echo "❌ FAIL: XDG_DATA_HOME points to non-existent directory: $XDG_DATA_HOME"
+              exit 1
+            fi
+            echo "✅ PASS: XDG_DATA_HOME points to existing directory"
+            
+            if [ ! -d "$XDG_STATE_HOME" ]; then
+              echo "❌ FAIL: XDG_STATE_HOME points to non-existent directory: $XDG_STATE_HOME"
+              exit 1
+            fi
+            echo "✅ PASS: XDG_STATE_HOME points to existing directory"
+            
+            echo "All XDG environment variables are correctly configured!"
+          '
+
+      - name: 🧪 Test 3 - Validate Permissions (vscode user)
+        run: |
+          echo "Testing vscode user write permissions..."
+          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }} bash -c '
+            set -e
+            echo "Testing write permissions as vscode user..."
+            
+            TEST_DIRS=(
+              "/opt/universal/cache"
+              "/opt/universal/config"
+              "/opt/universal/logs"
+              "/opt/universal/runtime"
+              "/opt/universal/toolbox"
+            )
+            
+            for dir in "${TEST_DIRS[@]}"; do
+              TEST_FILE="$dir/.test-write-${RANDOM}"
+              if ! touch "$TEST_FILE" 2>/dev/null; then
+                echo "❌ FAIL: vscode user cannot write to $dir"
+                exit 1
+              fi
+              rm -f "$TEST_FILE"
+              echo "✅ PASS: vscode user can write to $dir"
+            done
+            
+            echo "All permission checks passed!"
+          '
+
+      - name: 🧪 Test 4 - Validate Locale Configuration
+        run: |
+          echo "Testing locale configuration..."
+          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+            set -e
+            echo "Checking locale environment variables..."
+            
+            # Expected values
+            EXPECTED_LANG="en_US.UTF-8"
+            EXPECTED_LC_ALL="en_US.UTF-8"
+            
+            # Check LANG
+            if [ "$LANG" != "$EXPECTED_LANG" ]; then
+              echo "❌ FAIL: LANG is \"$LANG\", expected \"$EXPECTED_LANG\""
+              exit 1
+            fi
+            echo "✅ PASS: LANG=$LANG"
+            
+            # Check LC_ALL
+            if [ "$LC_ALL" != "$EXPECTED_LC_ALL" ]; then
+              echo "❌ FAIL: LC_ALL is \"$LC_ALL\", expected \"$EXPECTED_LC_ALL\""
+              exit 1
+            fi
+            echo "✅ PASS: LC_ALL=$LC_ALL"
+            
+            echo "Locale configuration is correct!"
+          '
+
+      - name: 🧪 Test 5 - Validate Fundamental Tools
+        run: |
+          echo "Testing fundamental tools availability..."
+          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+            set -e
+            echo "Checking fundamental tools..."
+            
+            REQUIRED_TOOLS=(
+              "bash"
+              "sh"
+              "ls"
+              "cat"
+              "touch"
+              "echo"
+              "grep"
+              "sed"
+              "awk"
+              "find"
+              "which"
+              "whoami"
+              "pwd"
+              "mkdir"
+              "rm"
+              "cp"
+              "mv"
+            )
+            
+            for tool in "${REQUIRED_TOOLS[@]}"; do
+              if ! command -v "$tool" >/dev/null 2>&1; then
+                echo "❌ FAIL: Required tool \"$tool\" not found"
+                exit 1
+              fi
+              echo "✅ PASS: $tool is available"
+            done
+            
+            echo "All fundamental tools are available!"
+          '
+
+      - name: 🧪 Test 6 - Command Suite Smoke Tests
+        run: |
+          echo "Running command suite smoke tests..."
+          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }} bash -c '
+            set -e
+            echo "Running basic command tests..."
+            
+            # Test ls
+            echo "Testing ls command..."
+            ls / > /dev/null
+            echo "✅ PASS: ls command works"
+            
+            # Test touch and file creation
+            echo "Testing touch command..."
+            TEST_FILE="/tmp/test-file-${RANDOM}"
+            touch "$TEST_FILE"
+            if [ ! -f "$TEST_FILE" ]; then
+              echo "❌ FAIL: touch command did not create file"
+              exit 1
+            fi
+            rm -f "$TEST_FILE"
+            echo "✅ PASS: touch command works"
+            
+            # Test echo
+            echo "Testing echo command..."
+            OUTPUT=$(echo "Hello UBI")
+            if [ "$OUTPUT" != "Hello UBI" ]; then
+              echo "❌ FAIL: echo command output mismatch"
+              exit 1
+            fi
+            echo "✅ PASS: echo command works"
+            
+            # Test grep
+            echo "Testing grep command..."
+            echo "test content" | grep "test" > /dev/null
+            echo "✅ PASS: grep command works"
+            
+            # Test directory creation and navigation
+            echo "Testing mkdir and cd commands..."
+            TEST_DIR="/tmp/test-dir-${RANDOM}"
+            mkdir -p "$TEST_DIR"
+            cd "$TEST_DIR"
+            if [ "$(pwd)" != "$TEST_DIR" ]; then
+              echo "❌ FAIL: cd command did not change directory"
+              exit 1
+            fi
+            cd /
+            rm -rf "$TEST_DIR"
+            echo "✅ PASS: mkdir and cd commands work"
+            
+            echo "All command suite smoke tests passed!"
+          '
+
+      # -------------------------------------------------------------
+      # 6. Generate test summary and upload artifacts
+      # -------------------------------------------------------------
+      - name: 📋 Generate Test Summary
+        if: success()
+        run: |
+          {
+            echo "## 🧪 UBI Image Test Summary"
+            echo ""
+            echo "**Image Version:** ${{ steps.version.outputs.version }}"
+            echo "**Test Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+            echo ""
+            echo "### Test Results"
+            echo ""
+            echo "✅ Test 1: Universal Directory Structure - PASSED"
+            echo "✅ Test 2: XDG Environment Variables - PASSED"
+            echo "✅ Test 3: Permissions (vscode user) - PASSED"
+            echo "✅ Test 4: Locale Configuration - PASSED"
+            echo "✅ Test 5: Fundamental Tools - PASSED"
+            echo "✅ Test 6: Command Suite Smoke Tests - PASSED"
+            echo ""
+            echo "### Summary"
+            echo ""
+            echo "All image tests passed successfully! ✨"
+          } > test-summary.md
+          
+          cat test-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📦 Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: image-test-results
+          path: |
+            test-summary.md
+          retention-days: 30

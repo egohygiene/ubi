@@ -26,124 +26,64 @@
   "name": "UBI - Universal Base Image Development",
 
   // ==================================================================
-  // Build Configuration
+  // Build Configuration Options
   // ==================================================================
-  // The 'build' section defines how to construct the development
-  // container image from a Dockerfile. This replaces the simpler
-  // 'image' property when you need custom build steps.
+  // There are THREE ways to configure the container source:
   //
-  // Why use 'build' instead of 'image'?
-  // - Customization: Build from source with specific args
-  // - Reproducibility: Version-controlled Dockerfile ensures consistency
-  // - Flexibility: Multi-stage builds with target selection
-  // - Development: Test changes before publishing images
+  // Option 1: Use 'image' to pull a pre-built image
+  //   "image": "ghcr.io/egohygiene/ubi:latest"
   //
-  // Alternative: Use "image": "ghcr.io/egohygiene/ubi:latest" to pull
-  // a pre-built image instead of building locally.
+  // Option 2: Use 'build' to build from Dockerfile directly
+  //   "build": {
+  //     "context": "..",
+  //     "dockerfile": ".devcontainer/Dockerfile",
+  //     "args": { "BUILD_DATE": "${localEnv:BUILD_DATE}" },
+  //     "target": "final"
+  //   }
+  //
+  // Option 3: Use 'dockerComposeFile' + 'service' (CURRENT APPROACH)
+  //   Build configuration comes from docker-compose.yml
+  //   Allows multi-container setups and advanced networking
+  //
+  // We use Option 3 (docker-compose) because:
+  // - Supports multi-container development environments
+  // - Centralizes build configuration in docker-compose.yml
+  // - Enables service dependencies and shared networks
+  // - Provides flexibility for complex dev environments
+  //
+  // The 'build' object below is commented out but kept for reference.
+  // To switch to direct Dockerfile builds (Option 2):
+  // 1. Uncomment the 'build' object below
+  // 2. Comment out 'dockerComposeFile' and 'service' properties
+  // 3. Rebuild the container
   // ==================================================================
-  "build": {
-    // --------------------------------------------------------------
-    // Build Context
-    // --------------------------------------------------------------
-    // The 'context' defines the base directory for the Docker build.
-    // All COPY/ADD commands in the Dockerfile are relative to this.
-    //
-    // ".." means the parent directory (repository root), allowing
-    // the Dockerfile to access files from the entire repository.
-    //
-    // Why ".."?
-    // - The Dockerfile is in .devcontainer/
-    // - We need access to repository files like pyproject.toml
-    // - Workspace should mount at repository root, not .devcontainer
-    // --------------------------------------------------------------
-    "context": "..",
 
-    // --------------------------------------------------------------
-    // Dockerfile Path
-    // --------------------------------------------------------------
-    // Path to the Dockerfile, relative to 'context' (not the
-    // devcontainer.json location).
-    //
-    // Since context is "..", the Dockerfile at
-    // .devcontainer/Dockerfile becomes ".devcontainer/Dockerfile"
-    // relative to the repository root.
-    // --------------------------------------------------------------
-    "dockerfile": ".devcontainer/Dockerfile",
-
-    // --------------------------------------------------------------
-    // Build Arguments (ARG in Dockerfile)
-    // --------------------------------------------------------------
-    // These values are passed to the Dockerfile as ARG variables
-    // during the build process. They allow customization without
-    // modifying the Dockerfile itself.
-    //
-    // Usage in Dockerfile:
-    //   ARG BUILD_DATE
-    //   LABEL org.opencontainers.image.created="${BUILD_DATE}"
-    //
-    // Note: Build args are evaluated at build time only. For runtime
-    // configuration, use 'containerEnv' or 'remoteEnv' instead.
-    //
-    // Current Configuration:
-    // - Most environment variables are defined in the Dockerfile
-    // - Add build-time customizations here as needed
-    // - Examples: version tags, build metadata, feature flags
-    // --------------------------------------------------------------
-    "args": {
-      // Example: Pass build timestamp for image metadata
-      // "BUILD_DATE": "${localEnv:BUILD_DATE}",
-      
-      // Example: Override default locale at build time
-      // "LANG": "en_US.UTF-8",
-      
-      // Example: Customize Python behavior during image build
-      // "PIP_NO_CACHE_DIR": "1"
-    },
-
-    // --------------------------------------------------------------
-    // Multi-Stage Build Target
-    // --------------------------------------------------------------
-    // When using multi-stage Dockerfiles (multiple FROM statements),
-    // 'target' specifies which stage to build.
-    //
-    // Our Dockerfile stages:
-    //   1. 'base' - Minimal foundation with pinned base image
-    //   2. 'environment' - Environment variables and directory setup
-    //   3. 'final' - Complete dev environment (default)
-    //
-    // Why specify 'final'?
-    // - Explicitly documents the intended build target
-    // - Prevents accidental builds of intermediate stages
-    // - Enables CI/CD to build different stages for different purposes
-    //
-    // Example: Build only 'base' stage for minimal testing:
-    //   "target": "base"
-    // --------------------------------------------------------------
-    "target": "final",
-
-    // --------------------------------------------------------------
-    // Build Options
-    // --------------------------------------------------------------
-    // Additional Docker build options. These are passed directly to
-    // 'docker build' or 'podman build'.
-    //
-    // Common options:
-    // - "--no-cache": Force rebuild without using cache layers
-    // - "--pull": Always pull the latest base image
-    // - "--progress=plain": Show full build output (useful for CI)
-    // - "--platform=linux/amd64": Force specific architecture
-    //
-    // Note: Use sparingly in devcontainer.json. Most options are
-    // better configured in docker-compose.yml or left as defaults.
-    // --------------------------------------------------------------
-    "options": [
-      // Example: Force no-cache builds (useful for debugging)
-      // "--no-cache",
-      
-      // Example: Always pull latest base image
-      // "--pull"
-    ]
-  },
+  // "build": {
+  //   // Build Context: Base directory for Docker build
+  //   // ".." = repository root, allowing access to all repo files
+  //   "context": "..",
+  //
+  //   // Dockerfile Path: Relative to context (repository root)
+  //   "dockerfile": ".devcontainer/Dockerfile",
+  //
+  //   // Build Arguments: Passed as ARG to Dockerfile
+  //   // Use for build-time customization (versions, features, etc.)
+  //   "args": {
+  //     // "BUILD_DATE": "${localEnv:BUILD_DATE}",
+  //     // "LANG": "en_US.UTF-8",
+  //     // "PIP_NO_CACHE_DIR": "1"
+  //   },
+  //
+  //   // Multi-Stage Build Target: Which stage to build
+  //   // Our stages: 'base', 'environment', 'final'
+  //   "target": "final",
+  //
+  //   // Build Options: Additional docker build flags
+  //   "options": [
+  //     // "--no-cache",  // Force rebuild without cache
+  //     // "--pull"       // Always pull latest base image
+  //   ]
+  // },
 
   // ==================================================================
   // Container Features

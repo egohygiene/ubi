@@ -97,7 +97,7 @@ dev-output/
 # Note: This project commits workflow logs - be specific about exclusions
 # Exclude log directories but not individual log files
 logs/*
-!logs/*.log
+!logs/**/*.log
 
 ######################################################################
 # OS Files

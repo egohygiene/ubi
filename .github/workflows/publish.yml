@@ -51,7 +51,19 @@ jobs:
           echo "version=$VERSION_CONTENT" >> "$GITHUB_OUTPUT"
 
       # -------------------------------------------------------------
-      # 3. Log in to GHCR
+      # 3. Set up QEMU for multi-architecture emulation
+      # -------------------------------------------------------------
+      - name: 🏗️ Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # -------------------------------------------------------------
+      # 4. Set up Docker Buildx for multi-platform builds
+      # -------------------------------------------------------------
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -------------------------------------------------------------
+      # 5. Log in to GHCR
       # -------------------------------------------------------------
       - name: 🔐 Login to GHCR
         uses: docker/login-action@v3
@@ -61,7 +73,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # -------------------------------------------------------------
-      # 4. Extract metadata (tags + labels)
+      # 6. Extract metadata (tags + labels)
       # -------------------------------------------------------------
       - name: 🏷️ Extract metadata
         id: meta
@@ -77,7 +89,7 @@ jobs:
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
 
       # -------------------------------------------------------------
-      # 5. Build & Push the UBI Image
+      # 7. Build & Push the UBI Image (multi-platform)
       # -------------------------------------------------------------
       - name: 🛠️ Build and Push UBI Image
         uses: docker/build-push-action@v5
@@ -85,12 +97,12 @@ jobs:
           context: .
           file: .devcontainer/Dockerfile
           push: true
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # -------------------------------------------------------------
-      # 6. Display final tag list for clarity
+      # 8. Display final tag list for clarity
       # -------------------------------------------------------------
       - name: 📋 Show published tags
         run: |

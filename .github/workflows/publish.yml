@@ -48,7 +48,7 @@ jobs:
           fi
 
           echo "VERSION=$VERSION_CONTENT" >> $GITHUB_ENV
-          echo "::set-output name=version::$VERSION_CONTENT"
+          echo "version=$VERSION_CONTENT" >> "$GITHUB_OUTPUT"
 
       # -------------------------------------------------------------
       # 3. Log in to GHCR

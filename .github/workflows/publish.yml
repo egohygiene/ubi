@@ -113,7 +113,7 @@ jobs:
       # 8. Display SBOM generation summary
       # -------------------------------------------------------------
       - name: 📊 Display SBOM summary
-        if: always()
+        if: success() || failure()
         run: |
           {
             echo "## 🧾 SBOM Generation Summary"
@@ -122,6 +122,13 @@ jobs:
             echo "**Format:** SPDX-JSON"
             echo "**File:** ubi-sbom.spdx.json"
             echo ""
+            if [ -f ubi-sbom.spdx.json ]; then
+              echo "✅ SBOM generated successfully"
+              echo ""
+            else
+              echo "⚠️ SBOM generation may have failed"
+              echo ""
+            fi
             echo "📥 Download the SBOM from the workflow artifacts."
           } >> "$GITHUB_STEP_SUMMARY"
 

@@ -150,7 +150,7 @@ UBI is built on top of the official [Microsoft DevContainers base image](https:/
 
 ### Key Components
 
-1. **Base Image**: `mcr.microsoft.com/devcontainers/base:latest`
+1. **Base Image**: `mcr.microsoft.com/devcontainers/base:2.1.2` (pinned with digest for reproducibility)
 2. **Environment Configuration**: Extensive ENV vars for consistent behavior
 3. **XDG Directory Structure**: `/opt/universal/*` hierarchy
 4. **Build Arguments**: Customizable settings at build time
@@ -179,6 +179,72 @@ docker build -f .devcontainer/Dockerfile -t ubi:local .
 3. Rebuild your devcontainer and test your changes
 4. Once validated, update `VERSION` and push to trigger a new release
 
+### Updating the Base Image
+
+UBI's base image is pinned to a specific version with a digest for reproducibility and stability. To update it:
+
+#### 1. Check for New Releases
+
+Visit the official sources to find the latest stable version:
+- **GitHub Releases**: [devcontainers/images releases](https://github.com/devcontainers/images/releases)
+- **MCR Tag List**: Query available tags from the Microsoft Container Registry API:
+  ```bash
+  # List all available tags (returns JSON)
+  curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | jq -r '.tags[]'
+  
+  # Or filter for version tags only
+  curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | \
+    jq -r '.tags[] | select(. | test("^[0-9]+\\.[0-9]+"))' | sort -V | tail -10
+  ```
+- **Docker Hub Alternative**: Search directly with Docker:
+  ```bash
+  docker search mcr.microsoft.com/devcontainers/base
+  ```
+
+#### 2. Pull and Inspect the New Version
+
+```bash
+# Pull the desired version
+docker pull mcr.microsoft.com/devcontainers/base:<version>
+
+# Get the digest
+docker inspect mcr.microsoft.com/devcontainers/base:<version> \
+  --format='{{index .RepoDigests 0}}'
+```
+
+#### 3. Update the Dockerfile
+
+Edit `.devcontainer/Dockerfile` and update the `FROM` line with:
+- The new version tag
+- The corresponding digest (from step 2)
+- The `LAST UPDATED` date in the comment block
+
+#### 4. Test Thoroughly
+
+```bash
+# Build with no cache to ensure clean build
+docker build -f .devcontainer/Dockerfile -t ubi:test . --no-cache
+
+# Test the container
+docker run -it --rm ubi:test bash
+```
+
+#### 5. Update Documentation and Changelog
+
+- Update the base image version in `README.md` (Architecture > Key Components)
+- Document the base image update in `CHANGELOG.md` by creating a new version section or note the change in your PR description for the maintainers to include in the next release
+- Document any breaking changes or notable updates from the upstream base image
+
+#### 6. When to Update
+
+Evaluate base image updates when:
+- **Security patches** are released (high priority)
+- **New stable versions** are available (evaluate breaking changes)
+- **Quarterly review** (best practice for staying current)
+- **CI/CD issues** arise from upstream changes (investigate and update if needed)
+
+**Note**: Always review the [devcontainers release notes](https://github.com/devcontainers/images/releases) before updating to understand what's changing.
+
 ---
 
 ## 🤝 Contributing
@@ -194,7 +260,7 @@ Contributions are welcome! Here's how you can help:
 - Keep changes minimal and focused
 - Update documentation for any environment changes
 - Bump the `VERSION` file according to SemVer for breaking or feature changes
-- Update the [CHANGELOG.md](./CHANGELOG.md) with your changes under the `[Unreleased]` section
+- Document your changes in your PR description; the CHANGELOG.md is updated automatically during releases
 - Test your changes locally before submitting
 
 ---

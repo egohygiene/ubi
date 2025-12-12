@@ -5,7 +5,36 @@
 # It extends the official devcontainers base image and installs a
 # collection of common build tools, language runtimes and utilities.
 ######################################################################
-FROM mcr.microsoft.com/devcontainers/base:latest AS base
+
+######################################################################
+# BASE IMAGE VERSION PINNING
+#
+# WHY: The base image is pinned to a specific version and digest to ensure:
+#      - Reproducible builds across all environments
+#      - Protection against breaking changes from upstream
+#      - Stable CI/CD pipelines without unexpected drift
+#      - Security traceability and audit compliance
+#
+# UPDATING: To update the base image version:
+#   1. Check for new releases at:
+#      https://github.com/devcontainers/images/releases
+#      Or query available tags:
+#      curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | \
+#        jq -r '.tags[] | select(. | test("^[0-9]+\\.[0-9]+"))' | sort -V
+#   2. Pull the new version locally:
+#      docker pull mcr.microsoft.com/devcontainers/base:<version>
+#   3. Get the digest:
+#      docker inspect mcr.microsoft.com/devcontainers/base:<version> \
+#        --format='{{index .RepoDigests 0}}'
+#   4. Update the FROM line below with the new version and digest
+#   5. Test the build thoroughly before committing
+#   6. Document the change in your PR description
+#
+# CURRENT VERSION: 2.1.2
+# CURRENT DIGEST: sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4
+# LAST UPDATED: 2025-12-12
+######################################################################
+FROM mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4 AS base
 
 # Safer shell defaults
 SHELL ["/bin/bash", "-o", "errexit", "-o", "errtrace", "-o", "functrace", "-o", "nounset", "-o", "pipefail", "-c"]

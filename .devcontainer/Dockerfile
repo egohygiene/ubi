@@ -167,6 +167,23 @@ ENV \
     XDG_CONFIG_DIRS="${UNIVERSAL_CONFIG}:/etc/xdg" \
     XDG_DATA_DIRS="${UNIVERSAL_APPS}:/usr/local/share:/usr/share"
 
+######################################################################
+# CREATE UNIVERSAL DIRECTORIES
+######################################################################
+RUN mkdir -p \
+    ${UNIVERSAL_BIN} \
+    ${UNIVERSAL_TOOLBOX} \
+    ${UNIVERSAL_CACHE} \
+    ${UNIVERSAL_LOGS} \
+    ${UNIVERSAL_CONFIG} \
+    ${UNIVERSAL_LIB} \
+    ${UNIVERSAL_LOCKS} \
+    ${UNIVERSAL_FONTS} \
+    ${UNIVERSAL_RUNTIME} \
+    ${UNIVERSAL_APPS} \
+    ${UNIVERSAL_REPORTS} \
+  && chown -R vscode:vscode ${UNIVERSAL_HOME}
+
 FROM environment AS final
 
 ######################################################################

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ubi"
-version = "0.1.3"
+version = "0.1.5"
 description = "Universal Base Image (UBI) for Ego Hygiene projects. Provides a reproducible development platform with standardized tooling, XDG paths, UX defaults, and environment configuration."
 license = "MIT"
 readme = "README.md"

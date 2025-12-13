@@ -30,7 +30,7 @@ jobs:
       # 1. Checkout code and tags
       # -------------------------------------------------------------
       - name: 🛎️ Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0   # REQUIRED for tag creation
 

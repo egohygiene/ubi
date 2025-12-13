@@ -1,0 +1,420 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "📈 Collect Build Metrics & Observability Data"
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "*"  # trigger on any tagged release
+  workflow_dispatch:
+    inputs:
+      commit_metrics:
+        description: 'Commit metrics to repository (default: false)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write    # Required for committing metrics (if enabled)
+  packages: read     # Required for pulling published images
+
+jobs:
+  collect-metrics:
+    name: "📊 Collect Container Metrics"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # -------------------------------------------------------------
+      # 2. Read VERSION file
+      # -------------------------------------------------------------
+      - name: Read VERSION
+        id: version
+        run: |
+          if [ ! -f VERSION ]; then
+            echo "❌ ERROR: VERSION file is missing."
+            exit 1
+          fi
+
+          VERSION_CONTENT=$(tr -d '[:space:]' < VERSION)
+
+          if [ -z "$VERSION_CONTENT" ]; then
+            echo "❌ ERROR: VERSION file is empty."
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION_CONTENT" >> "$GITHUB_ENV"
+          echo "version=$VERSION_CONTENT" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 3. Set up QEMU for multi-architecture support
+      # -------------------------------------------------------------
+      - name: 🏗️ Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # -------------------------------------------------------------
+      # 4. Set up Docker Buildx
+      # -------------------------------------------------------------
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -------------------------------------------------------------
+      # 5. Build UBI Image (for metrics collection)
+      # -------------------------------------------------------------
+      - name: 🛠️ Build UBI Image (amd64)
+        id: build_amd64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .devcontainer/Dockerfile
+          load: true
+          platforms: linux/amd64
+          tags: ubi:metrics-amd64-${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🛠️ Build UBI Image (arm64)
+        id: build_arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .devcontainer/Dockerfile
+          load: false  # Can't load arm64 on amd64 runner
+          platforms: linux/arm64
+          tags: ubi:metrics-arm64-${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          outputs: type=docker,dest=/tmp/ubi-arm64.tar
+
+      # -------------------------------------------------------------
+      # 6. Collect Image Metrics (amd64)
+      # -------------------------------------------------------------
+      - name: 📊 Collect Image Metrics (amd64)
+        id: metrics_amd64
+        run: |
+          IMAGE_TAG="ubi:metrics-amd64-${{ steps.version.outputs.version }}"
+          
+          echo "Collecting metrics for $IMAGE_TAG..."
+          
+          # Get image size information
+          IMAGE_SIZE_BYTES=$(docker image inspect "$IMAGE_TAG" --format='{{.Size}}')
+          IMAGE_SIZE_MB=$(echo "scale=2; $IMAGE_SIZE_BYTES / 1024 / 1024" | bc)
+          
+          # Get virtual size (uncompressed)
+          VIRTUAL_SIZE_BYTES=$(docker image inspect "$IMAGE_TAG" --format='{{.VirtualSize}}')
+          VIRTUAL_SIZE_MB=$(echo "scale=2; $VIRTUAL_SIZE_BYTES / 1024 / 1024" | bc)
+          
+          # Get layer count
+          LAYER_COUNT=$(docker image inspect "$IMAGE_TAG" --format='{{len .RootFS.Layers}}')
+          
+          # Get creation date
+          CREATED=$(docker image inspect "$IMAGE_TAG" --format='{{.Created}}')
+          
+          # Save to environment
+          {
+            echo "amd64_size_bytes=$IMAGE_SIZE_BYTES"
+            echo "amd64_size_mb=$IMAGE_SIZE_MB"
+            echo "amd64_virtual_size_bytes=$VIRTUAL_SIZE_BYTES"
+            echo "amd64_virtual_size_mb=$VIRTUAL_SIZE_MB"
+            echo "amd64_layer_count=$LAYER_COUNT"
+            echo "amd64_created=$CREATED"
+          } >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 7. Collect Layer Breakdown (amd64)
+      # -------------------------------------------------------------
+      - name: 🔍 Collect Layer Breakdown (amd64)
+        id: layers_amd64
+        run: |
+          IMAGE_TAG="ubi:metrics-amd64-${{ steps.version.outputs.version }}"
+          
+          echo "Collecting layer breakdown for $IMAGE_TAG..."
+          
+          # Get docker history output
+          docker history "$IMAGE_TAG" --format "{{.Size}}\t{{.CreatedBy}}" --human --no-trunc > /tmp/layers-amd64.txt
+          
+          # Create JSON format for layers
+          cat > /tmp/layers-amd64.json <<'EOF'
+          {
+            "layers": []
+          }
+          EOF
+          
+          # Process layer history into JSON
+          python3 <<'PYTHON_SCRIPT'
+          import json
+          import re
+          
+          layers = []
+          with open('/tmp/layers-amd64.txt', 'r') as f:
+              for idx, line in enumerate(f):
+                  parts = line.strip().split('\t', 1)
+                  if len(parts) == 2:
+                      size_str = parts[0]
+                      command = parts[1]
+                      
+                      # Parse size (Docker uses SI/decimal prefixes: kB=1000, MB=1000^2, GB=1000^3)
+                      size_bytes = 0
+                      if size_str != "0B":
+                          match = re.match(r'([\d.]+)([kMG]?B)', size_str)
+                          if match:
+                              value = float(match.group(1))
+                              unit = match.group(2)
+                              multipliers = {'B': 1, 'kB': 1000, 'MB': 1000**2, 'GB': 1000**3}
+                              size_bytes = int(value * multipliers.get(unit, 1))
+                      
+                      layers.append({
+                          "index": idx,
+                          "size": size_str,
+                          "size_bytes": size_bytes,
+                          "command": command[:200]  # Truncate long commands
+                      })
+          
+          with open('/tmp/layers-amd64.json', 'w') as f:
+              json.dump({"layers": layers}, f, indent=2)
+          PYTHON_SCRIPT
+          
+          echo "Layer breakdown saved to /tmp/layers-amd64.json"
+
+      # -------------------------------------------------------------
+      # 8. Collect Image Metrics (arm64 from tar)
+      # -------------------------------------------------------------
+      - name: 📊 Collect Image Metrics (arm64)
+        id: metrics_arm64
+        run: |
+          TAR_FILE="/tmp/ubi-arm64.tar"
+          
+          echo "Collecting metrics for arm64 image from tar..."
+          
+          # Get tar file size
+          if [ -f "$TAR_FILE" ]; then
+            TAR_SIZE_BYTES=$(stat -c%s "$TAR_FILE")
+            TAR_SIZE_MB=$(echo "scale=2; $TAR_SIZE_BYTES / 1024 / 1024" | bc)
+            
+            echo "arm64_tar_size_bytes=$TAR_SIZE_BYTES" >> "$GITHUB_OUTPUT"
+            echo "arm64_tar_size_mb=$TAR_SIZE_MB" >> "$GITHUB_OUTPUT"
+          else
+            echo "⚠️ Warning: arm64 tar file not found"
+            echo "arm64_tar_size_bytes=0" >> "$GITHUB_OUTPUT"
+            echo "arm64_tar_size_mb=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      # -------------------------------------------------------------
+      # 9. Generate Metrics Report (JSON)
+      # -------------------------------------------------------------
+      - name: 📝 Generate Metrics Report (JSON)
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_SHORT="${COMMIT_SHA:0:7}"
+          
+          # Create metrics JSON
+          cat > metrics-report.json <<EOF
+          {
+            "version": "${{ steps.version.outputs.version }}",
+            "timestamp": "$TIMESTAMP",
+            "commit": "$COMMIT_SHA",
+            "commit_short": "$COMMIT_SHORT",
+            "ref": "${{ github.ref }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "workflow_run_number": "${{ github.run_number }}",
+            "build_metrics": {
+              "job_name": "${{ github.job }}",
+              "runner_os": "${{ runner.os }}",
+              "runner_arch": "${{ runner.arch }}"
+            },
+            "image_metrics": {
+              "amd64": {
+                "size_bytes": ${{ steps.metrics_amd64.outputs.amd64_size_bytes }},
+                "size_mb": "${{ steps.metrics_amd64.outputs.amd64_size_mb }}",
+                "virtual_size_bytes": ${{ steps.metrics_amd64.outputs.amd64_virtual_size_bytes }},
+                "virtual_size_mb": "${{ steps.metrics_amd64.outputs.amd64_virtual_size_mb }}",
+                "layer_count": ${{ steps.metrics_amd64.outputs.amd64_layer_count }},
+                "created": "${{ steps.metrics_amd64.outputs.amd64_created }}"
+              },
+              "arm64": {
+                "tar_size_bytes": ${{ steps.metrics_arm64.outputs.arm64_tar_size_bytes }},
+                "tar_size_mb": "${{ steps.metrics_arm64.outputs.arm64_tar_size_mb }}"
+              }
+            }
+          }
+          EOF
+          
+          echo "Metrics report generated: metrics-report.json"
+          jq '.' < metrics-report.json
+
+      # -------------------------------------------------------------
+      # 10. Generate Metrics Report (Markdown)
+      # -------------------------------------------------------------
+      - name: 📝 Generate Metrics Report (Markdown)
+        run: |
+          cat > metrics-report.md <<EOF
+          # 📈 UBI Build Metrics Report
+          
+          **Version:** ${{ steps.version.outputs.version }}  
+          **Commit:** ${{ github.sha }}  
+          **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")  
+          **Workflow Run:** [${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ## 📦 Image Size Metrics
+          
+          ### AMD64 Architecture
+          
+          | Metric | Value |
+          |--------|-------|
+          | Compressed Size | ${{ steps.metrics_amd64.outputs.amd64_size_mb }} MB |
+          | Uncompressed Size | ${{ steps.metrics_amd64.outputs.amd64_virtual_size_mb }} MB |
+          | Layer Count | ${{ steps.metrics_amd64.outputs.amd64_layer_count }} |
+          | Created | ${{ steps.metrics_amd64.outputs.amd64_created }} |
+          
+          ### ARM64 Architecture
+          
+          | Metric | Value |
+          |--------|-------|
+          | TAR Size | ${{ steps.metrics_arm64.outputs.arm64_tar_size_mb }} MB |
+          
+          ## 📊 Layer Breakdown (AMD64)
+          
+          Top 10 largest layers:
+          
+          \`\`\`
+          $(docker history ubi:metrics-amd64-${{ steps.version.outputs.version }} --format "{{.Size}}\t{{.CreatedBy}}" --human | head -10)
+          \`\`\`
+          
+          ## 🔗 Resources
+          
+          - [Full JSON Report](metrics-report.json)
+          - [Layer Details](layers-amd64.json)
+          - [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ---
+          
+          Generated by [UBI Metrics Workflow](.github/workflows/metrics.yml)
+          EOF
+          
+          echo "Markdown report generated: metrics-report.md"
+          cat metrics-report.md
+
+      # -------------------------------------------------------------
+      # 11. Append to Historical Metrics (JSONL)
+      # -------------------------------------------------------------
+      - name: 📊 Append to Historical Metrics
+        run: |
+          mkdir -p metrics
+          
+          # Create JSONL entry (one line per build)
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Create compact JSON line and append directly
+          {
+            echo -n '{"version":"${{ steps.version.outputs.version }}",'
+            echo -n '"timestamp":"'"$TIMESTAMP"'",'
+            echo -n '"commit":"${{ github.sha }}",'
+            echo -n '"amd64_size_mb":"${{ steps.metrics_amd64.outputs.amd64_size_mb }}",'
+            echo -n '"amd64_virtual_size_mb":"${{ steps.metrics_amd64.outputs.amd64_virtual_size_mb }}",'
+            echo -n '"amd64_layer_count":${{ steps.metrics_amd64.outputs.amd64_layer_count }},'
+            echo '"arm64_tar_size_mb":"${{ steps.metrics_arm64.outputs.arm64_tar_size_mb }}"}'
+          } >> metrics/build-metrics.jsonl
+          
+          echo "Historical metrics updated"
+          echo "Total records: $(wc -l < metrics/build-metrics.jsonl)"
+
+      # -------------------------------------------------------------
+      # 12. Generate Workflow Summary
+      # -------------------------------------------------------------
+      - name: 📋 Generate Workflow Summary
+        if: always()
+        run: |
+          {
+            echo "## 📈 Build Metrics Summary"
+            echo ""
+            echo "### Image Information"
+            echo ""
+            echo "**Version:** \`${{ steps.version.outputs.version }}\`"
+            echo "**Commit:** \`${{ github.sha }}\`"
+            echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+            echo ""
+            echo "### Size Metrics"
+            echo ""
+            echo "| Architecture | Compressed Size | Uncompressed Size | Layers |"
+            echo "|--------------|-----------------|-------------------|--------|"
+            echo "| AMD64 | ${{ steps.metrics_amd64.outputs.amd64_size_mb }} MB | ${{ steps.metrics_amd64.outputs.amd64_virtual_size_mb }} MB | ${{ steps.metrics_amd64.outputs.amd64_layer_count }} |"
+            echo "| ARM64 | ${{ steps.metrics_arm64.outputs.arm64_tar_size_mb }} MB (TAR) | - | - |"
+            echo ""
+            echo "### Top 5 Largest Layers (AMD64)"
+            echo ""
+            echo "\`\`\`"
+            docker history ubi:metrics-amd64-${{ steps.version.outputs.version }} --format "{{.Size}}\t{{.CreatedBy}}" --human | head -5
+            echo "\`\`\`"
+            echo ""
+            echo "### Artifacts"
+            echo ""
+            echo "- 📊 [metrics-report.json](metrics-report.json)"
+            echo "- 📝 [metrics-report.md](metrics-report.md)"
+            echo "- 🔍 [layers-amd64.json](layers-amd64.json)"
+            echo "- 📈 [build-metrics.jsonl](metrics/build-metrics.jsonl)"
+            echo ""
+            echo "---"
+            echo ""
+            echo "💡 **Tip:** Download the artifacts to compare metrics across builds."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # -------------------------------------------------------------
+      # 13. Upload Metrics Artifacts
+      # -------------------------------------------------------------
+      - name: 📤 Upload Metrics Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: ubi-metrics-${{ steps.version.outputs.version }}
+          path: |
+            metrics-report.json
+            metrics-report.md
+            /tmp/layers-amd64.json
+            metrics/build-metrics.jsonl
+          retention-days: 90
+
+      # -------------------------------------------------------------
+      # 14. Commit Metrics to Repository (Optional)
+      # -------------------------------------------------------------
+      - name: 💾 Commit Metrics to Repository
+        if: |
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+          (github.event_name == 'workflow_dispatch' && inputs.commit_metrics == true)
+        run: |
+          # Configure git
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Copy artifacts to metrics directory
+          cp metrics-report.json metrics/metrics-${{ steps.version.outputs.version }}.json
+          cp metrics-report.md metrics/metrics-${{ steps.version.outputs.version }}.md
+          cp /tmp/layers-amd64.json metrics/layers-${{ steps.version.outputs.version }}.json
+          
+          # Add and commit
+          git add metrics/
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "📈 Add metrics for version ${{ steps.version.outputs.version }}
+
+            - Added build metrics report
+            - Updated historical metrics data
+            - Version: ${{ steps.version.outputs.version }}
+            - Commit: ${{ github.sha }}"
+            
+            # Push to current branch or main (dynamically determined)
+            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            git push origin "HEAD:${CURRENT_BRANCH}"
+            echo "✅ Metrics committed to repository"
+          fi

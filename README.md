@@ -428,6 +428,72 @@ If the scan detects vulnerabilities:
 
 ---
 
+## 📈 Metrics & Observability
+
+UBI includes automated metrics collection to track image size, build performance, and layer distribution over time. This helps identify performance regressions, optimize image size, and monitor build trends.
+
+### What Gets Tracked
+
+- **Image Size Metrics**:
+  - Compressed and uncompressed size per architecture (amd64, arm64)
+  - Layer count and distribution
+  - Size trends over time
+
+- **Build Metadata**:
+  - Version, commit SHA, and timestamp
+  - Workflow run information
+  - Build duration and runner details
+
+- **Layer Analysis**:
+  - Per-layer size breakdown
+  - Command history for each layer
+  - Identification of largest layers for optimization
+
+### Accessing Metrics
+
+Metrics are automatically collected on every tagged release and push to main:
+
+1. **Workflow Artifacts**: Download from the [Metrics Workflow](https://github.com/egohygiene/ubi/actions/workflows/metrics.yml) runs
+2. **Historical Data**: View the [`metrics/build-metrics.jsonl`](./metrics/build-metrics.jsonl) file for trends
+3. **Detailed Reports**: Check version-specific reports in the `metrics/` directory
+
+### Metrics Reports
+
+Each build generates:
+
+- **JSON Report** (`metrics-report.json`): Complete metrics in structured format
+- **Markdown Report** (`metrics-report.md`): Human-readable summary
+- **Layer Breakdown** (`layers-amd64.json`): Detailed layer analysis
+- **Historical Log** (`build-metrics.jsonl`): Append-only history in JSON Lines format
+
+### Analyzing Trends
+
+```bash
+# View latest metrics
+tail -1 metrics/build-metrics.jsonl | jq '.'
+
+# Compare sizes over time
+jq -r '[.version, .timestamp, .amd64_size_mb] | @tsv' metrics/build-metrics.jsonl
+
+# Find largest build
+jq -s 'max_by(.amd64_size_mb | tonumber)' metrics/build-metrics.jsonl
+
+# Track layer count trends
+jq -r '[.version, .amd64_layer_count] | @tsv' metrics/build-metrics.jsonl
+```
+
+### Manual Collection
+
+You can manually trigger metrics collection:
+
+1. Go to **Actions** → **📈 Collect Build Metrics & Observability Data**
+2. Click **Run workflow**
+3. Optionally enable **commit_metrics** to save results to the repository
+
+See the [metrics documentation](./metrics/README.md) for more details.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:

@@ -605,6 +605,16 @@ All PRs must pass the following automated checks:
 4. **🛡️ GitHub Code Scanning**:
    - Automated security and quality checks
 
+### Additional Workflows
+
+The following workflows run on tagged releases and main branch pushes:
+
+- **📈 Metrics Collection** (`.github/workflows/metrics.yml`):
+  - Collects image size and build performance metrics
+  - Generates reports and historical trend data
+  - Uploads artifacts for analysis
+  - See [metrics documentation](./metrics/README.md) for details
+
 ### Review Process
 
 1. **Submit your PR**:

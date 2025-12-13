@@ -571,7 +571,7 @@ jobs:
 
       - name: 📝 Generate Aggregated Markdown Report
         run: |
-          cat > benchmarks/benchmark-${{ steps.version.outputs.version }}.md <<'EOF'
+          cat > benchmarks/benchmark-${{ steps.version.outputs.version }}.md <<EOF
           # ⚡ UBI Performance Benchmark Report
           
           **Version:** ${{ steps.version.outputs.version }}
@@ -627,8 +627,13 @@ jobs:
             - Version: ${{ steps.version.outputs.version }}
             - Commit: ${{ github.sha }}"
             
-            # Push to current branch
-            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-            git push origin "HEAD:${CURRENT_BRANCH}"
+            # Push to main branch (or current ref if on a branch)
+            if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+              # On a tag, push to main
+              git push origin HEAD:main
+            else
+              # On a branch, push to the same branch
+              git push origin HEAD:${{ github.ref }}
+            fi
             echo "✅ Benchmark results committed to repository"
           fi

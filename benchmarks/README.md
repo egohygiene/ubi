@@ -64,7 +64,7 @@ docker stats --no-stream $(docker run -d ubi:test sleep 10)
 
 ### JSONL Format (benchmark-results.jsonl)
 
-Each line is a valid JSON object representing one benchmark run:
+Each line is a valid JSON object representing one benchmark run (flat structure for easy parsing):
 
 ```json
 {
@@ -73,21 +73,14 @@ Each line is a valid JSON object representing one benchmark run:
   "timestamp": "2025-12-13T06:00:00Z",
   "commit": "abc123...",
   "architecture": "amd64",
-  "startup_times": {
-    "cold_start_seconds": 1.234,
-    "warm_start_seconds": 0.567,
-    "first_command_seconds": 0.123
-  },
-  "resource_usage": {
-    "cpu_percent": 2.5,
-    "memory_mb": 45.6,
-    "memory_limit_mb": 1024.0
-  },
-  "image_metrics": {
-    "size_mb": 123.45,
-    "virtual_size_mb": 456.78,
-    "layer_count": 12
-  }
+  "cold_start_seconds": 1.234,
+  "warm_start_seconds": 0.567,
+  "first_command_seconds": 0.123,
+  "cpu_percent": 2.5,
+  "memory_mb": 45.6,
+  "size_mb": "123.45",
+  "virtual_size_mb": "456.78",
+  "layer_count": 12
 }
 ```
 
@@ -161,15 +154,15 @@ cat benchmarks/benchmark-0.1.5.json | jq '.'
 
 ```bash
 # Extract startup times over history
-jq -r '[.version, .timestamp, .startup_times.cold_start_seconds] | @tsv' \
+jq -r '[.version, .timestamp, .cold_start_seconds] | @tsv' \
   benchmarks/benchmark-results.jsonl
 
 # Find slowest startup
-jq -s 'max_by(.startup_times.cold_start_seconds)' \
+jq -s 'max_by(.cold_start_seconds)' \
   benchmarks/benchmark-results.jsonl
 
 # Average startup time
-jq -s 'map(.startup_times.cold_start_seconds) | add/length' \
+jq -s 'map(.cold_start_seconds) | add/length' \
   benchmarks/benchmark-results.jsonl
 ```
 

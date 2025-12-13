@@ -20,7 +20,8 @@ indent_size = 4
 [*.md]
 trim_trailing_whitespace = false
 
-# CHANGELOG.md - prevent autoformatting
+# CHANGELOG.md - explicit override to prevent unintended autoformatting
+# while maintaining consistent line endings and whitespace handling
 [CHANGELOG.md]
 insert_final_newline = true
 trim_trailing_whitespace = true

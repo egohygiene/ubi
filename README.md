@@ -161,6 +161,10 @@ UBI is built on top of the official [Microsoft DevContainers base image](https:/
 
 The image is automatically built and published via GitHub Actions on every push to `main` or when the `VERSION` file changes. See [`.github/workflows/publish.yml`](.github/workflows/publish.yml) for details.
 
+### Learn More
+
+For detailed architecture documentation, see [docs/architecture.md](./docs/architecture.md).
+
 ---
 
 ## 🔧 Development
@@ -391,10 +395,24 @@ Special thanks to:
 
 ---
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [docs/](./docs/) directory:
+
+- **[Architecture](./docs/architecture.md)** - Design, XDG strategy, filesystem layout, and CI/CD
+- **[Troubleshooting](./docs/troubleshooting.md)** - Common issues and solutions
+- **[Release Process](./docs/release-process.md)** - Version management and publishing workflow
+- **[Security Overview](./docs/security-overview.md)** - Security practices, scanning, and SBOM
+
+See the [Documentation Index](./docs/README.md) for a complete overview.
+
+---
+
 ## 📬 Support
 
 - **Issues**: [github.com/egohygiene/ubi/issues](https://github.com/egohygiene/ubi/issues)
 - **Discussions**: [github.com/egohygiene/ubi/discussions](https://github.com/egohygiene/ubi/discussions)
+- **Documentation**: [docs/](./docs/)
 - **Organization**: [github.com/egohygiene](https://github.com/egohygiene)
 
 ---

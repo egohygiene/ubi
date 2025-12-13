@@ -50,6 +50,7 @@ This file provides context and guidelines for GitHub Copilot when working in the
 │   │   ├── publish.yml     # Image build & publish
 │   │   ├── test-image.yml  # Image testing
 │   │   ├── trivy-scan.yml  # Security scanning
+│   │   ├── sanity.yml      # Sanity checks
 │   │   ├── bump-version.yml # Automated version bumps
 │   │   └── validate-changelog.yml # CHANGELOG validation
 │   ├── linters/            # Linter configurations

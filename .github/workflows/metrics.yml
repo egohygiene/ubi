@@ -140,7 +140,7 @@ jobs:
           echo "Collecting layer breakdown for $IMAGE_TAG..."
           
           # Get docker history output
-          docker history "$IMAGE_TAG" --format "{{.Size}}\t{{.CreatedBy}}" --human-readable --no-trunc > /tmp/layers-amd64.txt
+          docker history "$IMAGE_TAG" --format "{{.Size}}\t{{.CreatedBy}}" --human --no-trunc > /tmp/layers-amd64.txt
           
           # Create JSON format for layers
           cat > /tmp/layers-amd64.json <<'EOF'
@@ -287,7 +287,7 @@ jobs:
           Top 10 largest layers:
           
           \`\`\`
-          $(docker history ubi:metrics-amd64-${{ steps.version.outputs.version }} --format "{{.Size}}\t{{.CreatedBy}}" --human-readable | head -10)
+          $(docker history ubi:metrics-amd64-${{ steps.version.outputs.version }} --format "{{.Size}}\t{{.CreatedBy}}" --human | head -10)
           \`\`\`
           
           ## 🔗 Resources
@@ -353,7 +353,7 @@ jobs:
             echo "### Top 5 Largest Layers (AMD64)"
             echo ""
             echo "\`\`\`"
-            docker history ubi:metrics-amd64-${{ steps.version.outputs.version }} --format "{{.Size}}\t{{.CreatedBy}}" --human-readable | head -5
+            docker history ubi:metrics-amd64-${{ steps.version.outputs.version }} --format "{{.Size}}\t{{.CreatedBy}}" --human | head -5
             echo "\`\`\`"
             echo ""
             echo "### Artifacts"

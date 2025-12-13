@@ -74,6 +74,5 @@ services:
       # Mount the repository so that changes on the host are reflected inside the container
       - ..:/workspace:cached
     command: sleep infinity
-    privileged: true # required for docker-in-docker
     user: vscode
     <<: *settings

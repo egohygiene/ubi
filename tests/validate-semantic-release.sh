@@ -16,9 +16,9 @@ FAILURES=0
 # Function to report test results
 check() {
   local test_name="$1"
-  local test_command="$2"
+  shift
   
-  if eval "$test_command" &>/dev/null; then
+  if "$@" &>/dev/null; then
     echo "✅ $test_name"
   else
     echo "❌ $test_name"
@@ -40,36 +40,36 @@ command_exists() {
 
 # Check required files
 echo "📁 Checking required files..."
-check "package.json exists" "file_exists package.json"
-check "package-lock.json exists" "file_exists package-lock.json"
-check ".releaserc.yml exists" "file_exists .releaserc.yml"
-check ".github/workflows/semantic-release.yml exists" "file_exists .github/workflows/semantic-release.yml"
-check "VERSION file exists" "file_exists VERSION"
-check "CHANGELOG.md exists" "file_exists CHANGELOG.md"
+check "package.json exists" file_exists package.json
+check "package-lock.json exists" file_exists package-lock.json
+check ".releaserc.yml exists" file_exists .releaserc.yml
+check ".github/workflows/semantic-release.yml exists" file_exists .github/workflows/semantic-release.yml
+check "VERSION file exists" file_exists VERSION
+check "CHANGELOG.md exists" file_exists CHANGELOG.md
 echo ""
 
 # Check package.json content
 echo "📦 Checking package.json configuration..."
-check "semantic-release in devDependencies" "grep -q 'semantic-release' package.json"
-check "@semantic-release/changelog in devDependencies" "grep -q '@semantic-release/changelog' package.json"
-check "@semantic-release/git in devDependencies" "grep -q '@semantic-release/git' package.json"
-check "@semantic-release/github in devDependencies" "grep -q '@semantic-release/github' package.json"
-check "@semantic-release/commit-analyzer in devDependencies" "grep -q '@semantic-release/commit-analyzer' package.json"
-check "@semantic-release/release-notes-generator in devDependencies" "grep -q '@semantic-release/release-notes-generator' package.json"
-check "@semantic-release/exec in devDependencies" "grep -q '@semantic-release/exec' package.json"
+check "semantic-release in devDependencies" grep -q semantic-release package.json
+check "@semantic-release/changelog in devDependencies" grep -q @semantic-release/changelog package.json
+check "@semantic-release/git in devDependencies" grep -q @semantic-release/git package.json
+check "@semantic-release/github in devDependencies" grep -q @semantic-release/github package.json
+check "@semantic-release/commit-analyzer in devDependencies" grep -q @semantic-release/commit-analyzer package.json
+check "@semantic-release/release-notes-generator in devDependencies" grep -q @semantic-release/release-notes-generator package.json
+check "@semantic-release/exec in devDependencies" grep -q @semantic-release/exec package.json
 echo ""
 
 # Check .releaserc.yml content
 echo "⚙️  Checking .releaserc.yml configuration..."
-check "branches configuration" "grep -q 'branches:' .releaserc.yml"
-check "plugins configuration" "grep -q 'plugins:' .releaserc.yml"
-check "commit-analyzer plugin" "grep -q '@semantic-release/commit-analyzer' .releaserc.yml"
-check "release-notes-generator plugin" "grep -q '@semantic-release/release-notes-generator' .releaserc.yml"
-check "changelog plugin" "grep -q '@semantic-release/changelog' .releaserc.yml"
-check "exec plugin" "grep -q '@semantic-release/exec' .releaserc.yml"
-check "git plugin" "grep -q '@semantic-release/git' .releaserc.yml"
-check "github plugin" "grep -q '@semantic-release/github' .releaserc.yml"
-check "conventionalcommits preset" "grep -q 'conventionalcommits' .releaserc.yml"
+check "branches configuration" grep -q branches: .releaserc.yml
+check "plugins configuration" grep -q plugins: .releaserc.yml
+check "commit-analyzer plugin" grep -q @semantic-release/commit-analyzer .releaserc.yml
+check "release-notes-generator plugin" grep -q @semantic-release/release-notes-generator .releaserc.yml
+check "changelog plugin" grep -q @semantic-release/changelog .releaserc.yml
+check "exec plugin" grep -q @semantic-release/exec .releaserc.yml
+check "git plugin" grep -q @semantic-release/git .releaserc.yml
+check "github plugin" grep -q @semantic-release/github .releaserc.yml
+check "conventionalcommits preset" grep -q conventionalcommits .releaserc.yml
 echo ""
 
 # Check if Node.js and npm are available (optional, for local testing)
@@ -102,12 +102,12 @@ echo ""
 
 # Check workflow file content
 echo "🔄 Checking GitHub Actions workflow..."
-check "workflow name" "grep -q 'name.*Semantic Release' .github/workflows/semantic-release.yml"
-check "trigger on push to main" "grep -q 'main' .github/workflows/semantic-release.yml"
-check "checkout step" "grep -q 'checkout' .github/workflows/semantic-release.yml"
-check "setup node step" "grep -q 'setup-node' .github/workflows/semantic-release.yml"
-check "npm ci command" "grep -q 'npm ci' .github/workflows/semantic-release.yml"
-check "semantic-release execution" "grep -q 'semantic-release' .github/workflows/semantic-release.yml"
+check "workflow name" grep -q "name.*Semantic Release" .github/workflows/semantic-release.yml
+check "trigger on push to main" grep -q main .github/workflows/semantic-release.yml
+check "checkout step" grep -q checkout .github/workflows/semantic-release.yml
+check "setup node step" grep -q setup-node .github/workflows/semantic-release.yml
+check "npm ci command" grep -q "npm ci" .github/workflows/semantic-release.yml
+check "semantic-release execution" grep -q semantic-release .github/workflows/semantic-release.yml
 echo ""
 
 # Summary

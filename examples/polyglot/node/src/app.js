@@ -87,6 +87,7 @@ app.post("/api/process", async (req, res) => {
 });
 
 // Get processing results
+// Note: In production, consider adding rate limiting to prevent abuse
 app.get("/api/results", async (req, res) => {
   try {
     const xdgDataHome =

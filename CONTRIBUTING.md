@@ -32,6 +32,7 @@ This document provides comprehensive guidance on how to contribute to the projec
   - [Python Style](#python-style)
   - [File Naming Conventions](#file-naming-conventions)
   - [Documentation Standards](#documentation-standards)
+    - [Building Documentation](#building-documentation)
 - [Local Build and Test Commands](#local-build-and-test-commands)
   - [Docker Build Commands](#docker-build-commands)
   - [Bump-my-version Dry-Runs](#bump-my-version-dry-runs)
@@ -739,6 +740,66 @@ def calculate_xdg_path(base: str, subdir: str) -> str:
         raise ValueError("base and subdir must be non-empty")
     return f"{base}/{subdir}"
 ```
+
+#### Building Documentation
+
+The project uses **MkDocs** with the **Material theme** for documentation.
+
+**Install dependencies:**
+
+```bash
+# Using pip
+pip install mkdocs mkdocs-material
+
+# Or using the project's pyproject.toml
+pip install -e ".[docs]"
+```
+
+**Build and serve locally:**
+
+```bash
+# Serve docs locally with live reload
+mkdocs serve
+
+# Open http://127.0.0.1:8000 in your browser
+```
+
+**Build static site:**
+
+```bash
+# Build the documentation site
+mkdocs build
+
+# Output will be in the site/ directory
+```
+
+**Deploy to GitHub Pages:**
+
+The documentation is automatically deployed to GitHub Pages when changes are pushed to the `main` branch. The workflow is defined in `.github/workflows/docs.yml`.
+
+Manual deployment (if needed):
+
+```bash
+# Deploy to gh-pages branch
+mkdocs gh-deploy
+```
+
+**Documentation structure:**
+
+- `mkdocs.yml` - MkDocs configuration
+- `docs/index.md` - Home page
+- `docs/*.md` - Individual documentation pages
+- `docs/getting-started/` - Getting started guides
+- `docs/examples.md` - Examples and use cases
+- `docs/security/` - Security documentation
+
+**Tips for writing documentation:**
+
+- Use Markdown with MkDocs extensions (admonitions, code blocks, etc.)
+- Test locally with `mkdocs serve` before pushing
+- Follow the existing documentation structure
+- Add new pages to `mkdocs.yml` nav section
+- Use relative links for internal documentation
 
 ---
 

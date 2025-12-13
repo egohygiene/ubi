@@ -54,14 +54,12 @@ replace = "{new_version}"
 # 2. CHANGELOG insertion (inline block format like bump-my-version repo)
 #    This inserts the new version section ABOVE the existing top entry,
 #    matching exactly the style used by upstream bump-my-version.
+#    Pattern matches the first "## " after the "# Changelog" header.
 [[tool.bumpversion.files]]
 filename = "CHANGELOG.md"
 regex = true
-search = "\\A## "
-replace = """## {new_version} ({now:%Y-%m-%d})
-[Compare the full difference.](https://github.com/egohygiene/ubi/compare/{current_version}...{new_version})
-
-## """
+search = "(# Changelog\\n\\n)## "
+replace = "\\g<1>## {new_version} ({now:%Y-%m-%d})\n[Compare the full difference.](https://github.com/egohygiene/ubi/compare/{current_version}...{new_version})\n\n## "
 
 # ---------------------------------------------------------
 # Developer tooling config (unchanged)

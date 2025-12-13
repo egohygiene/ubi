@@ -26,7 +26,7 @@ jobs:
       # 1. Check out the repository
       # -------------------------------------------------------------
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0   # ensures bumper workflow tags are visible
 
@@ -94,7 +94,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 🛠️ Build and Push UBI Image
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: .devcontainer/Dockerfile
@@ -107,7 +107,7 @@ jobs:
       # 8. Install Cosign for keyless image signing
       # -------------------------------------------------------------
       - name: 🔐 Install Cosign
-        uses: sigstore/cosign-installer@v3.5.0
+        uses: sigstore/cosign-installer@v4.0.0
 
       # -------------------------------------------------------------
       # 9. Sign the container image with Cosign (keyless)
@@ -142,7 +142,7 @@ jobs:
       # 11. Upload SBOM as workflow artifact
       # -------------------------------------------------------------
       - name: 📤 Upload SBOM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ubi-sbom-${{ steps.version.outputs.version }}
           path: ubi-sbom.spdx.json

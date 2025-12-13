@@ -20,8 +20,27 @@ permissions:
 
 jobs:
   test-image:
-    name: "🔍 Test UBI Image (Environment, XDG, Sanity Checks)"
+    name: "🔍 Test UBI Image - ${{ matrix.variant.name }}"
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        variant:
+          - name: "base"
+            dockerfile: ".devcontainer/Dockerfile"
+            suffix: ""
+          - name: "minimal"
+            dockerfile: "variants/minimal/Dockerfile"
+            suffix: "-minimal"
+          - name: "python"
+            dockerfile: "variants/python/Dockerfile"
+            suffix: "-python"
+          - name: "node"
+            dockerfile: "variants/node/Dockerfile"
+            suffix: "-node"
+          - name: "full"
+            dockerfile: "variants/full/Dockerfile"
+            suffix: "-full"
 
     steps:
       # -------------------------------------------------------------
@@ -60,13 +79,13 @@ jobs:
       # -------------------------------------------------------------
       # 4. Build the UBI Image (without pushing)
       # -------------------------------------------------------------
-      - name: 🛠️ Build UBI Image
+      - name: 🛠️ Build UBI Image (${{ matrix.variant.name }})
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: .devcontainer/Dockerfile
+          file: ${{ matrix.variant.dockerfile }}
           load: true  # Load image into local Docker for testing
-          tags: ubi:test-${{ steps.version.outputs.version }}
+          tags: ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -76,7 +95,7 @@ jobs:
       - name: 🧪 Test 1 - Validate Universal Directory Structure
         run: |
           echo "Testing /opt/universal/* directories existence..."
-          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+          docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
             set -e
             echo "Checking required directories..."
 
@@ -109,7 +128,7 @@ jobs:
       - name: 🧪 Test 2 - Validate XDG Environment Variables
         run: |
           echo "Testing XDG environment variables..."
-          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+          docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
             set -e
             echo "Checking XDG environment variables..."
 
@@ -178,7 +197,7 @@ jobs:
       - name: 🧪 Test 3 - Validate Permissions (vscode user)
         run: |
           echo "Testing vscode user write permissions..."
-          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }} bash -c '
+          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
             set -e
             echo "Testing write permissions as vscode user..."
 
@@ -206,7 +225,7 @@ jobs:
       - name: 🧪 Test 4 - Validate Locale Configuration
         run: |
           echo "Testing locale configuration..."
-          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+          docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
             set -e
             echo "Checking locale environment variables..."
 
@@ -234,7 +253,7 @@ jobs:
       - name: 🧪 Test 5 - Validate Fundamental Tools
         run: |
           echo "Testing fundamental tools availability..."
-          docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
+          docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
             set -e
             echo "Checking fundamental tools..."
 
@@ -272,7 +291,7 @@ jobs:
       - name: 🧪 Test 6 - Command Suite Smoke Tests
         run: |
           echo "Running command suite smoke tests..."
-          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }} bash -c '
+          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
             set -e
             echo "Running basic command tests..."
 

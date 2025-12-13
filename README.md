@@ -71,6 +71,18 @@ UBI is distributed via GitHub Container Registry (GHCR) and consumed by other re
 
 ## 🚀 Getting Started
 
+### Choosing a Variant
+
+UBI provides multiple image variants optimized for different use cases:
+
+- **Base** (`ubi:latest`) - Default general-purpose image
+- **Minimal** (`ubi:latest-minimal`) - Lightweight with only essentials
+- **Python** (`ubi:latest-python`) - Includes Python, pip, poetry, pyenv
+- **Node** (`ubi:latest-node`) - Includes Node.js, npm, pnpm, yarn, nvm
+- **Full** (`ubi:latest-full`) - All tools and runtimes included
+
+📖 **[See the full variants documentation →](docs/variants.md)**
+
 ### Using UBI in Your Devcontainer
 
 The simplest way to consume UBI is via a devcontainer configuration:
@@ -85,12 +97,24 @@ The simplest way to consume UBI is via a devcontainer configuration:
 }
 ```
 
+Or use a specialized variant:
+
+```json
+{
+  "name": "My Python Project",
+  "image": "ghcr.io/egohygiene/ubi:latest-python",
+  "features": {
+    // Add your devcontainer features here
+  }
+}
+```
+
 ### Using UBI in a Dockerfile
 
 Build your project-specific image on top of UBI:
 
 ```dockerfile
-FROM ghcr.io/egohygiene/ubi:0.1.0
+FROM ghcr.io/egohygiene/ubi:0.1.5
 
 # Install project-specific dependencies
 RUN apt-get update && apt-get install -y \
@@ -101,6 +125,16 @@ COPY . /workspace
 
 # Set up your project
 RUN npm install  # or pip install, cargo build, etc.
+```
+
+Or use a specialized variant:
+
+```dockerfile
+FROM ghcr.io/egohygiene/ubi:0.1.5-python
+
+# Your Python project is ready to go!
+COPY . /workspace
+RUN poetry install
 ```
 
 ### Pulling the Latest Image

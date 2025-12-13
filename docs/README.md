@@ -7,7 +7,9 @@ Welcome to the UBI (Universal Base Image) documentation.
 ## Core Documentation
 
 ### [Architecture](./architecture.md)
+
 Learn about UBI's design, goals, and implementation:
+
 - UBI goals and philosophy
 - XDG Base Directory strategy
 - Universal filesystem layout (`/opt/universal`)
@@ -16,7 +18,9 @@ Learn about UBI's design, goals, and implementation:
 - Environment configuration
 
 ### [Troubleshooting](./troubleshooting.md)
+
 Solutions to common issues:
+
 - Devcontainer build problems
 - Docker layer caching
 - Version bump issues
@@ -25,7 +29,9 @@ Solutions to common issues:
 - Permission issues
 
 ### [Release Process](./release-process.md)
+
 Complete guide to releasing new versions:
+
 - VERSION file rules
 - Semantic versioning guidelines
 - bump-my-version workflow
@@ -34,7 +40,9 @@ Complete guide to releasing new versions:
 - Release checklist
 
 ### [Security Overview](./security-overview.md)
+
 Security practices and policies:
+
 - Security philosophy and threat model
 - Container security (no privileged mode)
 - Vulnerability scanning with Trivy
@@ -47,7 +55,9 @@ Security practices and policies:
 ## Security
 
 ### [Security Documentation](./security/)
+
 Security-related documentation, audits, and decisions:
+
 - **[Privileged Mode Analysis](./security/privileged-mode.md)** - Investigation and removal of privileged mode from devcontainer
 
 ---
@@ -57,12 +67,15 @@ Security-related documentation, audits, and decisions:
 The following sections are placeholders for future expansion:
 
 ### [Contributing](./contributing/)
+
 Contributing guidelines and development workflows *(coming soon)*
 
 ### [Examples](./examples/)
+
 Practical examples of using UBI in various scenarios *(coming soon)*
 
 ### [Best Practices](./best-practices/)
+
 Recommendations for using UBI effectively *(coming soon)*
 
 ---
@@ -70,6 +83,7 @@ Recommendations for using UBI effectively *(coming soon)*
 ## Quick Links
 
 ### Project Resources
+
 - [Main README](../README.md) - Project overview and getting started
 - [Changelog](../CHANGELOG.md) - Version history and release notes
 - [Security Policy](../SECURITY.md) - Security vulnerability reporting
@@ -77,6 +91,7 @@ Recommendations for using UBI effectively *(coming soon)*
 - [DevContainer Configuration](../.devcontainer/) - Development environment setup
 
 ### External Links
+
 - [GitHub Repository](https://github.com/egohygiene/ubi)
 - [Container Registry](https://ghcr.io/egohygiene/ubi)
 - [GitHub Actions Workflows](https://github.com/egohygiene/ubi/actions)

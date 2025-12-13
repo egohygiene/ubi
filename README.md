@@ -159,6 +159,7 @@ cosign verify \
 ```
 
 **What does this verify?**
+
 - ✅ The image was built by an official UBI GitHub Actions workflow
 - ✅ The image hasn't been modified since signing
 - ✅ The signature is backed by Sigstore's transparency log
@@ -242,17 +243,21 @@ UBI's base image is pinned to a specific version with a digest for reproducibili
 #### 1. Check for New Releases
 
 Visit the official sources to find the latest stable version:
+
 - **GitHub Releases**: [devcontainers/images releases](https://github.com/devcontainers/images/releases)
 - **MCR Tag List**: Query available tags from the Microsoft Container Registry API:
+
   ```bash
   # List all available tags (returns JSON)
   curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | jq -r '.tags[]'
-  
+
   # Or filter for version tags only
   curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | \
     jq -r '.tags[] | select(. | test("^[0-9]+\\.[0-9]+"))' | sort -V | tail -10
   ```
+
 - **Docker Hub Alternative**: Search directly with Docker:
+
   ```bash
   docker search mcr.microsoft.com/devcontainers/base
   ```
@@ -271,6 +276,7 @@ docker inspect mcr.microsoft.com/devcontainers/base:<version> \
 #### 3. Update the Dockerfile
 
 Edit `.devcontainer/Dockerfile` and update the `FROM` line with:
+
 - The new version tag
 - The corresponding digest (from step 2)
 - The `LAST UPDATED` date in the comment block
@@ -294,6 +300,7 @@ docker run -it --rm ubi:test bash
 #### 6. When to Update
 
 Evaluate base image updates when:
+
 - **Security patches** are released (high priority)
 - **New stable versions** are available (evaluate breaking changes)
 - **Quarterly review** (best practice for staying current)

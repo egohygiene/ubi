@@ -35,6 +35,7 @@ graph TD
 ```
 
 **Key Principles:**
+
 - Single source of truth: `VERSION` file
 - Automated synchronization across files
 - Git tags trigger image publishing
@@ -53,6 +54,7 @@ The `VERSION` file at the repository root is the **single source of truth** for 
 ```
 
 **Rules:**
+
 - Plain text file, no comments
 - Single line with semantic version number
 - Format: `MAJOR.MINOR.PATCH` (e.g., `0.1.5`)
@@ -154,7 +156,7 @@ Increment for **bug fixes and minor updates**:
   - `0.1.0` → `0.2.0` can include breaking changes
   - After `1.0.0`, breaking changes require MAJOR bump
 
-- **Security Fixes**: 
+- **Security Fixes**:
   - If critical, may warrant out-of-band patch release
   - Document clearly in CHANGELOG
 
@@ -167,7 +169,7 @@ Version bumping is handled by the `bump-version.yml` GitHub Actions workflow.
 ### Triggering a Version Bump
 
 1. **Navigate to Actions tab in GitHub:**
-   - Go to: https://github.com/egohygiene/ubi/actions
+   - Go to: <https://github.com/egohygiene/ubi/actions>
    - Select "🔼 Bump UBI Version" workflow
 
 2. **Click "Run workflow"**
@@ -184,13 +186,15 @@ Version bumping is handled by the `bump-version.yml` GitHub Actions workflow.
 The workflow performs these steps:
 
 1. **Checkout repository** with full git history
-   
+
 2. **Install bump-my-version:**
+
    ```bash
    pip install bump-my-version
    ```
 
 3. **Bump version** using configuration in `pyproject.toml`:
+
    ```bash
    bump-my-version [major|minor|patch]
    ```
@@ -203,11 +207,13 @@ The workflow performs these steps:
    - `CHANGELOG.md` - New version section inserted at top
 
 5. **Create commit:**
+
    ```
    chore: bump version to X.Y.Z
    ```
 
 6. **Create git tag:**
+
    ```
    X.Y.Z
    ```
@@ -269,6 +275,7 @@ The `publish.yml` workflow builds and publishes the UBI image to GHCR.
 ### Triggers
 
 The publish workflow runs automatically on:
+
 - **Push to main branch** (after version bump commit)
 - **Tag creation** (after version bump workflow)
 - **Manual trigger** (workflow_dispatch)
@@ -278,6 +285,7 @@ The publish workflow runs automatically on:
 1. **Checkout repository**
 
 2. **Read VERSION file:**
+
    ```bash
    VERSION=$(cat VERSION | tr -d '[:space:]')
    ```
@@ -287,11 +295,13 @@ The publish workflow runs automatically on:
    - Docker Buildx for multi-platform builds
 
 4. **Authenticate to GHCR:**
+
    ```bash
    echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
    ```
 
 5. **Generate metadata (tags and labels):**
+
    ```yaml
    tags: |
      type=raw,value=latest
@@ -305,6 +315,7 @@ The publish workflow runs automatically on:
    - Dockerfile: `.devcontainer/Dockerfile`
 
 7. **Push to GHCR with multiple tags:**
+
    ```
    ghcr.io/egohygiene/ubi:latest
    ghcr.io/egohygiene/ubi:0.1.5
@@ -336,6 +347,7 @@ A Software Bill of Materials (SBOM) is generated for every published image.
 ### What is an SBOM?
 
 An SBOM is a formal, machine-readable inventory of:
+
 - All software components in the image
 - Package names and versions
 - Dependencies and relationships
@@ -364,17 +376,18 @@ The publish workflow uses [Syft](https://github.com/anchore/syft) to generate SB
 ### Accessing SBOMs
 
 1. **Workflow Artifacts:**
-   - Navigate to workflow run: https://github.com/egohygiene/ubi/actions/workflows/publish.yml
+   - Navigate to workflow run: <https://github.com/egohygiene/ubi/actions/workflows/publish.yml>
    - Download artifact: `ubi-sbom-X.Y.Z`
    - Retention: 90 days
 
 2. **Generate Locally:**
+
    ```bash
    # Install Syft
    brew install syft  # macOS
    # or
    curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-   
+
    # Generate SBOM
    syft ghcr.io/egohygiene/ubi:0.1.5 -o spdx-json > ubi-sbom.json
    ```
@@ -413,14 +426,18 @@ Use this checklist when preparing a release:
 ### Post-Release
 
 - [ ] Verify image available on GHCR:
+
   ```bash
   docker pull ghcr.io/egohygiene/ubi:latest
   docker pull ghcr.io/egohygiene/ubi:X.Y.Z
   ```
+
 - [ ] Test pulled image:
+
   ```bash
   docker run -it --rm ghcr.io/egohygiene/ubi:X.Y.Z bash
   ```
+
 - [ ] Verify SBOM artifact uploaded
 - [ ] Update dependent projects (if needed)
 - [ ] Announce release (if significant)
@@ -434,6 +451,7 @@ Use this checklist when preparing a release:
 **Problem:** Workflow fails at bump step
 
 **Solutions:**
+
 1. Check `pyproject.toml` configuration matches VERSION file
 2. Verify VERSION file format is correct
 3. Review workflow logs for specific error
@@ -444,6 +462,7 @@ Use this checklist when preparing a release:
 **Problem:** Image builds but doesn't push to GHCR
 
 **Solutions:**
+
 1. Verify workflow has `packages: write` permission
 2. Check GHCR authentication
 3. Confirm image size is within limits
@@ -454,12 +473,15 @@ Use this checklist when preparing a release:
 **Problem:** Cannot create tag because it already exists
 
 **Solutions:**
+
 1. Verify you're bumping the correct version component
 2. Delete tag if needed:
+
    ```bash
    git tag -d X.Y.Z
    git push origin :refs/tags/X.Y.Z
    ```
+
 3. Re-run bump workflow
 
 ### SBOM Generation Fails
@@ -467,6 +489,7 @@ Use this checklist when preparing a release:
 **Problem:** SBOM step fails in publish workflow
 
 **Solutions:**
+
 1. Check if image was successfully built
 2. Verify Syft action version
 3. Review Syft logs for specific errors

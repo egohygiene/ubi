@@ -70,6 +70,7 @@ This effectively removes the security boundaries that containers are designed to
 ### 2. CI/CD Architecture
 
 The GitHub Actions workflows (`.github/workflows/publish.yml`, `.github/workflows/test-image.yml`) build and test the UBI image using:
+
 - Docker Buildx on the GitHub Actions runner (host)
 - Standard Docker build commands
 - No requirement for nested containerization
@@ -107,12 +108,14 @@ services:
 ```
 
 **Pros**:
+
 - No privileged mode required
 - Uses host Docker daemon
 - Better performance
 - Simpler configuration
 
 **Cons**:
+
 - Still requires careful permission management
 - Grants significant access to host Docker daemon
 
@@ -128,11 +131,13 @@ services:
 ```
 
 **Pros**:
+
 - Enhanced security
 - No root privileges required
 - Better isolation
 
 **Cons**:
+
 - More complex setup
 - Some features may be limited
 
@@ -149,11 +154,13 @@ services:
 ```
 
 **Pros**:
+
 - Principle of least privilege
 - Better than full privileged mode
 - Fine-grained control
 
 **Cons**:
+
 - Requires careful analysis of needed capabilities
 - Still presents some security risks
 
@@ -230,6 +237,7 @@ All tests passed without privileged mode.
 By removing `privileged: true`, the following security improvements are achieved:
 
 ### Before (with privileged mode)
+
 - ❌ Container could access all host devices
 - ❌ Full kernel capability access
 - ❌ No AppArmor/SELinux enforcement
@@ -237,6 +245,7 @@ By removing `privileged: true`, the following security improvements are achieved
 - ❌ Host compromise risk
 
 ### After (without privileged mode)
+
 - ✅ Standard container isolation maintained
 - ✅ Limited kernel capabilities (only required ones)
 - ✅ AppArmor/SELinux profiles enforced
@@ -260,6 +269,7 @@ Should the need arise to run Docker commands from within the devcontainer:
 ### Documentation Requirements
 
 Any future changes that require elevated privileges must:
+
 - Be documented in this file with clear justification
 - Include specific risks and mitigations
 - Be reviewed by security team
@@ -283,6 +293,7 @@ Any future changes that require elevated privileges must:
 The investigation conclusively determined that `privileged: true` was not necessary for any functionality in the UBI devcontainer. The flag has been safely removed, resulting in improved security posture while maintaining full functionality.
 
 **Key Takeaways:**
+
 - Always question the necessity of privileged mode
 - Investigate alternatives before granting elevated privileges
 - Document security decisions thoroughly

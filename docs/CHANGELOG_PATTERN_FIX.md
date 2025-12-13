@@ -8,12 +8,12 @@ The original `bump-my-version` CHANGELOG rule used a regex pattern that caused d
 
 ### The Problem Patterns
 
-1. **Pattern: `\A## `** (Start of string)
-   - **Issue**: CHANGELOG.md starts with `# Changelog\n\n`, not `## `
+1. **Pattern: `\A##`** (Start of string)
+   - **Issue**: CHANGELOG.md starts with `# Changelog\n\n`, not `##`
    - **Result**: Matches **0 times** - pattern is ineffective
    - **Impact**: No CHANGELOG updates occur
 
-2. **Pattern: `^## `** (Start of line with MULTILINE)
+2. **Pattern: `^##`** (Start of line with MULTILINE)
    - **Issue**: Matches **every** version header in the file
    - **Result**: Matches **6+ times** for all version sections
    - **Impact**: Creates duplicate entries on each bump
@@ -35,10 +35,11 @@ The original `bump-my-version` CHANGELOG rule used a regex pattern that caused d
 
 ## Solution
 
-### Correct Pattern: `(# Changelog\n\n)## `
+### Correct Pattern: `(# Changelog\n\n)##`
 
 This pattern:
-- Matches the literal string `# Changelog\n\n## `
+
+- Matches the literal string `# Changelog\n\n##`
 - Captures `# Changelog\n\n` as group 1
 - Targets **only** the first occurrence after the header
 - Works regardless of how many version sections exist
@@ -55,9 +56,9 @@ replace = "\\g<1>## {new_version} ({now:%Y-%m-%d})\n[Compare the full difference
 
 ### How It Works
 
-1. **Search**: Finds `# Changelog\n\n## ` at the start
+1. **Search**: Finds `# Changelog\n\n##` at the start
 2. **Capture**: Group 1 = `# Changelog\n\n`
-3. **Replace**: Reconstructs with: `<captured header>` + `<new version>` + `## `
+3. **Replace**: Reconstructs with: `<captured header>` + `<new version>` + `##`
 4. **Result**: New version inserted between header and first existing version
 
 ## Validation
@@ -123,7 +124,7 @@ bump-my-version bump patch --dry-run --verbose
 
 ### Capture Groups
 
-- **Group 0**: Full match `# Changelog\n\n## `
+- **Group 0**: Full match `# Changelog\n\n##`
 - **Group 1**: Captured `# Changelog\n\n`
 - **`\g<1>`**: Backreference to restore the captured header
 

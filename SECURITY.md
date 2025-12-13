@@ -80,6 +80,7 @@ View scan results: [Trivy Scan Workflow](https://github.com/egohygiene/ubi/actio
 - **Verification**: Anyone can verify image authenticity without needing private keys
 
 **Verify an image:**
+
 ```bash
 cosign verify \
   --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \

@@ -124,22 +124,22 @@
     "ghcr.io/devcontainers/features/common-utils:2": {
       // Install zsh as an alternative shell
       "installZsh": true,
-      
+
       // Don't install Oh My Zsh (we manage shell configs separately)
       "installOhMyZsh": false,
-      
+
       // Don't upgrade packages automatically (reproducibility)
       "upgradePackages": false,
-      
+
       // Use 'vscode' user (matches our Dockerfile)
       "username": "vscode",
-      
+
       // User UID (matches base image default)
       "userUid": "automatic",
-      
+
       // User GID (matches base image default)
       "userGid": "automatic",
-      
+
       // Configure git to use the VS Code credential helper
       "configureZshAsDefaultShell": false
     },
@@ -166,19 +166,19 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       // Docker version to install (or "latest")
       "version": "latest",
-      
+
       // Install Docker Compose plugin
       "dockerDashComposeVersion": "v2",
-      
+
       // Install Docker Buildx plugin (for multi-platform builds)
       "installDockerBuildx": true,
-      
+
       // Install Docker Compose Switch (compatibility wrapper)
       "installDockerComposeSwitch": true,
-      
+
       // Configure Docker to start automatically
       "moby": true,
-      
+
       // Enable BuildKit by default (modern Docker builder)
       "enableNonRootDocker": true
     },
@@ -197,7 +197,7 @@
     "ghcr.io/devcontainers/features/git:1": {
       // Git version to install
       "version": "latest",
-      
+
       // Install Git LFS for large file support
       "ppa": true
     },
@@ -217,19 +217,19 @@
     "ghcr.io/devcontainers/features/python:1": {
       // Python version (or "latest", "3.12", etc.)
       "version": "3.12",
-      
+
       // Install pip and setuptools
       "installTools": true,
-      
+
       // Optimize Python for development (enable assertions, etc.)
       "optimize": false,
-      
+
       // Enable Python user site-packages directory
       "enableShared": false,
-      
+
       // Install common Python tools: black, mypy, pylint, etc.
       "installJupyterlab": false,
-      
+
       // Configure default Python version
       "configureGitSafeDirectory": true
     },
@@ -251,10 +251,10 @@
     "ghcr.io/devcontainers/features/node:1": {
       // Node.js version ("lts", "latest", "18", etc.)
       "version": "lts",
-      
+
       // Install Yarn package manager
       "installYarnUsingApt": true,
-      
+
       // NVM (Node Version Manager) version to install
       "nvmVersion": "latest"
     }
@@ -295,10 +295,10 @@
   "initializeCommand": {
     // Format: { "command-name": ["executable", "arg1", "arg2"] }
     // Use array format for cross-platform compatibility
-    
+
     // Example: Verify Docker is running
     // "verify-docker": ["docker", "info"],
-    
+
     // Example: Pre-download large dependencies
     // "cache-deps": ["docker", "pull", "mcr.microsoft.com/devcontainers/base:2.1.2"]
   },
@@ -321,7 +321,7 @@
   "onCreateCommand": {
     // Example: Initialize git submodules
     // "init-submodules": ["git", "submodule", "update", "--init", "--recursive"],
-    
+
     // Example: Generate SSH key for the vscode user
     // "generate-ssh-key": ["ssh-keygen", "-t", "ed25519", "-f", "~/.ssh/id_ed25519", "-N", ""]
   },
@@ -345,7 +345,7 @@
   "updateContentCommand": {
     // Example: Reinstall Python dependencies
     // "install-deps": ["pip", "install", "-r", "requirements.txt"],
-    
+
     // Example: Rebuild project after content changes
     // "rebuild": ["npm", "run", "build"]
   },
@@ -370,10 +370,10 @@
   "postCreateCommand": {
     // Example: Install Python dependencies with Poetry
     // "install-python-deps": ["poetry", "install", "--no-root"],
-    
+
     // Example: Install Node.js dependencies
     // "install-node-deps": ["npm", "install"],
-    
+
     // Example: Run database migrations
     // "migrate-db": ["python", "manage.py", "migrate"]
   },
@@ -394,10 +394,10 @@
   "postStartCommand": {
     // Example: Start PostgreSQL service
     // "start-postgres": ["sudo", "service", "postgresql", "start"],
-    
+
     // Example: Start Redis in background
     // "start-redis": ["redis-server", "--daemonize", "yes"],
-    
+
     // Example: Display welcome message
     // "welcome": ["echo", "🚀 Development container started successfully!"]
   },
@@ -418,7 +418,7 @@
   "postAttachCommand": {
     // Example: Activate Python virtual environment
     // "activate-venv": ["echo", "source .venv/bin/activate >> ~/.bashrc"],
-    
+
     // Example: Display git status
     // "git-status": ["git", "status", "--short"]
   },
@@ -546,14 +546,14 @@
   "containerEnv": {
     // Example: Override workspace location
     // "WORKSPACE_HOME": "/workspace",
-    
+
     // Example: Pass secrets from host environment
     // "API_KEY": "${localEnv:API_KEY}",
-    
+
     // Example: Development-specific overrides
     // "DEBUG": "true",
     // "LOG_LEVEL": "debug",
-    
+
     // Example: VS Code specific configuration
     // "VSCODE_WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
   },
@@ -582,10 +582,10 @@
   "remoteEnv": {
     // Example: Add custom binaries to PATH for VS Code terminal
     // "PATH": "${containerEnv:PATH}:/opt/universal/bin",
-    
+
     // Example: Configure VS Code extensions
     // "VSCODE_EXTENSION_CONFIG": "/workspace/.vscode/extensions.json",
-    
+
     // Example: Set workspace-relative paths
     // "PROJECT_ROOT": "${containerWorkspaceFolder}"
   },
@@ -620,14 +620,14 @@
   "mounts": [
     // Example: Share host SSH keys (readonly for security)
     // "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly",
-    
+
     // Example: Share Git configuration from host
     // "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly",
-    
+
     // Example: Persistent volume for package caches (faster rebuilds)
     // "type=volume,source=ubi-devcontainer-npm-cache,target=/home/vscode/.npm",
     // "type=volume,source=ubi-devcontainer-pip-cache,target=/home/vscode/.cache/pip",
-    
+
     // Example: Mount host Docker socket (alternative to docker-in-docker)
     // "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
   ],
@@ -658,22 +658,22 @@
   "runArgs": [
     // Enable init system for proper signal handling
     "--init",
-    
+
     // Grant privileged mode for Docker-in-Docker
     // Required by the docker-in-docker feature
     // Security Trade-off: Grants significant access to host
     // Only use in trusted development environments
     "--privileged",
-    
+
     // Add host.docker.internal alias for host access
     // Useful for accessing host services from container
     "--add-host=host.docker.internal:host-gateway",
-    
+
     // Security options for debugging
     // Uncomment if you need to debug with tools like gdb, strace
     // "--cap-add=SYS_PTRACE",
     // "--security-opt=seccomp=unconfined",
-    
+
     // Resource limits (uncomment to enable)
     // "--memory=4g",
     // "--cpus=2"
@@ -798,39 +798,39 @@
         "ms-python.vscode-pylance",      // Fast Python language server
         "ms-python.black-formatter",     // Black code formatter
         "ms-python.isort",               // Import sorting
-        
+
         // Node.js and JavaScript
         "dbaeumer.vscode-eslint",        // ESLint integration
         "esbenp.prettier-vscode",        // Prettier code formatter
-        
+
         // Shell scripting
         "timonwong.shellcheck",          // ShellCheck linting
         "foxundermoon.shell-format",     // Shell script formatting
-        
+
         // Markup and data formats
         "redhat.vscode-yaml",            // YAML language support with schema validation
         "tamasfe.even-better-toml",      // TOML language support
         "DavidAnson.vscode-markdownlint", // Markdown linting
-        
+
         // ----------------------------------------------------------
         // Container and DevOps Tools
         // ----------------------------------------------------------
         "ms-azuretools.vscode-docker",   // Docker support (Dockerfiles, compose)
         "ms-vscode-remote.remote-containers", // Dev Containers extension
         "github.vscode-github-actions",  // GitHub Actions workflow support
-        
+
         // ----------------------------------------------------------
         // Code Quality and Linting
         // ----------------------------------------------------------
         "streetsidesoftware.code-spell-checker", // Spell checking in code/comments
         "editorconfig.editorconfig",     // EditorConfig support
-        
+
         // ----------------------------------------------------------
         // Git and Version Control
         // ----------------------------------------------------------
         "donjayamanne.githistory",       // Git history visualization
         "eamodio.gitlens",               // Advanced Git integration (optional)
-        
+
         // ----------------------------------------------------------
         // Productivity and UI
         // ----------------------------------------------------------
@@ -838,23 +838,23 @@
         "wmaurer.change-case",           // Quick case conversion
         "usernamehw.errorlens",          // Inline error highlighting
         "xyz.local-history",             // Local file history
-        
+
         // ----------------------------------------------------------
         // Testing and Debugging
         // ----------------------------------------------------------
         "hbenl.vscode-test-explorer",    // Test Explorer UI
         "littlefoxteam.vscode-python-test-adapter", // Python test adapter
-        
+
         // ----------------------------------------------------------
         // Schema and Validation
         // ----------------------------------------------------------
         "remcohaszing.schemastore",      // JSON Schema Store integration
-        
+
         // ----------------------------------------------------------
         // Task and Automation
         // ----------------------------------------------------------
         "task.vscode-task",              // Task runner support
-        
+
         // ----------------------------------------------------------
         // Additional Tools
         // ----------------------------------------------------------
@@ -885,7 +885,7 @@
         // --------------------------------------------------------
         // Set default shell for integrated terminal
         "terminal.integrated.defaultProfile.linux": "bash",
-        
+
         // Shell profiles available in terminal dropdown
         "terminal.integrated.profiles.linux": {
           "bash": {
@@ -901,18 +901,18 @@
             "icon": "terminal"
           }
         },
-        
+
         // Terminal font settings
         "terminal.integrated.fontSize": 14,
         "terminal.integrated.fontFamily": "MesloLGS NF, 'Courier New', monospace",
         "terminal.integrated.lineHeight": 1.2,
-        
+
         // Terminal behavior
         "terminal.integrated.scrollback": 10000,
         "terminal.integrated.enableBell": false,
         "terminal.integrated.cursorBlinking": true,
         "terminal.integrated.cursorStyle": "line",
-        
+
         // --------------------------------------------------------
         // Editor Configuration
         // --------------------------------------------------------
@@ -924,7 +924,7 @@
         "editor.tabSize": 2,
         "editor.insertSpaces": true,
         "editor.detectIndentation": true,
-        
+
         // Editor behavior
         "editor.formatOnSave": true,
         "editor.formatOnPaste": false,
@@ -935,13 +935,13 @@
         "editor.minimap.enabled": true,
         "editor.bracketPairColorization.enabled": true,
         "editor.guides.bracketPairs": true,
-        
+
         // Code actions on save
         "editor.codeActionsOnSave": {
           "source.fixAll": "explicit",
           "source.organizeImports": "explicit"
         },
-        
+
         // --------------------------------------------------------
         // Files Configuration
         // --------------------------------------------------------
@@ -950,11 +950,11 @@
         "files.insertFinalNewline": true,
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true,
-        
+
         // Auto-save configuration
         "files.autoSave": "afterDelay",
         "files.autoSaveDelay": 1000,
-        
+
         // File exclusions from explorer and search
         "files.exclude": {
           "**/.git": true,
@@ -968,20 +968,20 @@
           "**/build": true,
           "**/.venv": true
         },
-        
+
         // --------------------------------------------------------
         // Python Configuration
         // --------------------------------------------------------
         "python.defaultInterpreterPath": "/usr/local/bin/python",
         "python.terminal.activateEnvironment": true,
-        
+
         // Python linting
         "python.linting.enabled": true,
         "python.linting.pylintEnabled": false,
         "python.linting.flake8Enabled": false,
         "python.linting.mypyEnabled": true,
         "python.linting.lintOnSave": true,
-        
+
         // Python formatting
         "python.formatting.provider": "none",
         "[python]": {
@@ -991,17 +991,17 @@
             "source.organizeImports": "explicit"
           }
         },
-        
+
         // Black formatter settings
         "black-formatter.args": [
           "--line-length=88"
         ],
-        
+
         // isort settings
         "isort.args": [
           "--profile=black"
         ],
-        
+
         // Python testing
         "python.testing.pytestEnabled": true,
         "python.testing.unittestEnabled": false,
@@ -1011,7 +1011,7 @@
           "-v",
           "--color=yes"
         ],
-        
+
         // --------------------------------------------------------
         // Git Configuration
         // --------------------------------------------------------
@@ -1021,27 +1021,27 @@
         "git.confirmSync": false,
         "git.enableSmartCommit": true,
         "git.suggestSmartCommit": false,
-        
+
         // --------------------------------------------------------
         // Docker Configuration
         // --------------------------------------------------------
         "docker.dockerodeOptions": {
           "socketPath": "/var/run/docker.sock"
         },
-        
+
         // --------------------------------------------------------
         // Prettier Configuration
         // --------------------------------------------------------
         "prettier.requireConfig": true,
         "prettier.useEditorConfig": true,
-        
+
         // --------------------------------------------------------
         // ShellCheck Configuration
         // --------------------------------------------------------
         "shellcheck.enable": true,
         "shellcheck.run": "onSave",
         "shellcheck.executablePath": "/usr/bin/shellcheck",
-        
+
         // --------------------------------------------------------
         // YAML Configuration
         // --------------------------------------------------------
@@ -1053,7 +1053,7 @@
           "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml",
           "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "docker-compose*.yml"
         },
-        
+
         // --------------------------------------------------------
         // JSON Configuration
         // --------------------------------------------------------
@@ -1065,7 +1065,7 @@
           "editor.defaultFormatter": "esbenp.prettier-vscode",
           "editor.formatOnSave": true
         },
-        
+
         // --------------------------------------------------------
         // Markdown Configuration
         // --------------------------------------------------------
@@ -1074,7 +1074,7 @@
           "editor.formatOnSave": false,
           "editor.wordWrap": "on"
         },
-        
+
         // --------------------------------------------------------
         // Search Configuration
         // --------------------------------------------------------
@@ -1122,13 +1122,13 @@
     // 8000,  // Python HTTP server / Django
     // 8080,  // Alternative HTTP server
     // 5173,  // Vite dev server
-    
+
     // Example: Databases
     // 5432,  // PostgreSQL
     // 3306,  // MySQL
     // 6379,  // Redis
     // 27017, // MongoDB
-    
+
     // Example: Other services
     // 9229,  // Node.js debugging
     // 5678   // Python debugging (debugpy)
@@ -1164,13 +1164,13 @@
     //   "protocol": "http",
     //   "onAutoForward": "notify"
     // },
-    
+
     // Example: Database configuration
     // "5432": {
     //   "label": "PostgreSQL Database",
     //   "onAutoForward": "silent"
     // },
-    
+
     // Example: Debugging configuration
     // "9229": {
     //   "label": "Node.js Debug Port",

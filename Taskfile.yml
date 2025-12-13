@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# Taskfile for managing development tasks in a multi-platform environment
+
+version: "3"
+
+includes:
+  lint: ./tasks/lint.yml
+  utils: ./tasks/utils.yml
+  tools: ./tasks/tools.yml
+  # dev: ./tasks/dev.yml
+  # write: ./tasks/write.yml
+  # security: ./tasks/security.yml

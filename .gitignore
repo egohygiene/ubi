@@ -44,3 +44,6 @@ reports/megalinter/
 
 # actionlint binary
 actionlint
+
+# MkDocs
+site/

@@ -162,14 +162,14 @@ jobs:
                       size_str = parts[0]
                       command = parts[1]
                       
-                      # Parse size
+                      # Parse size (Docker uses SI/decimal prefixes: kB=1000, MB=1000^2, GB=1000^3)
                       size_bytes = 0
                       if size_str != "0B":
-                          match = re.match(r'([\d.]+)([kMGB]+)', size_str)
+                          match = re.match(r'([\d.]+)([kMG]?B)', size_str)
                           if match:
                               value = float(match.group(1))
                               unit = match.group(2)
-                              multipliers = {'B': 1, 'kB': 1024, 'MB': 1024**2, 'GB': 1024**3}
+                              multipliers = {'B': 1, 'kB': 1000, 'MB': 1000**2, 'GB': 1000**3}
                               size_bytes = int(value * multipliers.get(unit, 1))
                       
                       layers.append({
@@ -228,7 +228,7 @@ jobs:
             "workflow_run_id": "${{ github.run_id }}",
             "workflow_run_number": "${{ github.run_number }}",
             "build_metrics": {
-              "workflow_duration_seconds": "${{ github.job }}",
+              "job_name": "${{ github.job }}",
               "runner_os": "${{ runner.os }}",
               "runner_arch": "${{ runner.arch }}"
             },
@@ -413,6 +413,8 @@ jobs:
             - Version: ${{ steps.version.outputs.version }}
             - Commit: ${{ github.sha }}"
             
-            git push origin HEAD:main
+            # Push to current branch or main (dynamically determined)
+            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            git push origin "HEAD:${CURRENT_BRANCH}"
             echo "✅ Metrics committed to repository"
           fi

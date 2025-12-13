@@ -48,9 +48,9 @@ This file provides context and guidelines for GitHub Copilot when working in the
 ├── .github/
 │   ├── workflows/          # CI/CD workflows
 │   │   ├── publish.yml     # Image build & publish
-│   │   ├── test-image.yml  # Image testing
+│   │   ├── test-image.yml  # Comprehensive image testing (XDG, env vars, permissions)
 │   │   ├── trivy-scan.yml  # Security scanning
-│   │   ├── sanity.yml      # Sanity checks
+│   │   ├── sanity.yml      # Basic CI sanity check
 │   │   ├── bump-version.yml # Automated version bumps
 │   │   └── validate-changelog.yml # CHANGELOG validation
 │   ├── linters/            # Linter configurations
@@ -254,7 +254,7 @@ Follow **Conventional Commits**:
 
 ### Required Checks
 All PRs must pass:
-1. **🧪 Image Testing Workflow** (`.github/workflows/test-image.yml`): Container sanity tests
+1. **🧪 Image Testing Workflow** (`.github/workflows/test-image.yml`): Comprehensive container tests (directory structure, XDG environment variables, permissions, locale, and fundamental tools)
 2. **🔒 Trivy Security Scan** (`.github/workflows/trivy-scan.yml`): Vulnerability scanning
 3. **📋 CHANGELOG Validation** (`.github/workflows/validate-changelog.yml`): Format validation
 4. **🛡️ GitHub Code Scanning**: Security and quality checks

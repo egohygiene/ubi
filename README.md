@@ -149,6 +149,22 @@ docker pull ghcr.io/egohygiene/ubi:latest
 docker run -it --rm ghcr.io/egohygiene/ubi:latest bash
 ```
 
+### 📚 Example Projects
+
+Want to see UBI in action? Check out our [example projects](./examples/):
+
+- **[Python CLI](./examples/python-cli/)** - Command-line tool with Click
+- **[Node.js Express](./examples/node-express/)** - REST API server
+- **[Polyglot](./examples/polyglot/)** - Multi-language project (Python + Node.js + Bash)
+
+Each example is fully documented and ready to run. They demonstrate:
+- Real-world usage patterns
+- XDG directory compliance
+- Modern development workflows
+- Multi-language support
+
+👉 **[Browse all examples →](./examples/)**
+
 ### 🔏 Verifying Image Signatures
 
 UBI images are signed with [Sigstore Cosign](https://docs.sigstore.dev/cosign/overview/) using keyless signing. This provides cryptographic proof that images are authentic and haven't been tampered with.

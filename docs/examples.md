@@ -2,6 +2,18 @@
 
 This page provides practical examples of using UBI in various scenarios.
 
+## 📚 Complete Example Projects
+
+For fully working example projects, see the [examples directory](../examples/):
+
+- **[Python CLI](../examples/python-cli/)** - Simple command-line tool demonstrating Python development
+- **[Node.js Express](../examples/node-express/)** - REST API server showcasing Node.js development
+- **[Polyglot](../examples/polyglot/)** - Multi-language project combining Python, Node.js, and Bash
+
+Each example includes complete source code, documentation, and devcontainer configuration ready to run.
+
+👉 **[View all example projects →](../examples/)**
+
 ---
 
 ## Basic Usage

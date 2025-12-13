@@ -129,9 +129,10 @@ command:
     stdout:
       - "GNU bash"
 
+  # sh may not have --version, so we test basic functionality
   sh:
     exit-status: 0
-    exec: "sh --version || sh -c 'echo ok'"
+    exec: "sh -c 'exit 0'"
 
   # Coreutils
   ls:
@@ -245,9 +246,12 @@ command:
     stdout:
       - "less"
 
+  # vi may not have --version, so we test that it can be invoked
   vi:
     exit-status: 0
-    exec: "vi --version || echo 'vi exists'"
+    exec: "command -v vi"
+    stdout:
+      - "/usr/bin/vi"
 
   nano:
     exit-status: 0
@@ -391,8 +395,11 @@ group:
 # Validates that the container can start processes correctly
 
 process:
+  # Note: This test verifies that bash is not running as a persistent process
+  # when Goss validates the container. This is expected behavior since Goss
+  # runs validation inside a temporary container that exits after tests complete.
   bash:
-    running: false  # Not running by default in test mode
+    running: false
 
 # =============================================================================
 # MOUNT TESTS

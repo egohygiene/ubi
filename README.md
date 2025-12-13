@@ -466,7 +466,9 @@ Special thanks to:
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the [docs/](./docs/) directory:
+**[📖 Visit the full documentation site →](https://egohygiene.github.io/ubi/)**
+
+Comprehensive documentation is also available in the [docs/](./docs/) directory:
 
 - **[Architecture](./docs/architecture.md)** - Design, XDG strategy, filesystem layout, and CI/CD
 - **[Troubleshooting](./docs/troubleshooting.md)** - Common issues and solutions
@@ -481,7 +483,7 @@ See the [Documentation Index](./docs/README.md) for a complete overview.
 
 - **Issues**: [github.com/egohygiene/ubi/issues](https://github.com/egohygiene/ubi/issues)
 - **Discussions**: [github.com/egohygiene/ubi/discussions](https://github.com/egohygiene/ubi/discussions)
-- **Documentation**: [docs/](./docs/)
+- **Documentation**: [egohygiene.github.io/ubi](https://egohygiene.github.io/ubi/)
 - **Organization**: [github.com/egohygiene](https://github.com/egohygiene)
 
 ---

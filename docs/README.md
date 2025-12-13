@@ -2,6 +2,15 @@
 
 Welcome to the UBI (Universal Base Image) documentation.
 
+**[📖 View the full documentation site →](https://egohygiene.github.io/ubi/)**
+
+The documentation is also available as a beautifully formatted website built with MkDocs Material theme, featuring:
+- 🔍 Full-text search
+- 📱 Mobile-responsive design
+- 🌓 Light/dark mode
+- 📑 Organized navigation
+- ⚡ Fast and modern UI
+
 ---
 
 ## Core Documentation

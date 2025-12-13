@@ -2,12 +2,13 @@
 # UBI Python Variant
 #
 # This variant extends UBI Minimal with Python development tools.
-# Includes Python runtime, pip, poetry, and pyenv for version management.
+# Includes Python 3.13 runtime, pip, and Python build dependencies.
+# Poetry is installed when possible; pyenv can be installed manually.
 #
 # Use this variant when:
 # - Building Python applications or data science projects
-# - Need multiple Python versions (via pyenv)
 # - Require Python package management (pip, poetry)
+# - Need Python build tools and dependencies
 ######################################################################
 
 ######################################################################
@@ -192,10 +193,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry for Python package management via pip
-RUN python3 -m pip install --user poetry \
-  && ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry || true
+# Note: This may fail in restricted environments (e.g., externally-managed-environment error)
+# Core Python tooling (python3, pip, venv) is always available
+RUN python3 -m pip install --user poetry 2>/dev/null || echo "Poetry installation skipped (restricted environment)" \
+  && if [ -f /root/.local/bin/poetry ]; then ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry; fi
 
-# Set up pyenv directories (pyenv can be installed by users as needed)
+# Set up pyenv environment variables for future manual installation
+# Users can install pyenv manually using: curl https://pyenv.run | bash
 ENV PYENV_ROOT="${UNIVERSAL_TOOLBOX}/pyenv"
 ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/shims:${PATH}"
 

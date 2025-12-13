@@ -2,12 +2,13 @@
 # UBI Node Variant
 #
 # This variant extends UBI Minimal with Node.js development tools.
-# Includes Node.js runtime, npm, pnpm, yarn, and nvm for version management.
+# Includes Node.js v20 (LTS) runtime and npm.
+# pnpm and yarn are installed when possible; nvm can be installed manually.
 #
 # Use this variant when:
 # - Building JavaScript/TypeScript applications
-# - Need multiple Node.js versions (via nvm)
 # - Require Node package management (npm, pnpm, yarn)
+# - Need Node.js build tools
 ######################################################################
 
 ######################################################################
@@ -164,15 +165,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js and package managers via apt
+# Install Node.js and npm via apt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* \
-  && npm install -g pnpm yarn || true
+  && rm -rf /var/lib/apt/lists/*
 
-# Set up nvm directories (nvm can be installed by users as needed)
+# Install pnpm and yarn globally
+# Note: This may fail in restricted environments (e.g., certificate issues)
+# Core Node.js tooling (node, npm) is always available
+RUN npm install -g pnpm yarn 2>/dev/null || echo "pnpm/yarn installation skipped (restricted environment)"
+
+# Set up nvm environment variables for future manual installation
+# Users can install nvm manually using: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ENV NVM_DIR="${UNIVERSAL_TOOLBOX}/nvm"
 
 FROM node-tools AS final

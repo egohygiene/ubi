@@ -27,7 +27,7 @@ The original UBI image as defined in `.devcontainer/Dockerfile`. This is the def
 ### 🔹 Minimal
 **Image:** `ghcr.io/egohygiene/ubi:latest-minimal` or `ghcr.io/egohygiene/ubi:0.1.5-minimal`
 
-The most lightweight variant with only foundational environment variables and XDG directory structure. No language runtimes or heavy tools.
+The most lightweight variant with only foundational environment variables and XDG directory structure. No language runtimes, build tools, or package managers.
 
 **Use this when:**
 - You need the smallest possible image size
@@ -39,13 +39,13 @@ The most lightweight variant with only foundational environment variables and XD
 - XDG-compliant directory structure (`/opt/universal/*`)
 - Essential environment variables (locale, colors, basic tooling)
 - Telemetry controls
-- Minimal system utilities
+- Basic system utilities from the devcontainer base
 
 **What's NOT included:**
-- Python runtime or tools
-- Node.js runtime or tools
-- Language-specific package managers
-- Additional development tools
+- Python runtime, pip, or development tools
+- Node.js runtime, npm, or package managers
+- Language-specific build dependencies (build-essential, compilers, etc.)
+- Version managers (pyenv, nvm, etc.)
 
 **Image size:** Smallest (~500MB base)
 
@@ -64,16 +64,16 @@ Python-focused variant with Python runtime and package management tools.
 
 **What's included:**
 - Everything from Minimal variant
-- Python 3.13 runtime and development headers
-- pip (Python package installer)
-- poetry (dependency management) - installed via pip
-- Python build dependencies (build-essential, libssl-dev, zlib1g-dev, libbz2-dev, libreadline-dev, libsqlite3-dev, etc.)
-- Python-specific environment variables
-- pyenv environment variables pre-configured (install pyenv as needed)
+- Python 3.13.5 runtime and development headers
+- pip 25.1.1 (Python package installer)
+- poetry (dependency management) - best-effort install via pip
+- Python build dependencies (build-essential, libssl-dev, zlib1g-dev, libbz2-dev, libreadline-dev, libsqlite3-dev, libxml2-dev, libxmlsec1-dev, libffi-dev, liblzma-dev, etc.)
+- Python-specific environment variables (PYTHONUNBUFFERED, PYTHONUTF8, PIP_NO_CACHE_DIR, etc.)
+- pyenv environment variables pre-configured at `$UNIVERSAL_TOOLBOX/pyenv` (install pyenv manually if needed)
 
 **Image size:** Medium (~1.2GB)
 
-**Note:** Poetry is installed via pip. You can install additional version managers like pyenv manually if needed.
+**Note:** Poetry installation may fail in restricted environments but the core Python tooling (python3, pip, venv) is always available. You can install additional version managers like pyenv manually if needed.
 
 ---
 
@@ -90,17 +90,17 @@ Node.js-focused variant with Node.js runtime and package management tools.
 
 **What's included:**
 - Everything from Minimal variant
-- Node.js v20 (LTS) runtime
-- npm (Node package manager)
-- pnpm (fast, disk space efficient package manager) - installed globally
-- yarn (alternative package manager) - installed globally
+- Node.js v20.19.2 (LTS) runtime
+- npm 9.2.0 (Node package manager)
+- pnpm (fast, disk space efficient package manager) - best-effort install via npm
+- yarn (alternative package manager) - best-effort install via npm
 - Node.js build dependencies (build-essential, libssl-dev)
-- Node-specific environment variables (NODE_OPTIONS)
-- nvm environment variables pre-configured (install nvm as needed)
+- Node-specific environment variables (NODE_OPTIONS, telemetry controls)
+- nvm environment variables pre-configured at `$UNIVERSAL_TOOLBOX/nvm` (install nvm manually if needed)
 
 **Image size:** Medium (~1.1GB)
 
-**Note:** pnpm and yarn are installed globally via npm. You can install additional version managers like nvm or volta manually if needed.
+**Note:** pnpm and yarn installation may fail in restricted environments but the core Node.js tooling (node, npm) is always available. You can install additional version managers like nvm or volta manually if needed.
 
 ---
 

@@ -1,14 +1,14 @@
 ######################################################################
 # UBI Full Variant
 #
-# This is the full-featured "kitchen sink" version of UBI with all
-# development tools and runtimes included.
-# Includes Python, Node.js, and all their associated tooling.
+# This is the full-featured "kitchen sink" version of UBI combining
+# Python and Node.js development tools.
+# Includes Python 3.13, Node.js v20, and their package managers.
 #
 # Use this variant when:
 # - Working in polyglot environments
 # - Need maximum flexibility for heavy workflows
-# - Devcontainer for large, multi-language projects
+# - Building devcontainers for large, multi-language projects
 ######################################################################
 
 ######################################################################
@@ -218,10 +218,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry for Python package management via pip
-RUN python3 -m pip install --user poetry \
-  && ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry || true
+# Note: This may fail in restricted environments (e.g., externally-managed-environment error)
+# Core Python tooling (python3, pip, venv) is always available
+RUN python3 -m pip install --user poetry 2>/dev/null || echo "Poetry installation skipped (restricted environment)" \
+  && if [ -f /root/.local/bin/poetry ]; then ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry; fi
 
-# Set up pyenv directories (pyenv can be installed by users as needed)
+# Set up pyenv environment variables for future manual installation
+# Users can install pyenv manually using: curl https://pyenv.run | bash
 ENV PYENV_ROOT="${UNIVERSAL_TOOLBOX}/pyenv"
 ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/shims:${PATH}"
 
@@ -231,15 +234,20 @@ FROM python-tools AS node-tools
 # INSTALL NODE.JS DEVELOPMENT TOOLS
 ######################################################################
 
-# Install Node.js and package managers via apt
+# Install Node.js and npm via apt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* \
-  && npm install -g pnpm yarn || true
+  && rm -rf /var/lib/apt/lists/*
 
-# Set up nvm directories (nvm can be installed by users as needed)
+# Install pnpm and yarn globally
+# Note: This may fail in restricted environments (e.g., certificate issues)
+# Core Node.js tooling (node, npm) is always available
+RUN npm install -g pnpm yarn 2>/dev/null || echo "pnpm/yarn installation skipped (restricted environment)"
+
+# Set up nvm environment variables for future manual installation
+# Users can install nvm manually using: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ENV NVM_DIR="${UNIVERSAL_TOOLBOX}/nvm"
 
 FROM node-tools AS final

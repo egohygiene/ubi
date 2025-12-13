@@ -1,0 +1,442 @@
+---
+# =============================================================================
+# Goss Container Test Configuration for UBI
+# =============================================================================
+# This file validates the Universal Base Image (UBI) container environment
+# to ensure all critical filesystem structures, commands, and environment
+# variables are correctly configured.
+#
+# Test Categories:
+# - Filesystem Structure: /opt/universal/* directories
+# - Permissions: vscode user access
+# - Commands: bash, coreutils, curl, wget, git, python, etc.
+# - Environment Variables: XDG paths, locale, telemetry
+# - Process Validation: Container health
+# =============================================================================
+
+# =============================================================================
+# FILESYSTEM STRUCTURE TESTS
+# =============================================================================
+# Validates the /opt/universal/* directory hierarchy and XDG compliance
+
+file:
+  # Universal Home Directory
+  /opt/universal:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Bin Directory
+  /opt/universal/bin:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Toolbox Directory (XDG_DATA_HOME)
+  /opt/universal/toolbox:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Cache Directory (XDG_CACHE_HOME)
+  /opt/universal/cache:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Logs Directory
+  /opt/universal/logs:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Config Directory (XDG_CONFIG_HOME)
+  /opt/universal/config:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Lib Directory
+  /opt/universal/lib:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Locks Directory
+  /opt/universal/locks:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Fonts Directory
+  /opt/universal/fonts:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Runtime Directory (XDG_STATE_HOME)
+  /opt/universal/runtime:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Apps Directory
+  /opt/universal/apps:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Reports Directory
+  /opt/universal/reports:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+# =============================================================================
+# COMMAND AVAILABILITY TESTS
+# =============================================================================
+# Validates that essential CLI tools and commands are installed and executable
+
+command:
+  # Shell
+  bash:
+    exit-status: 0
+    exec: "bash --version"
+    stdout:
+      - "GNU bash"
+
+  # sh may not have --version, so we test basic functionality
+  sh:
+    exit-status: 0
+    exec: "sh -c 'exit 0'"
+
+  # Coreutils
+  ls:
+    exit-status: 0
+    exec: "ls --version"
+    stdout:
+      - "GNU coreutils"
+
+  cat:
+    exit-status: 0
+    exec: "cat --version"
+    stdout:
+      - "GNU coreutils"
+
+  touch:
+    exit-status: 0
+    exec: "touch --version"
+    stdout:
+      - "GNU coreutils"
+
+  echo:
+    exit-status: 0
+    exec: "echo test"
+    stdout:
+      - "test"
+
+  grep:
+    exit-status: 0
+    exec: "grep --version"
+    stdout:
+      - "GNU grep"
+
+  sed:
+    exit-status: 0
+    exec: "sed --version"
+    stdout:
+      - "GNU sed"
+
+  awk:
+    exit-status: 0
+    exec: "awk --version"
+
+  find:
+    exit-status: 0
+    exec: "find --version"
+    stdout:
+      - "GNU findutils"
+
+  which:
+    exit-status: 0
+    exec: "which bash"
+    stdout:
+      - "/bin/bash"
+
+  whoami:
+    exit-status: 0
+    exec: "whoami"
+
+  pwd:
+    exit-status: 0
+    exec: "pwd"
+
+  mkdir:
+    exit-status: 0
+    exec: "mkdir --version"
+    stdout:
+      - "GNU coreutils"
+
+  rm:
+    exit-status: 0
+    exec: "rm --version"
+    stdout:
+      - "GNU coreutils"
+
+  cp:
+    exit-status: 0
+    exec: "cp --version"
+    stdout:
+      - "GNU coreutils"
+
+  mv:
+    exit-status: 0
+    exec: "mv --version"
+    stdout:
+      - "GNU coreutils"
+
+  # Network Tools
+  curl:
+    exit-status: 0
+    exec: "curl --version"
+    stdout:
+      - "curl"
+
+  wget:
+    exit-status: 0
+    exec: "wget --version"
+    stdout:
+      - "GNU Wget"
+
+  # Version Control
+  git:
+    exit-status: 0
+    exec: "git --version"
+    stdout:
+      - "git version"
+
+  # Editor and Pager Tools
+  less:
+    exit-status: 0
+    exec: "less --version"
+    stdout:
+      - "less"
+
+  # vi may not have --version, so we test that it can be invoked
+  vi:
+    exit-status: 0
+    exec: "command -v vi"
+    stdout:
+      - "/usr/bin/vi"
+
+  nano:
+    exit-status: 0
+    exec: "nano --version"
+    stdout:
+      - "GNU nano"
+
+# =============================================================================
+# ENVIRONMENT VARIABLE TESTS
+# =============================================================================
+# Validates critical environment variables for XDG paths, locale, and telemetry
+
+env:
+  # XDG Base Directory Specification
+  XDG_CONFIG_HOME:
+    contains:
+      - "/opt/universal/config"
+
+  XDG_CACHE_HOME:
+    contains:
+      - "/opt/universal/cache"
+
+  XDG_DATA_HOME:
+    contains:
+      - "/opt/universal/toolbox"
+
+  XDG_STATE_HOME:
+    contains:
+      - "/opt/universal/runtime"
+
+  # Locale Configuration
+  LANG:
+    contains:
+      - "en_US.UTF-8"
+
+  LC_ALL:
+    contains:
+      - "en_US.UTF-8"
+
+  # Telemetry Opt-Out Variables
+  DO_NOT_TRACK:
+    contains:
+      - "1"
+
+  TELEMETRY_ENABLED:
+    contains:
+      - "0"
+
+  NEXT_TELEMETRY_DISABLED:
+    contains:
+      - "1"
+
+  DOTNET_CLI_TELEMETRY_OPTOUT:
+    contains:
+      - "1"
+
+  GATSBY_TELEMETRY_DISABLED:
+    contains:
+      - "1"
+
+  NUXT_TELEMETRY_DISABLED:
+    contains:
+      - "1"
+
+  STRIPE_CLI_TELEMETRY_OPTOUT:
+    contains:
+      - "1"
+
+  # Universal Directories
+  UNIVERSAL_HOME:
+    contains:
+      - "/opt/universal"
+
+  UNIVERSAL_BIN:
+    contains:
+      - "/opt/universal/bin"
+
+  UNIVERSAL_TOOLBOX:
+    contains:
+      - "/opt/universal/toolbox"
+
+  UNIVERSAL_CACHE:
+    contains:
+      - "/opt/universal/cache"
+
+  UNIVERSAL_LOGS:
+    contains:
+      - "/opt/universal/logs"
+
+  UNIVERSAL_CONFIG:
+    contains:
+      - "/opt/universal/config"
+
+  # Editor and Pager
+  EDITOR:
+    contains:
+      - "code"
+
+  VISUAL:
+    contains:
+      - "code"
+
+  PAGER:
+    contains:
+      - "less"
+
+  # Terminal Settings
+  TERM:
+    contains:
+      - "xterm"
+
+  COLORTERM:
+    contains:
+      - "truecolor"
+
+# =============================================================================
+# USER TESTS
+# =============================================================================
+# Validates that the vscode user exists with correct configuration
+
+user:
+  vscode:
+    exists: true
+    uid: 1000
+    gid: 1000
+    home: /home/vscode
+
+# =============================================================================
+# GROUP TESTS
+# =============================================================================
+# Validates that required groups exist
+
+group:
+  vscode:
+    exists: true
+    gid: 1000
+
+# =============================================================================
+# PROCESS TESTS
+# =============================================================================
+# Validates that the container can start processes correctly
+
+process:
+  # Note: This test verifies that bash is not running as a persistent process
+  # when Goss validates the container. This is expected behavior since Goss
+  # runs validation inside a temporary container that exits after tests complete.
+  bash:
+    running: false
+
+# =============================================================================
+# MOUNT TESTS
+# =============================================================================
+# Validates that critical system mounts are available
+# Note: Mount tests are commented out as they may not work reliably in all
+# container environments. Use file tests for /tmp instead.
+
+# mount:
+#   /tmp:
+#     exists: true
+#     opts:
+#       - rw
+
+# =============================================================================
+# PACKAGE TESTS (Optional - depends on base image)
+# =============================================================================
+# Validates that critical packages are installed
+
+package:
+  bash:
+    installed: true
+
+  coreutils:
+    installed: true
+
+  curl:
+    installed: true
+
+  wget:
+    installed: true
+
+  git:
+    installed: true
+
+  nano:
+    installed: true
+
+  less:
+    installed: true

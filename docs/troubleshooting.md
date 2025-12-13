@@ -305,7 +305,7 @@ ERROR: No files were modified
    # Ensure first version header starts at beginning of line
    # Example correct format:
    ## {new_version} ({now:%Y-%m-%d})
-   [Compare the full difference.](https://github.com/egohygiene/ubi/compare/{previous_version}...{new_version})
+   [Compare the full difference.](https://github.com/egohygiene/ubi/compare/{current_version}...{new_version})
    ```
 
 4. **Test CHANGELOG update:**

@@ -1,0 +1,655 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "⚡ Performance Benchmarking"
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_results:
+        description: 'Commit benchmark results to repository (default: false)'
+        required: false
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "*"  # Run on any tagged release
+
+permissions:
+  contents: write    # Required for committing results (if enabled)
+  packages: read     # Required for pulling published images
+
+jobs:
+  benchmark:
+    name: "⚡ Benchmark UBI - ${{ matrix.variant.name }} (${{ matrix.arch }})"
+    runs-on: ${{ matrix.runs_on }}
+
+    strategy:
+      matrix:
+        variant:
+          - name: "base"
+            dockerfile: ".devcontainer/Dockerfile"
+            suffix: ""
+          - name: "minimal"
+            dockerfile: "variants/minimal/Dockerfile"
+            suffix: "-minimal"
+          - name: "python"
+            dockerfile: "variants/python/Dockerfile"
+            suffix: "-python"
+          - name: "node"
+            dockerfile: "variants/node/Dockerfile"
+            suffix: "-node"
+          - name: "full"
+            dockerfile: "variants/full/Dockerfile"
+            suffix: "-full"
+        arch:
+          - "amd64"
+        runs_on:
+          - "ubuntu-latest"
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # -------------------------------------------------------------
+      # 2. Read VERSION file
+      # -------------------------------------------------------------
+      - name: Read VERSION
+        id: version
+        run: |
+          if [ ! -f VERSION ]; then
+            echo "❌ ERROR: VERSION file is missing."
+            exit 1
+          fi
+
+          VERSION_CONTENT=$(tr -d '[:space:]' < VERSION)
+
+          if [ -z "$VERSION_CONTENT" ]; then
+            echo "❌ ERROR: VERSION file is empty."
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION_CONTENT" >> "$GITHUB_ENV"
+          echo "version=$VERSION_CONTENT" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 3. Set up Docker Buildx
+      # -------------------------------------------------------------
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -------------------------------------------------------------
+      # 4. Build the UBI Image (load for testing)
+      # -------------------------------------------------------------
+      - name: 🛠️ Build UBI Image (${{ matrix.variant.name }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.variant.dockerfile }}
+          load: true
+          platforms: linux/${{ matrix.arch }}
+          tags: ubi:benchmark-${{ matrix.variant.name }}-${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # -------------------------------------------------------------
+      # 5. Collect Image Size Metrics
+      # -------------------------------------------------------------
+      - name: 📊 Collect Image Size Metrics
+        id: image_metrics
+        run: |
+          IMAGE_TAG="ubi:benchmark-${{ matrix.variant.name }}-${{ steps.version.outputs.version }}"
+          
+          echo "Collecting image metrics for $IMAGE_TAG..."
+          
+          # Get image size information
+          IMAGE_SIZE_BYTES=$(docker image inspect "$IMAGE_TAG" --format='{{.Size}}')
+          IMAGE_SIZE_MB=$(echo "scale=2; $IMAGE_SIZE_BYTES / 1024 / 1024" | bc)
+          
+          # Get virtual size (uncompressed)
+          VIRTUAL_SIZE_BYTES=$(docker image inspect "$IMAGE_TAG" --format='{{.VirtualSize}}')
+          VIRTUAL_SIZE_MB=$(echo "scale=2; $VIRTUAL_SIZE_BYTES / 1024 / 1024" | bc)
+          
+          # Get layer count
+          LAYER_COUNT=$(docker image inspect "$IMAGE_TAG" --format='{{len .RootFS.Layers}}')
+          
+          # Save to outputs
+          {
+            echo "size_bytes=$IMAGE_SIZE_BYTES"
+            echo "size_mb=$IMAGE_SIZE_MB"
+            echo "virtual_size_bytes=$VIRTUAL_SIZE_BYTES"
+            echo "virtual_size_mb=$VIRTUAL_SIZE_MB"
+            echo "layer_count=$LAYER_COUNT"
+          } >> "$GITHUB_OUTPUT"
+          
+          echo "✅ Image size: $IMAGE_SIZE_MB MB (compressed), $VIRTUAL_SIZE_MB MB (uncompressed)"
+
+      # -------------------------------------------------------------
+      # 6. Benchmark: Cold Start Time
+      # -------------------------------------------------------------
+      - name: ⚡ Benchmark Cold Start Time
+        id: cold_start
+        run: |
+          IMAGE_TAG="ubi:benchmark-${{ matrix.variant.name }}-${{ steps.version.outputs.version }}"
+          
+          echo "Benchmarking cold start time..."
+          
+          # Clear Docker cache to ensure true cold start
+          docker system prune -af > /dev/null 2>&1 || true
+          
+          # Rebuild image (will be faster due to GitHub Actions cache)
+          docker build -f ${{ matrix.variant.dockerfile }} -t "$IMAGE_TAG" . > /dev/null 2>&1
+          
+          # Measure cold start time (3 iterations for stability)
+          TOTAL_TIME=0
+          ITERATIONS=3
+          
+          for i in $(seq 1 $ITERATIONS); do
+            echo "Cold start iteration $i/$ITERATIONS..."
+            
+            # Remove any existing containers
+            docker rm -f test-container > /dev/null 2>&1 || true
+            
+            # Measure startup time
+            START_TIME=$(date +%s.%N)
+            docker run --name test-container --rm "$IMAGE_TAG" echo "Ready" > /dev/null 2>&1
+            END_TIME=$(date +%s.%N)
+            
+            ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)
+            echo "  Iteration $i: ${ELAPSED}s"
+            
+            TOTAL_TIME=$(echo "$TOTAL_TIME + $ELAPSED" | bc)
+            
+            # Small delay between iterations
+            sleep 1
+          done
+          
+          # Calculate average
+          COLD_START_AVG=$(echo "scale=3; $TOTAL_TIME / $ITERATIONS" | bc)
+          
+          echo "cold_start_seconds=$COLD_START_AVG" >> "$GITHUB_OUTPUT"
+          echo "✅ Average cold start time: ${COLD_START_AVG}s"
+
+      # -------------------------------------------------------------
+      # 7. Benchmark: Warm Start Time
+      # -------------------------------------------------------------
+      - name: ⚡ Benchmark Warm Start Time
+        id: warm_start
+        run: |
+          IMAGE_TAG="ubi:benchmark-${{ matrix.variant.name }}-${{ steps.version.outputs.version }}"
+          
+          echo "Benchmarking warm start time..."
+          
+          # Ensure image is cached (run once to warm up)
+          docker run --rm "$IMAGE_TAG" echo "Warmup" > /dev/null 2>&1
+          
+          # Measure warm start time (5 iterations for better average)
+          TOTAL_TIME=0
+          ITERATIONS=5
+          
+          for i in $(seq 1 $ITERATIONS); do
+            echo "Warm start iteration $i/$ITERATIONS..."
+            
+            START_TIME=$(date +%s.%N)
+            docker run --rm "$IMAGE_TAG" echo "Ready" > /dev/null 2>&1
+            END_TIME=$(date +%s.%N)
+            
+            ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)
+            echo "  Iteration $i: ${ELAPSED}s"
+            
+            TOTAL_TIME=$(echo "$TOTAL_TIME + $ELAPSED" | bc)
+            
+            # Small delay between iterations
+            sleep 0.5
+          done
+          
+          # Calculate average
+          WARM_START_AVG=$(echo "scale=3; $TOTAL_TIME / $ITERATIONS" | bc)
+          
+          echo "warm_start_seconds=$WARM_START_AVG" >> "$GITHUB_OUTPUT"
+          echo "✅ Average warm start time: ${WARM_START_AVG}s"
+
+      # -------------------------------------------------------------
+      # 8. Benchmark: Time to First Command
+      # -------------------------------------------------------------
+      - name: ⚡ Benchmark Time to First Command
+        id: first_command
+        run: |
+          IMAGE_TAG="ubi:benchmark-${{ matrix.variant.name }}-${{ steps.version.outputs.version }}"
+          
+          echo "Benchmarking time to first command..."
+          
+          # Measure time from container start to executing a simple command
+          TOTAL_TIME=0
+          ITERATIONS=5
+          
+          for i in $(seq 1 $ITERATIONS); do
+            echo "First command iteration $i/$ITERATIONS..."
+            
+            START_TIME=$(date +%s.%N)
+            docker run --rm "$IMAGE_TAG" /bin/bash -c 'echo "Ready" && ls / > /dev/null' > /dev/null 2>&1
+            END_TIME=$(date +%s.%N)
+            
+            ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)
+            echo "  Iteration $i: ${ELAPSED}s"
+            
+            TOTAL_TIME=$(echo "$TOTAL_TIME + $ELAPSED" | bc)
+            
+            sleep 0.5
+          done
+          
+          # Calculate average
+          FIRST_CMD_AVG=$(echo "scale=3; $TOTAL_TIME / $ITERATIONS" | bc)
+          
+          echo "first_command_seconds=$FIRST_CMD_AVG" >> "$GITHUB_OUTPUT"
+          echo "✅ Average time to first command: ${FIRST_CMD_AVG}s"
+
+      # -------------------------------------------------------------
+      # 9. Benchmark: Resource Usage
+      # -------------------------------------------------------------
+      - name: ⚡ Benchmark Resource Usage
+        id: resource_usage
+        run: |
+          IMAGE_TAG="ubi:benchmark-${{ matrix.variant.name }}-${{ steps.version.outputs.version }}"
+          
+          echo "Benchmarking resource usage..."
+          
+          # Start container in background with a sleep command
+          CONTAINER_ID=$(docker run -d "$IMAGE_TAG" sleep 30)
+          
+          echo "Container started: $CONTAINER_ID"
+          
+          # Wait a moment for container to fully initialize
+          sleep 2
+          
+          # Collect resource statistics
+          STATS_OUTPUT=$(docker stats --no-stream --format "{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}}" "$CONTAINER_ID")
+          
+          # Parse the output
+          CPU_PERCENT=$(echo "$STATS_OUTPUT" | cut -d',' -f1 | sed 's/%//')
+          
+          # Parse memory usage (format: "12.34MiB / 16GiB")
+          MEM_FULL=$(echo "$STATS_OUTPUT" | cut -d',' -f2)
+          MEM_USAGE_STR=$(echo "$MEM_FULL" | awk '{print $1}')
+          MEM_LIMIT_STR=$(echo "$MEM_FULL" | awk '{print $3}')
+          
+          # Function to convert any memory unit to MB
+          convert_to_mb() {
+            local value_with_unit="$1"
+            local value=$(echo "$value_with_unit" | sed 's/[^0-9.]//g')
+            local unit=$(echo "$value_with_unit" | sed 's/[0-9.]//g')
+            
+            case "$unit" in
+              B|b)
+                echo "scale=2; $value / 1024 / 1024" | bc
+                ;;
+              KiB|KB|K|k)
+                echo "scale=2; $value / 1024" | bc
+                ;;
+              MiB|MB|M|m)
+                echo "$value"
+                ;;
+              GiB|GB|G|g)
+                echo "scale=2; $value * 1024" | bc
+                ;;
+              *)
+                echo "0"
+                ;;
+            esac
+          }
+          
+          MEM_MB=$(convert_to_mb "$MEM_USAGE_STR")
+          MEM_LIMIT_MB=$(convert_to_mb "$MEM_LIMIT_STR")
+          
+          # Clean up container
+          docker stop "$CONTAINER_ID" > /dev/null 2>&1 || true
+          docker rm "$CONTAINER_ID" > /dev/null 2>&1 || true
+          
+          # Save to outputs (use default values if parsing failed)
+          CPU_PERCENT_CLEAN=$(echo "$CPU_PERCENT" | sed 's/[^0-9.]//g')
+          if [ -z "$CPU_PERCENT_CLEAN" ]; then
+            CPU_PERCENT_CLEAN="0.0"
+          fi
+          
+          MEM_MB_CLEAN=$(echo "$MEM_MB" | sed 's/[^0-9.]//g')
+          if [ -z "$MEM_MB_CLEAN" ]; then
+            MEM_MB_CLEAN="0.0"
+          fi
+          
+          MEM_LIMIT_MB_CLEAN=$(echo "$MEM_LIMIT_MB" | sed 's/[^0-9.]//g')
+          if [ -z "$MEM_LIMIT_MB_CLEAN" ]; then
+            MEM_LIMIT_MB_CLEAN="0.0"
+          fi
+          
+          {
+            echo "cpu_percent=$CPU_PERCENT_CLEAN"
+            echo "memory_mb=$MEM_MB_CLEAN"
+            echo "memory_limit_mb=$MEM_LIMIT_MB_CLEAN"
+          } >> "$GITHUB_OUTPUT"
+          
+          echo "✅ CPU: ${CPU_PERCENT_CLEAN}%, Memory: ${MEM_MB_CLEAN}MB / ${MEM_LIMIT_MB_CLEAN}MB"
+
+      # -------------------------------------------------------------
+      # 10. Generate Benchmark Result (JSON)
+      # -------------------------------------------------------------
+      - name: 📝 Generate Benchmark Result (JSON)
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA="${{ github.sha }}"
+          
+          # Create benchmark result JSON
+          cat > benchmark-result-${{ matrix.variant.name }}-${{ matrix.arch }}.json <<EOF
+          {
+            "version": "${{ steps.version.outputs.version }}",
+            "variant": "${{ matrix.variant.name }}",
+            "timestamp": "$TIMESTAMP",
+            "commit": "$COMMIT_SHA",
+            "architecture": "${{ matrix.arch }}",
+            "ref": "${{ github.ref }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "workflow_run_number": "${{ github.run_number }}",
+            "startup_times": {
+              "cold_start_seconds": ${{ steps.cold_start.outputs.cold_start_seconds }},
+              "warm_start_seconds": ${{ steps.warm_start.outputs.warm_start_seconds }},
+              "first_command_seconds": ${{ steps.first_command.outputs.first_command_seconds }}
+            },
+            "resource_usage": {
+              "cpu_percent": ${{ steps.resource_usage.outputs.cpu_percent }},
+              "memory_mb": ${{ steps.resource_usage.outputs.memory_mb }},
+              "memory_limit_mb": ${{ steps.resource_usage.outputs.memory_limit_mb }}
+            },
+            "image_metrics": {
+              "size_bytes": ${{ steps.image_metrics.outputs.size_bytes }},
+              "size_mb": "${{ steps.image_metrics.outputs.size_mb }}",
+              "virtual_size_bytes": ${{ steps.image_metrics.outputs.virtual_size_bytes }},
+              "virtual_size_mb": "${{ steps.image_metrics.outputs.virtual_size_mb }}",
+              "layer_count": ${{ steps.image_metrics.outputs.layer_count }}
+            }
+          }
+          EOF
+          
+          echo "Benchmark result generated:"
+          cat benchmark-result-${{ matrix.variant.name }}-${{ matrix.arch }}.json | jq '.'
+
+      # -------------------------------------------------------------
+      # 11. Generate Benchmark Report (Markdown)
+      # -------------------------------------------------------------
+      - name: 📝 Generate Benchmark Report (Markdown)
+        run: |
+          cat > benchmark-report-${{ matrix.variant.name }}-${{ matrix.arch }}.md <<EOF
+          # ⚡ UBI Performance Benchmark Report
+          
+          **Variant:** ${{ matrix.variant.name }}  
+          **Architecture:** ${{ matrix.arch }}  
+          **Version:** ${{ steps.version.outputs.version }}  
+          **Commit:** ${{ github.sha }}  
+          **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")  
+          **Workflow Run:** [${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ## ⚡ Startup Performance
+          
+          | Metric | Value | Unit |
+          |--------|-------|------|
+          | Cold Start Time | ${{ steps.cold_start.outputs.cold_start_seconds }} | seconds |
+          | Warm Start Time | ${{ steps.warm_start.outputs.warm_start_seconds }} | seconds |
+          | Time to First Command | ${{ steps.first_command.outputs.first_command_seconds }} | seconds |
+          
+          ## 💻 Resource Usage
+          
+          | Metric | Value | Unit |
+          |--------|-------|------|
+          | CPU Usage | ${{ steps.resource_usage.outputs.cpu_percent }} | % |
+          | Memory Usage | ${{ steps.resource_usage.outputs.memory_mb }} | MB |
+          | Memory Limit | ${{ steps.resource_usage.outputs.memory_limit_mb }} | MB |
+          
+          ## 📦 Image Size
+          
+          | Metric | Value | Unit |
+          |--------|-------|------|
+          | Compressed Size | ${{ steps.image_metrics.outputs.size_mb }} | MB |
+          | Uncompressed Size | ${{ steps.image_metrics.outputs.virtual_size_mb }} | MB |
+          | Layer Count | ${{ steps.image_metrics.outputs.layer_count }} | layers |
+          
+          ## 🎯 Performance Analysis
+          
+          ### Startup Performance
+          - **Cold Start**: ${{ steps.cold_start.outputs.cold_start_seconds }}s (target: < 3s)
+          - **Warm Start**: ${{ steps.warm_start.outputs.warm_start_seconds }}s (target: < 1s)
+          
+          ### Resource Efficiency
+          - **Memory at Idle**: ${{ steps.resource_usage.outputs.memory_mb }}MB (target: < 100 MB)
+          - **CPU Usage**: ${{ steps.resource_usage.outputs.cpu_percent }}% (lower is better)
+          
+          ### Image Size
+          - **Compressed**: ${{ steps.image_metrics.outputs.size_mb }}MB (target: < 500 MB)
+          
+          ## 🔗 Resources
+          
+          - [Full JSON Report](benchmark-result-${{ matrix.variant.name }}-${{ matrix.arch }}.json)
+          - [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [Benchmarking Documentation](../../benchmarks/README.md)
+          
+          ---
+          
+          Generated by [UBI Benchmark Workflow](../.github/workflows/benchmark.yml)
+          EOF
+          
+          echo "Markdown report generated:"
+          cat benchmark-report-${{ matrix.variant.name }}-${{ matrix.arch }}.md
+
+      # -------------------------------------------------------------
+      # 12. Append to Historical Benchmarks (JSONL)
+      # -------------------------------------------------------------
+      - name: 📊 Append to Historical Benchmarks
+        run: |
+          mkdir -p benchmarks
+          
+          # Create compact JSON line and append
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          {
+            echo -n '{"version":"${{ steps.version.outputs.version }}",'
+            echo -n '"variant":"${{ matrix.variant.name }}",'
+            echo -n '"timestamp":"'"$TIMESTAMP"'",'
+            echo -n '"commit":"${{ github.sha }}",'
+            echo -n '"architecture":"${{ matrix.arch }}",'
+            echo -n '"cold_start_seconds":${{ steps.cold_start.outputs.cold_start_seconds }},'
+            echo -n '"warm_start_seconds":${{ steps.warm_start.outputs.warm_start_seconds }},'
+            echo -n '"first_command_seconds":${{ steps.first_command.outputs.first_command_seconds }},'
+            echo -n '"cpu_percent":${{ steps.resource_usage.outputs.cpu_percent }},'
+            echo -n '"memory_mb":${{ steps.resource_usage.outputs.memory_mb }},'
+            echo -n '"size_mb":"${{ steps.image_metrics.outputs.size_mb }}",'
+            echo -n '"virtual_size_mb":"${{ steps.image_metrics.outputs.virtual_size_mb }}",'
+            echo '"layer_count":${{ steps.image_metrics.outputs.layer_count }}}'
+          } >> benchmarks/benchmark-results.jsonl
+          
+          echo "Historical benchmarks updated"
+
+      # -------------------------------------------------------------
+      # 13. Generate Workflow Summary
+      # -------------------------------------------------------------
+      - name: 📋 Generate Workflow Summary
+        if: always()
+        run: |
+          {
+            echo "## ⚡ Performance Benchmark Summary"
+            echo ""
+            echo "**Variant:** ${{ matrix.variant.name }}"
+            echo "**Architecture:** ${{ matrix.arch }}"
+            echo "**Version:** \`${{ steps.version.outputs.version }}\`"
+            echo "**Commit:** \`${{ github.sha }}\`"
+            echo ""
+            echo "### ⚡ Startup Performance"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Cold Start | ${{ steps.cold_start.outputs.cold_start_seconds }}s |"
+            echo "| Warm Start | ${{ steps.warm_start.outputs.warm_start_seconds }}s |"
+            echo "| First Command | ${{ steps.first_command.outputs.first_command_seconds }}s |"
+            echo ""
+            echo "### 💻 Resource Usage"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| CPU | ${{ steps.resource_usage.outputs.cpu_percent }}% |"
+            echo "| Memory | ${{ steps.resource_usage.outputs.memory_mb }} MB |"
+            echo ""
+            echo "### 📦 Image Size"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Compressed | ${{ steps.image_metrics.outputs.size_mb }} MB |"
+            echo "| Uncompressed | ${{ steps.image_metrics.outputs.virtual_size_mb }} MB |"
+            echo "| Layers | ${{ steps.image_metrics.outputs.layer_count }} |"
+            echo ""
+            echo "---"
+            echo ""
+            echo "💡 **Tip:** Download the artifacts for detailed analysis and historical comparison."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # -------------------------------------------------------------
+      # 14. Upload Benchmark Artifacts
+      # -------------------------------------------------------------
+      - name: 📤 Upload Benchmark Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-results-${{ matrix.variant.name }}-${{ matrix.arch }}-${{ steps.version.outputs.version }}
+          path: |
+            benchmark-result-${{ matrix.variant.name }}-${{ matrix.arch }}.json
+            benchmark-report-${{ matrix.variant.name }}-${{ matrix.arch }}.md
+            benchmarks/benchmark-results.jsonl
+          retention-days: 90
+
+  # -------------------------------------------------------------
+  # Aggregate results from all variants
+  # -------------------------------------------------------------
+  aggregate:
+    name: "📊 Aggregate Benchmark Results"
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Read VERSION
+        id: version
+        run: |
+          VERSION_CONTENT=$(tr -d '[:space:]' < VERSION)
+          echo "version=$VERSION_CONTENT" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts
+
+      - name: 📊 Aggregate Results
+        run: |
+          mkdir -p benchmarks
+          
+          echo "Aggregating benchmark results..."
+          
+          # Create aggregated report
+          cat > benchmarks/benchmark-${{ steps.version.outputs.version }}.json <<EOF
+          {
+            "version": "${{ steps.version.outputs.version }}",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "commit": "${{ github.sha }}",
+            "ref": "${{ github.ref }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "variants": {}
+          }
+          EOF
+          
+          # Merge individual results
+          for artifact in artifacts/*/benchmark-result-*.json; do
+            if [ -f "$artifact" ]; then
+              echo "Processing: $artifact"
+              VARIANT=$(jq -r '.variant' "$artifact")
+              ARCH=$(jq -r '.architecture' "$artifact")
+              
+              # Merge into aggregated report using jq
+              jq --slurpfile new <(cat "$artifact") \
+                ".variants[\"$VARIANT\"] = (.variants[\"$VARIANT\"] // {}) | .variants[\"$VARIANT\"][\"$ARCH\"] = \$new[0]" \
+                benchmarks/benchmark-${{ steps.version.outputs.version }}.json > /tmp/merged.json
+              
+              mv /tmp/merged.json benchmarks/benchmark-${{ steps.version.outputs.version }}.json
+            fi
+          done
+          
+          echo "Aggregated report created:"
+          cat benchmarks/benchmark-${{ steps.version.outputs.version }}.json | jq '.'
+
+      - name: 📝 Generate Aggregated Markdown Report
+        run: |
+          cat > benchmarks/benchmark-${{ steps.version.outputs.version }}.md <<EOF
+          # ⚡ UBI Performance Benchmark Report
+          
+          **Version:** ${{ steps.version.outputs.version }}
+          **Commit:** ${{ github.sha }}
+          **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Workflow Run:** [${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ## 📊 Benchmark Results by Variant
+          
+          This report contains performance benchmark results for all UBI variants.
+          
+          EOF
+          
+          # Add results for each variant
+          for artifact in artifacts/*/benchmark-report-*.md; do
+            if [ -f "$artifact" ]; then
+              echo "---" >> benchmarks/benchmark-${{ steps.version.outputs.version }}.md
+              echo "" >> benchmarks/benchmark-${{ steps.version.outputs.version }}.md
+              tail -n +3 "$artifact" >> benchmarks/benchmark-${{ steps.version.outputs.version }}.md
+              echo "" >> benchmarks/benchmark-${{ steps.version.outputs.version }}.md
+            fi
+          done
+
+      - name: 📤 Upload Aggregated Results
+        uses: actions/upload-artifact@v6
+        with:
+          name: benchmark-aggregated-${{ steps.version.outputs.version }}
+          path: |
+            benchmarks/benchmark-${{ steps.version.outputs.version }}.json
+            benchmarks/benchmark-${{ steps.version.outputs.version }}.md
+          retention-days: 90
+
+      - name: 💾 Commit Results to Repository
+        if: |
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+          (github.event_name == 'workflow_dispatch' && inputs.commit_results == true)
+        run: |
+          # Configure git
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Add benchmark results
+          git add benchmarks/
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "⚡ Add benchmark results for version ${{ steps.version.outputs.version }}
+
+            - Added performance benchmark results
+            - Updated historical benchmark data
+            - Version: ${{ steps.version.outputs.version }}
+            - Commit: ${{ github.sha }}"
+            
+            # Push to main branch (or current ref if on a branch)
+            if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+              # On a tag, push to main
+              git push origin HEAD:refs/heads/main
+            else
+              # On a branch, push to the same branch using ref_name
+              git push origin HEAD:refs/heads/${{ github.ref_name }}
+            fi
+            echo "✅ Benchmark results committed to repository"
+          fi

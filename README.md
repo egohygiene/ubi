@@ -528,6 +528,84 @@ See the [metrics documentation](./metrics/README.md) for more details.
 
 ---
 
+## ⚡ Performance Benchmarking
+
+UBI includes automated performance benchmarking to track container startup times, resource usage, and overall performance characteristics across releases. This helps detect performance regressions and validate optimizations.
+
+### What Gets Benchmarked
+
+- **Startup Performance**:
+  - Cold start time (no cached layers)
+  - Warm start time (cached layers)
+  - Time to first command execution
+
+- **Resource Usage**:
+  - CPU utilization during startup
+  - Memory footprint at idle
+  - Resource efficiency metrics
+
+- **Image Characteristics**:
+  - Compressed and uncompressed size
+  - Layer count and distribution
+  - Per-architecture metrics (amd64, arm64)
+
+### Running Benchmarks
+
+Benchmarks can be triggered manually or run automatically on tagged releases:
+
+1. Go to **Actions** → **⚡ Performance Benchmarking**
+2. Click **Run workflow**
+3. Select the branch to benchmark (default: main)
+4. Optionally enable **commit_results** to save results to the repository
+
+### Accessing Results
+
+Benchmark results are available in multiple formats:
+
+1. **Workflow Artifacts**: Download from the [Benchmark Workflow](https://github.com/egohygiene/ubi/actions/workflows/benchmark.yml) runs
+2. **Historical Data**: View the [`benchmarks/benchmark-results.jsonl`](./benchmarks/benchmark-results.jsonl) file for trends
+3. **Detailed Reports**: Check version-specific reports in the `benchmarks/` directory
+
+### Benchmark Reports
+
+Each benchmark run generates:
+
+- **JSON Report** (`benchmark-{version}.json`): Complete results in structured format
+- **Markdown Report** (`benchmark-{version}.md`): Human-readable summary
+- **Historical Log** (`benchmark-results.jsonl`): Append-only history in JSON Lines format
+
+### Analyzing Performance
+
+```bash
+# View latest benchmark
+tail -1 benchmarks/benchmark-results.jsonl | jq '.'
+
+# Compare startup times over releases
+jq -r '[.version, .cold_start_seconds, .warm_start_seconds] | @tsv' \
+  benchmarks/benchmark-results.jsonl
+
+# Find slowest startup
+jq -s 'max_by(.cold_start_seconds)' benchmarks/benchmark-results.jsonl
+
+# Average memory usage
+jq -s 'map(.memory_mb) | add/length' benchmarks/benchmark-results.jsonl
+```
+
+### Performance Targets
+
+These are informal goals for UBI performance:
+
+| Metric | Target | Rationale |
+|--------|--------|-----------|
+| Cold Start | < 3s | Fast developer feedback |
+| Warm Start | < 1s | Instant iteration |
+| Memory at Idle | < 100 MB | Efficient resource usage |
+| Image Size | < 500 MB | Reasonable download time |
+
+See the [benchmarks documentation](./benchmarks/README.md) for more details.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:

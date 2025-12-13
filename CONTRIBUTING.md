@@ -66,9 +66,10 @@ cd ubi
 
 UBI uses VS Code devcontainers to provide a consistent development environment. This approach is **highly recommended** as it ensures all developers work in an identical environment.
 
-#### Steps:
+#### Steps
 
 1. **Open VS Code** in the repository directory:
+
    ```bash
    code .
    ```
@@ -85,6 +86,7 @@ UBI uses VS Code devcontainers to provide a consistent development environment. 
 4. **Verify Setup**:
    - Once inside the container, open a terminal in VS Code
    - Verify the environment:
+
      ```bash
      echo $XDG_CONFIG_HOME  # Should output /opt/universal/config
      ls -la /opt/universal/  # Should show the UBI directory structure
@@ -95,6 +97,7 @@ UBI uses VS Code devcontainers to provide a consistent development environment. 
 The repository includes a list of recommended VS Code extensions in `.vscode/extensions.json`. These will be suggested automatically when you open the project:
 
 **Key Extensions:**
+
 - **Code Spell Checker**: Spell checking for code and docs
 - **EditorConfig**: Enforce consistent coding styles
 - **Prettier**: Code formatting for YAML, JSON, Markdown, etc.
@@ -104,6 +107,7 @@ The repository includes a list of recommended VS Code extensions in `.vscode/ext
 - **YAML**: YAML language support with schema validation
 
 Install all recommended extensions by:
+
 1. Opening the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`)
 2. Typing `@recommended` in the search bar
 3. Installing all suggested extensions
@@ -210,6 +214,7 @@ UBI uses GitHub Actions to automate the release process:
 4. Click **"Run workflow"**
 
 **What happens:**
+
 - The workflow runs `bump-my-version`
 - Commits and tags the new version
 - Pushes the commit and tag to `main`
@@ -228,6 +233,7 @@ git push origin main --follow-tags
 ```
 
 **What happens:**
+
 - The push triggers the **"🚀 Publish UBI Image"** workflow
 - The image is built and published to GHCR with tags:
   - `ghcr.io/egohygiene/ubi:latest`
@@ -242,13 +248,13 @@ git push origin main --follow-tags
 
 UBI includes automated image testing via the **"🧪 Image Testing Workflow"** (`.github/workflows/test-image.yml`).
 
-#### Tests Included:
+#### Tests Included
 
 1. **Universal Directory Structure**: Validates `/opt/universal/*` paths exist
 2. **Environment Variables**: Checks XDG paths and other ENV vars
 3. **Sanity Checks**: Confirms basic container functionality
 
-#### Run Tests Locally:
+#### Run Tests Locally
 
 ```bash
 # Build the image
@@ -272,18 +278,72 @@ docker run --rm ubi:test bash -c '
 '
 ```
 
-#### CI/CD Tests:
+#### CI/CD Tests
 
 Tests run automatically on:
+
 - **Pull Requests** to `main`
 - **Pushes** to `main`
 - **Tagged releases**
 
 ### Linting and Formatting
 
-UBI uses **Ruff** and **Black** for Python code quality, and various linters for other file types.
+UBI uses **Ruff** and **Black** for Python code quality, and various linters for other file types. We also use **pre-commit hooks** to automatically check your code before committing.
 
-#### Python Linting with Ruff:
+#### Pre-Commit Hooks (Recommended)
+
+Pre-commit hooks automatically run linting and formatting checks before you commit changes, catching issues early and ensuring consistent code quality.
+
+**Installation:**
+
+```bash
+# Install pre-commit (if not already installed)
+pip install pre-commit
+
+# Install the git hooks
+pre-commit install
+```
+
+**Usage:**
+
+Once installed, pre-commit will automatically run on every `git commit`. You can also run it manually:
+
+```bash
+# Run on all files
+pre-commit run --all-files
+
+# Run on staged files only
+pre-commit run
+
+# Run a specific hook
+pre-commit run <hook-id>
+
+# Update hooks to latest versions
+pre-commit autoupdate
+```
+
+**What hooks are included:**
+
+- **Core formatting**: trailing whitespace, end-of-file fixes, line ending normalization
+- **File checks**: large files, merge conflicts, YAML/JSON/TOML syntax
+- **YAML linting**: yamllint with custom rules
+- **Markdown linting**: markdownlint for documentation
+- **Dockerfile linting**: hadolint for container best practices
+- **Shell script linting**: shellcheck (when shell scripts are present)
+- **Python**: Black formatting and Ruff linting
+- **Secrets detection**: detect-secrets to prevent committing sensitive data
+
+**Bypassing hooks (not recommended):**
+
+If you absolutely need to bypass hooks (e.g., for a work-in-progress commit):
+
+```bash
+git commit --no-verify
+```
+
+**Note:** CI may still enforce these checks, so it's better to fix issues locally.
+
+#### Python Linting with Ruff
 
 ```bash
 # Lint all Python files
@@ -296,7 +356,7 @@ ruff check . --fix
 ruff check path/to/file.py
 ```
 
-#### Python Formatting with Black:
+#### Python Formatting with Black
 
 ```bash
 # Format all Python files
@@ -309,15 +369,16 @@ black . --check
 black path/to/file.py
 ```
 
-#### Configuration:
+#### Configuration
 
 Both Ruff and Black are configured in `pyproject.toml`:
+
 - **Line length**: 88 characters
 - **Target Python**: 3.12+
 - **Ruff**: Enforces comprehensive linting rules (PEP8, security, best practices)
 - **Black**: Google-style docstrings via Ruff
 
-#### Other Linters:
+#### Other Linters
 
 - **ShellCheck**: For shell scripts (runs automatically in VS Code if extension is installed)
 - **Prettier**: For YAML, JSON, Markdown (configured in `.vscode/settings.json`)
@@ -327,7 +388,7 @@ Both Ruff and Black are configured in `pyproject.toml`:
 
 The `CHANGELOG.md` is automatically updated by **bump-my-version** when you bump the version.
 
-#### Workflow:
+#### Workflow
 
 1. **Make your changes** and commit them to a feature branch
 2. **Open a Pull Request**
@@ -338,7 +399,7 @@ The `CHANGELOG.md` is automatically updated by **bump-my-version** when you bump
    - Include the date and a comparison link
    - Commit the changes
 
-#### Manual CHANGELOG Edits:
+#### Manual CHANGELOG Edits
 
 If you need to manually edit the CHANGELOG (e.g., adding more detailed release notes):
 
@@ -353,6 +414,7 @@ If you need to manually edit the CHANGELOG (e.g., adding more detailed release n
 3. Commit your CHANGELOG edits separately
 
 **Example CHANGELOG entry:**
+
 ```markdown
 ## 0.2.0 (2025-12-15)
 [Compare the full difference.](https://github.com/egohygiene/ubi/compare/0.1.5...0.2.0)
@@ -373,7 +435,7 @@ If you need to manually edit the CHANGELOG (e.g., adding more detailed release n
 
 UBI follows **Conventional Commits** for clear and consistent commit history.
 
-#### Format:
+#### Format
 
 ```
 <type>(<scope>): <short summary>
@@ -383,7 +445,7 @@ UBI follows **Conventional Commits** for clear and consistent commit history.
 <optional footer>
 ```
 
-#### Types:
+#### Types
 
 - `feat`: New feature
 - `fix`: Bug fix
@@ -394,7 +456,7 @@ UBI follows **Conventional Commits** for clear and consistent commit history.
 - `chore`: Maintenance tasks (dependencies, tooling, etc.)
 - `ci`: CI/CD changes
 
-#### Examples:
+#### Examples
 
 ```bash
 # New feature
@@ -495,7 +557,7 @@ UBI uses a simple **trunk-based development** workflow:
   - Example: `feature/add-node-env`, `fix/xdg-permissions`
 - **No long-lived branches**: Feature branches are short-lived and merged quickly
 
-#### Workflow:
+#### Workflow
 
 ```bash
 # Create a feature branch from main
@@ -521,18 +583,21 @@ git push origin feature/my-new-feature
 
 UBI enforces Python code quality using **Black** and **Ruff**.
 
-#### Black (Formatter):
+#### Black (Formatter)
+
 - **Line length**: 88 characters
 - **Style**: Opinionated, minimal configuration
 - **Run**: `black .`
 
-#### Ruff (Linter):
+#### Ruff (Linter)
+
 - **Comprehensive rules**: PEP8, security, best practices, import sorting
 - **Docstring style**: Google-style
 - **Configuration**: Defined in `pyproject.toml`
 - **Run**: `ruff check .` (or `ruff check . --fix` for auto-fixes)
 
-#### Key Guidelines:
+#### Key Guidelines
+
 - Use type hints for function signatures
 - Write docstrings for all public functions, classes, and modules
 - Follow PEP8 naming conventions:
@@ -578,6 +643,7 @@ UBI enforces Python code quality using **Black** and **Ruff**.
     - `Raises:` section for exceptions
 
 **Example Python docstring:**
+
 ```python
 def calculate_xdg_path(base: str, subdir: str) -> str:
     """Calculate the full XDG directory path.
@@ -603,26 +669,30 @@ def calculate_xdg_path(base: str, subdir: str) -> str:
 
 ### Docker Build Commands
 
-#### Basic Build:
+#### Basic Build
+
 ```bash
 # Build the UBI image
 docker build -f .devcontainer/Dockerfile -t ubi:local .
 ```
 
-#### Build with No Cache (clean build):
+#### Build with No Cache (clean build)
+
 ```bash
 # Rebuild from scratch (useful after base image updates)
 docker build -f .devcontainer/Dockerfile -t ubi:local . --no-cache
 ```
 
-#### Build and Run Interactively:
+#### Build and Run Interactively
+
 ```bash
 # Build and run in one command
 docker build -f .devcontainer/Dockerfile -t ubi:local . && \
 docker run -it --rm ubi:local bash
 ```
 
-#### Test the Published Image:
+#### Test the Published Image
+
 ```bash
 # Pull and test the latest published image
 docker pull ghcr.io/egohygiene/ubi:latest
@@ -633,7 +703,8 @@ docker pull ghcr.io/egohygiene/ubi:0.1.5
 docker run -it --rm ghcr.io/egohygiene/ubi:0.1.5 bash
 ```
 
-#### Build with Custom Arguments:
+#### Build with Custom Arguments
+
 ```bash
 # Build with custom locale (example)
 docker build -f .devcontainer/Dockerfile -t ubi:custom \
@@ -656,7 +727,7 @@ bump-my-version bump minor --dry-run --verbose
 bump-my-version bump major --dry-run --verbose
 ```
 
-#### What to Look For:
+#### What to Look For
 
 1. **VERSION file**: Check the new version number
 2. **CHANGELOG.md**: Verify the new section is added correctly at the top
@@ -673,12 +744,15 @@ bump-my-version bump patch
 #### Issue: "Failed to build devcontainer"
 
 **Solution:**
+
 1. **Check Docker is running**:
+
    ```bash
    docker ps
    ```
 
 2. **Clean up Docker resources**:
+
    ```bash
    docker system prune -a
    ```
@@ -695,6 +769,7 @@ bump-my-version bump patch
 #### Issue: "Extensions not installing in devcontainer"
 
 **Solution:**
+
 1. **Check `.devcontainer/devcontainer.json`** (if it exists) for extension configuration
 2. **Manually install extensions** after container is running
 3. **Rebuild the container** and wait for extensions to install
@@ -702,7 +777,9 @@ bump-my-version bump patch
 #### Issue: "Environment variables not set correctly"
 
 **Solution:**
+
 1. **Verify inside the container**:
+
    ```bash
    env | grep XDG
    ```
@@ -713,6 +790,7 @@ bump-my-version bump patch
 #### Issue: "Slow container startup"
 
 **Solution:**
+
 1. **Subsequent startups are much faster** (first build takes longer)
 2. **Use Docker layer caching** (automatically enabled)
 3. **Consider increasing Docker resources** (RAM/CPU):
@@ -721,13 +799,16 @@ bump-my-version bump patch
 #### Issue: "Permission issues with mounted volumes"
 
 **Solution:**
+
 1. **Check user inside container**:
+
    ```bash
    whoami
    id
    ```
 
 2. **Verify file ownership**:
+
    ```bash
    ls -la /workspace
    ```
@@ -751,7 +832,7 @@ For detailed information on our security policy, response timelines, and respons
 
 **[SECURITY.md](./SECURITY.md)**
 
-### Security Best Practices for Contributors:
+### Security Best Practices for Contributors
 
 - **Never commit secrets** (passwords, API keys, tokens) to the repository
 - **Use pinned base images** with digests (already implemented in Dockerfile)

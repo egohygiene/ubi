@@ -7,20 +7,26 @@
 ## Core Goals
 
 ### 1. Consistency Across Projects
+
 Every developer and CI environment works with an identical baseline, ensuring:
+
 - Predictable behavior across local development and CI/CD
 - Reduced "works on my machine" issues
 - Standardized tooling and configuration
 
 ### 2. Reproducibility
+
 All builds are deterministic and auditable through:
+
 - Semantic versioning (SemVer)
 - Pinned base image with digest verification
 - Version-tagged releases published to GHCR
 - Immutable container images
 
 ### 3. Developer Experience (DX)
+
 Sensible defaults reduce friction:
+
 - Pre-configured environment variables
 - Standardized filesystem layout
 - XDG-compliant directory structure
@@ -28,7 +34,9 @@ Sensible defaults reduce friction:
 - Modern terminal and editor support
 
 ### 4. Maintainability
+
 Single source of truth for environment configuration:
+
 - Update once, benefit everywhere
 - Clear versioning and changelog
 - Automated release pipeline
@@ -155,7 +163,7 @@ graph LR
    - Uses `bump-my-version` tool
    - Updates VERSION, CHANGELOG.md, and pyproject.toml
    - Creates git commit and tag
-   
+
 2. **`publish.yml`**: Automated image build and publish
    - Triggered on push to main or tag creation
    - Multi-platform builds (amd64, arm64)
@@ -293,6 +301,7 @@ GIT_PAGER=less
 ### Language-Specific
 
 **Python:**
+
 ```bash
 PYTHONUNBUFFERED=1
 PYTHONIOENCODING=UTF-8
@@ -301,11 +310,13 @@ PIP_NO_CACHE_DIR=1
 ```
 
 **Node.js:**
+
 ```bash
 NODE_OPTIONS=--max-old-space-size=4096
 ```
 
 **Rust:**
+
 ```bash
 CARGO_TERM_COLOR=always
 ```
@@ -360,6 +371,7 @@ DOTNET_CLI_TELEMETRY_OPTOUT=1
 ### Extensibility
 
 UBI is designed to be extended, not modified:
+
 - Projects layer on top via Dockerfile or devcontainer features
 - Base remains stable and minimal
 - Extensions don't affect UBI's core functionality

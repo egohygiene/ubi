@@ -16,7 +16,7 @@ jobs:
   validate-changelog:
     name: Validate CHANGELOG Updates
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       pull-requests: read
@@ -51,11 +51,11 @@ jobs:
         run: |
           echo "The following files have changed:"
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
-          
+
           # Check if CHANGELOG.md was modified in this PR
           if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "CHANGELOG.md"; then
             echo "✅ CHANGELOG.md has been updated"
-            
+
             # Verify that the Unreleased section has content (category headers with items)
             if grep -A 20 "## \[Unreleased\]" CHANGELOG.md | grep -E "^### (Added|Changed|Deprecated|Removed|Fixed|Security)" -A 5 | grep -q "^- "; then
               echo "✅ Changes found in Unreleased section"
@@ -82,7 +82,7 @@ jobs:
         if: contains(steps.changed-files.outputs.all_changed_files, 'VERSION')
         run: |
           echo "VERSION file has been modified"
-          
+
           # Check if CHANGELOG was also updated
           if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q "CHANGELOG.md"; then
             echo "✅ Both VERSION and CHANGELOG.md have been updated"

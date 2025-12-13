@@ -79,7 +79,7 @@ jobs:
           docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Checking required directories..."
-            
+
             REQUIRED_DIRS=(
               "/opt/universal"
               "/opt/universal/bin"
@@ -94,7 +94,7 @@ jobs:
               "/opt/universal/apps"
               "/opt/universal/reports"
             )
-            
+
             for dir in "${REQUIRED_DIRS[@]}"; do
               if [ ! -d "$dir" ]; then
                 echo "❌ FAIL: Directory $dir does not exist"
@@ -102,7 +102,7 @@ jobs:
               fi
               echo "✅ PASS: $dir exists"
             done
-            
+
             echo "All required directories exist!"
           '
 
@@ -112,66 +112,66 @@ jobs:
           docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Checking XDG environment variables..."
-            
+
             # Expected values
             EXPECTED_XDG_CONFIG_HOME="/opt/universal/config"
             EXPECTED_XDG_CACHE_HOME="/opt/universal/cache"
             EXPECTED_XDG_DATA_HOME="/opt/universal/toolbox"
             EXPECTED_XDG_STATE_HOME="/opt/universal/runtime"
-            
+
             # Check XDG_CONFIG_HOME
             if [ "$XDG_CONFIG_HOME" != "$EXPECTED_XDG_CONFIG_HOME" ]; then
               echo "❌ FAIL: XDG_CONFIG_HOME is \"$XDG_CONFIG_HOME\", expected \"$EXPECTED_XDG_CONFIG_HOME\""
               exit 1
             fi
             echo "✅ PASS: XDG_CONFIG_HOME=$XDG_CONFIG_HOME"
-            
+
             # Check XDG_CACHE_HOME
             if [ "$XDG_CACHE_HOME" != "$EXPECTED_XDG_CACHE_HOME" ]; then
               echo "❌ FAIL: XDG_CACHE_HOME is \"$XDG_CACHE_HOME\", expected \"$EXPECTED_XDG_CACHE_HOME\""
               exit 1
             fi
             echo "✅ PASS: XDG_CACHE_HOME=$XDG_CACHE_HOME"
-            
+
             # Check XDG_DATA_HOME
             if [ "$XDG_DATA_HOME" != "$EXPECTED_XDG_DATA_HOME" ]; then
               echo "❌ FAIL: XDG_DATA_HOME is \"$XDG_DATA_HOME\", expected \"$EXPECTED_XDG_DATA_HOME\""
               exit 1
             fi
             echo "✅ PASS: XDG_DATA_HOME=$XDG_DATA_HOME"
-            
+
             # Check XDG_STATE_HOME
             if [ "$XDG_STATE_HOME" != "$EXPECTED_XDG_STATE_HOME" ]; then
               echo "❌ FAIL: XDG_STATE_HOME is \"$XDG_STATE_HOME\", expected \"$EXPECTED_XDG_STATE_HOME\""
               exit 1
             fi
             echo "✅ PASS: XDG_STATE_HOME=$XDG_STATE_HOME"
-            
+
             # Check that XDG variables point to existing directories
             if [ ! -d "$XDG_CONFIG_HOME" ]; then
               echo "❌ FAIL: XDG_CONFIG_HOME points to non-existent directory: $XDG_CONFIG_HOME"
               exit 1
             fi
             echo "✅ PASS: XDG_CONFIG_HOME points to existing directory"
-            
+
             if [ ! -d "$XDG_CACHE_HOME" ]; then
               echo "❌ FAIL: XDG_CACHE_HOME points to non-existent directory: $XDG_CACHE_HOME"
               exit 1
             fi
             echo "✅ PASS: XDG_CACHE_HOME points to existing directory"
-            
+
             if [ ! -d "$XDG_DATA_HOME" ]; then
               echo "❌ FAIL: XDG_DATA_HOME points to non-existent directory: $XDG_DATA_HOME"
               exit 1
             fi
             echo "✅ PASS: XDG_DATA_HOME points to existing directory"
-            
+
             if [ ! -d "$XDG_STATE_HOME" ]; then
               echo "❌ FAIL: XDG_STATE_HOME points to non-existent directory: $XDG_STATE_HOME"
               exit 1
             fi
             echo "✅ PASS: XDG_STATE_HOME points to existing directory"
-            
+
             echo "All XDG environment variables are correctly configured!"
           '
 
@@ -181,7 +181,7 @@ jobs:
           docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Testing write permissions as vscode user..."
-            
+
             TEST_DIRS=(
               "/opt/universal/cache"
               "/opt/universal/config"
@@ -189,7 +189,7 @@ jobs:
               "/opt/universal/runtime"
               "/opt/universal/toolbox"
             )
-            
+
             for dir in "${TEST_DIRS[@]}"; do
               TEST_FILE="$dir/.test-write-${RANDOM}"
               if ! touch "$TEST_FILE" 2>/dev/null; then
@@ -199,7 +199,7 @@ jobs:
               rm -f "$TEST_FILE"
               echo "✅ PASS: vscode user can write to $dir"
             done
-            
+
             echo "All permission checks passed!"
           '
 
@@ -209,25 +209,25 @@ jobs:
           docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Checking locale environment variables..."
-            
+
             # Expected values
             EXPECTED_LANG="en_US.UTF-8"
             EXPECTED_LC_ALL="en_US.UTF-8"
-            
+
             # Check LANG
             if [ "$LANG" != "$EXPECTED_LANG" ]; then
               echo "❌ FAIL: LANG is \"$LANG\", expected \"$EXPECTED_LANG\""
               exit 1
             fi
             echo "✅ PASS: LANG=$LANG"
-            
+
             # Check LC_ALL
             if [ "$LC_ALL" != "$EXPECTED_LC_ALL" ]; then
               echo "❌ FAIL: LC_ALL is \"$LC_ALL\", expected \"$EXPECTED_LC_ALL\""
               exit 1
             fi
             echo "✅ PASS: LC_ALL=$LC_ALL"
-            
+
             echo "Locale configuration is correct!"
           '
 
@@ -237,7 +237,7 @@ jobs:
           docker run --rm ubi:test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Checking fundamental tools..."
-            
+
             REQUIRED_TOOLS=(
               "bash"
               "sh"
@@ -257,7 +257,7 @@ jobs:
               "cp"
               "mv"
             )
-            
+
             for tool in "${REQUIRED_TOOLS[@]}"; do
               if ! command -v "$tool" >/dev/null 2>&1; then
                 echo "❌ FAIL: Required tool \"$tool\" not found"
@@ -265,7 +265,7 @@ jobs:
               fi
               echo "✅ PASS: $tool is available"
             done
-            
+
             echo "All fundamental tools are available!"
           '
 
@@ -275,12 +275,12 @@ jobs:
           docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Running basic command tests..."
-            
+
             # Test ls
             echo "Testing ls command..."
             ls / > /dev/null
             echo "✅ PASS: ls command works"
-            
+
             # Test touch and file creation
             echo "Testing touch command..."
             TEST_FILE="/tmp/test-file-${RANDOM}"
@@ -291,7 +291,7 @@ jobs:
             fi
             rm -f "$TEST_FILE"
             echo "✅ PASS: touch command works"
-            
+
             # Test echo
             echo "Testing echo command..."
             OUTPUT=$(echo "Hello UBI")
@@ -300,12 +300,12 @@ jobs:
               exit 1
             fi
             echo "✅ PASS: echo command works"
-            
+
             # Test grep
             echo "Testing grep command..."
             echo "test content" | grep "test" > /dev/null
             echo "✅ PASS: grep command works"
-            
+
             # Test directory creation and navigation
             echo "Testing mkdir and cd commands..."
             TEST_DIR="/tmp/test-dir-${RANDOM}"
@@ -318,7 +318,7 @@ jobs:
             cd /
             rm -rf "$TEST_DIR"
             echo "✅ PASS: mkdir and cd commands work"
-            
+
             echo "All command suite smoke tests passed!"
           '
 
@@ -347,7 +347,7 @@ jobs:
             echo ""
             echo "All image tests passed successfully! ✨"
           } > test-summary.md
-          
+
           cat test-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: 📦 Upload Test Artifacts

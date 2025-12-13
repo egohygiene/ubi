@@ -21,11 +21,13 @@ This guide covers common issues you may encounter when working with UBI and thei
 ### Issue: Devcontainer fails to build with "base image not found"
 
 **Symptoms:**
+
 ```
 Error response from daemon: manifest for mcr.microsoft.com/devcontainers/base:2.1.2@sha256:... not found
 ```
 
 **Causes:**
+
 - Base image digest may have been updated or removed upstream
 - Network connectivity issues to Microsoft Container Registry
 - Docker daemon cache issues
@@ -33,11 +35,13 @@ Error response from daemon: manifest for mcr.microsoft.com/devcontainers/base:2.
 **Solutions:**
 
 1. **Verify base image availability:**
+
    ```bash
    docker pull mcr.microsoft.com/devcontainers/base:2.1.2
    ```
 
 2. **Check the latest digest:**
+
    ```bash
    docker pull mcr.microsoft.com/devcontainers/base:2.1.2
    docker inspect mcr.microsoft.com/devcontainers/base:2.1.2 \
@@ -49,6 +53,7 @@ Error response from daemon: manifest for mcr.microsoft.com/devcontainers/base:2.
    - See [README.md](../README.md#updating-the-base-image) for full instructions
 
 4. **Clear Docker cache and rebuild:**
+
    ```bash
    docker system prune -f
    docker build -f .devcontainer/Dockerfile -t ubi:test . --no-cache
@@ -59,11 +64,13 @@ Error response from daemon: manifest for mcr.microsoft.com/devcontainers/base:2.
 ### Issue: "Permission denied" errors during devcontainer build
 
 **Symptoms:**
+
 ```
 mkdir: cannot create directory '/opt/universal/bin': Permission denied
 ```
 
 **Causes:**
+
 - Incorrect user context in Dockerfile
 - Volume mount permission issues
 - SELinux/AppArmor restrictions
@@ -71,6 +78,7 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
 **Solutions:**
 
 1. **Check Dockerfile USER directive:**
+
    ```dockerfile
    # Should run as root during build, then switch to vscode
    USER root
@@ -79,12 +87,14 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
    ```
 
 2. **For volume mount issues in docker-compose.yml:**
+
    ```yaml
    volumes:
      - ..:/workspace:cached  # Add :cached for better performance
    ```
 
 3. **On SELinux systems, relabel volumes:**
+
    ```yaml
    volumes:
      - ..:/workspace:z  # :z for shared, :Z for private
@@ -95,6 +105,7 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
 ### Issue: Devcontainer builds but environment is incorrect
 
 **Symptoms:**
+
 - Environment variables not set
 - `/opt/universal` directories missing
 - Wrong locale or timezone
@@ -102,12 +113,14 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
 **Solutions:**
 
 1. **Verify environment in running container:**
+
    ```bash
    docker exec -it <container-name> env | grep UNIVERSAL
    docker exec -it <container-name> ls -la /opt/universal
    ```
 
 2. **Force rebuild without cache:**
+
    ```bash
    # In VS Code: Cmd/Ctrl+Shift+P → "Dev Containers: Rebuild Container"
    # Or via CLI:
@@ -126,6 +139,7 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
 ### Issue: Builds are slow despite no changes
 
 **Symptoms:**
+
 - Every build re-downloads packages
 - Dockerfile changes invalidate all subsequent layers
 - CI builds take excessive time
@@ -138,17 +152,20 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
    - Group related RUN commands to reduce layers
 
 2. **Use Docker BuildKit for better caching:**
+
    ```bash
    DOCKER_BUILDKIT=1 docker build -f .devcontainer/Dockerfile -t ubi:local .
    ```
 
 3. **Enable BuildKit cache mounts:**
+
    ```dockerfile
    RUN --mount=type=cache,target=/var/cache/apt \
        apt-get update && apt-get install -y package-name
    ```
 
 4. **In GitHub Actions, use caching:**
+
    ```yaml
    - name: Set up Docker Buildx
      uses: docker/setup-buildx-action@v3
@@ -163,12 +180,14 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
 ### Issue: Cache not being used in CI
 
 **Symptoms:**
+
 - CI builds from scratch every time
 - Previous layers not reused
 
 **Solutions:**
 
 1. **Verify GitHub Actions cache configuration:**
+
    ```yaml
    - name: Build and Push
      uses: docker/build-push-action@v5
@@ -188,12 +207,14 @@ mkdir: cannot create directory '/opt/universal/bin': Permission denied
 ### Issue: `bump-my-version` command fails
 
 **Symptoms:**
+
 ```
 ERROR: Could not find a valid version string
 ERROR: No files were modified
 ```
 
 **Causes:**
+
 - `pyproject.toml` configuration mismatch
 - VERSION file doesn't match current version in config
 - Regex pattern doesn't match version format
@@ -201,18 +222,21 @@ ERROR: No files were modified
 **Solutions:**
 
 1. **Verify VERSION file content:**
+
    ```bash
    cat VERSION
    # Should contain only version number (e.g., 0.1.5) with newline
    ```
 
 2. **Check pyproject.toml configuration:**
+
    ```bash
    grep -A 5 "\[tool.bumpversion\]" pyproject.toml
    # Verify current_version matches VERSION file
    ```
 
 3. **Manually sync version numbers:**
+
    ```toml
    # In pyproject.toml
    [tool.poetry]
@@ -223,6 +247,7 @@ ERROR: No files were modified
    ```
 
 4. **Test version bump locally:**
+
    ```bash
    pip install bump-my-version
    bump-my-version patch --dry-run --verbose
@@ -233,11 +258,13 @@ ERROR: No files were modified
 ### Issue: Version bump succeeds but tag not created
 
 **Symptoms:**
+
 - Commit created with new version
 - Git tag not created
 - CI publish workflow not triggered
 
 **Causes:**
+
 - `tag = false` in pyproject.toml (expected behavior)
 - GitHub Actions workflow not pushing tags
 - Permission issues in workflow
@@ -245,6 +272,7 @@ ERROR: No files were modified
 **Solutions:**
 
 1. **Verify workflow configuration in `bump-version.yml`:**
+
    ```yaml
    - name: Push bump commit + tags
      uses: ad-m/github-push-action@master
@@ -255,12 +283,14 @@ ERROR: No files were modified
    ```
 
 2. **Check workflow permissions:**
+
    ```yaml
    permissions:
      contents: write  # Required for tag creation
    ```
 
 3. **Manually create tag if needed:**
+
    ```bash
    git tag 0.1.6
    git push origin 0.1.6
@@ -273,11 +303,13 @@ ERROR: No files were modified
 ### Issue: CHANGELOG.md not being updated
 
 **Symptoms:**
+
 - Version bumped but CHANGELOG unchanged
 - CHANGELOG has duplicate entries
 - Wrong format after bump
 
 **Causes:**
+
 - `pyproject.toml` CHANGELOG configuration incorrect
 - Regex pattern not matching CHANGELOG format
 - Manual edits broke the pattern matching
@@ -285,6 +317,7 @@ ERROR: No files were modified
 **Solutions:**
 
 1. **Verify CHANGELOG configuration in pyproject.toml:**
+
    ```toml
    [[tool.bumpversion.files]]
    filename = "CHANGELOG.md"
@@ -301,6 +334,7 @@ ERROR: No files were modified
    - Pattern must match exactly
 
 3. **Fix broken CHANGELOG:**
+
    ```bash
    # Ensure first version header starts at beginning of line
    # Example correct format:
@@ -309,6 +343,7 @@ ERROR: No files were modified
    ```
 
 4. **Test CHANGELOG update:**
+
    ```bash
    bump-my-version patch --dry-run --verbose
    # Check output for CHANGELOG modifications
@@ -319,16 +354,18 @@ ERROR: No files were modified
 ### Issue: CHANGELOG has merge conflicts
 
 **Symptoms:**
+
 - Git merge conflicts in CHANGELOG.md
 - Multiple version entries colliding
 
 **Solutions:**
 
 1. **Resolve manually prioritizing chronological order:**
+
    ```markdown
    ## 0.1.6 (2025-12-13)
    [Compare...]
-   
+
    ## 0.1.5 (2025-12-11)
    [Compare...]
    ```
@@ -345,11 +382,13 @@ ERROR: No files were modified
 ### Issue: XDG directories not being used by applications
 
 **Symptoms:**
+
 - Applications still write to `~/.config`
 - Cache files in home directory
 - XDG_* variables set but ignored
 
 **Causes:**
+
 - Application doesn't support XDG
 - Variables set but directories don't exist
 - Permission issues on XDG directories
@@ -357,12 +396,14 @@ ERROR: No files were modified
 **Solutions:**
 
 1. **Verify directories exist and are writable:**
+
    ```bash
    ls -la /opt/universal/
    touch /opt/universal/config/test && rm /opt/universal/config/test
    ```
 
 2. **Check if application supports XDG:**
+
    ```bash
    # Some apps need explicit configuration
    # Example for pip:
@@ -371,6 +412,7 @@ ERROR: No files were modified
    ```
 
 3. **Set application-specific overrides:**
+
    ```bash
    # Example for npm
    export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
@@ -383,6 +425,7 @@ ERROR: No files were modified
 ### Issue: Cannot pull UBI image from GHCR
 
 **Symptoms:**
+
 ```
 Error response from daemon: unauthorized: authentication required
 Error: ghcr.io/egohygiene/ubi:0.1.5 not found
@@ -391,23 +434,26 @@ Error: ghcr.io/egohygiene/ubi:0.1.5 not found
 **Solutions:**
 
 1. **Authenticate to GitHub Container Registry:**
+
    ```bash
    echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
    ```
 
 2. **Verify image exists:**
+
    ```bash
    curl -s "https://ghcr.io/v2/egohygiene/ubi/tags/list" | jq
    ```
 
 3. **Try with explicit tag:**
+
    ```bash
    docker pull ghcr.io/egohygiene/ubi:latest
    docker pull ghcr.io/egohygiene/ubi:0.1.5
    ```
 
 4. **Check package visibility:**
-   - Visit https://github.com/orgs/egohygiene/packages
+   - Visit <https://github.com/orgs/egohygiene/packages>
    - Ensure package is public or you have access
 
 ---
@@ -417,6 +463,7 @@ Error: ghcr.io/egohygiene/ubi:0.1.5 not found
 ### Issue: Cannot write to /opt/universal directories
 
 **Symptoms:**
+
 ```
 touch: cannot touch '/opt/universal/cache/test': Permission denied
 ```
@@ -424,18 +471,21 @@ touch: cannot touch '/opt/universal/cache/test': Permission denied
 **Solutions:**
 
 1. **Check directory ownership:**
+
    ```bash
    ls -la /opt/universal/
    # Should be owned by vscode:vscode
    ```
 
 2. **Fix permissions:**
+
    ```dockerfile
    # In Dockerfile:
    RUN chown -R vscode:vscode /opt/universal
    ```
 
 3. **Verify current user:**
+
    ```bash
    whoami  # Should be 'vscode'
    id      # Check groups
@@ -463,16 +513,17 @@ If you encounter issues not covered here:
    - Specify UBI version
 
 4. **Useful debugging commands:**
+
    ```bash
    # Check container details
    docker inspect <container-name>
-   
+
    # Shell into running container
    docker exec -it <container-name> bash
-   
+
    # Check environment
    docker exec <container-name> env | sort
-   
+
    # Verify filesystem
    docker exec <container-name> ls -laR /opt/universal
    ```

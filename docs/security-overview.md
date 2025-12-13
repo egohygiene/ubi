@@ -89,6 +89,7 @@ USER vscode
 ```
 
 **Benefits:**
+
 - Limits damage from container escape
 - Prevents accidental system modifications
 - Follows best practice for development containers
@@ -98,6 +99,7 @@ USER vscode
 ### Minimal Base Image
 
 UBI uses Microsoft's DevContainers base image, which:
+
 - Is actively maintained by Microsoft
 - Receives regular security updates
 - Has a small attack surface
@@ -160,12 +162,12 @@ Trivy categorizes vulnerabilities by severity:
 ### Viewing Scan Results
 
 1. **GitHub Security Tab:**
-   - Navigate to: https://github.com/egohygiene/ubi/security/code-scanning
+   - Navigate to: <https://github.com/egohygiene/ubi/security/code-scanning>
    - View all detected vulnerabilities
    - Filter by severity, status, and date
 
 2. **Workflow Artifacts:**
-   - Go to: https://github.com/egohygiene/ubi/actions/workflows/trivy-scan.yml
+   - Go to: <https://github.com/egohygiene/ubi/actions/workflows/trivy-scan.yml>
    - Download detailed report from artifact
 
 3. **Pull Request Comments:**
@@ -204,6 +206,7 @@ When Trivy detects vulnerabilities:
    - **Accept risk**: Document why and track for future fix
 
 3. **Verify Fix:**
+
    ```bash
    # Rebuild and rescan
    docker build -f .devcontainer/Dockerfile -t ubi:test .
@@ -243,13 +246,14 @@ UBI generates an SBOM for every published image, providing full transparency int
    - Download from workflow runs
 
 2. **Generate Locally:**
+
    ```bash
    # Install Syft
    brew install syft
-   
+
    # Generate SBOM
    syft ghcr.io/egohygiene/ubi:0.1.5 -o spdx-json > ubi-sbom.json
-   
+
    # View summary
    syft ghcr.io/egohygiene/ubi:0.1.5 -o table
    ```
@@ -284,12 +288,14 @@ FROM mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b
 ```
 
 **Benefits:**
+
 - ✅ Immutable - same digest always pulls identical image
 - ✅ Tamper-proof - digest changes if image modified
 - ✅ Reproducible - builds are deterministic
 - ✅ Auditable - exact version is traceable
 
 **Risks Mitigated:**
+
 - Tag hijacking (someone overwrites `:2.1.2` tag)
 - Man-in-the-middle attacks during pull
 - Accidental upstream changes
@@ -297,6 +303,7 @@ FROM mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b
 ### 2. Dependency Tracking
 
 All dependencies are tracked via:
+
 - SBOM generation (Syft)
 - Vulnerability scanning (Trivy)
 - Version pinning in Dockerfile (where applicable)
@@ -304,6 +311,7 @@ All dependencies are tracked via:
 ### 3. Secure Build Pipeline
 
 GitHub Actions workflows use:
+
 - Pinned action versions (e.g., `actions/checkout@v4`)
 - Minimal permissions (principle of least privilege)
 - Secrets management via GitHub Secrets
@@ -312,6 +320,7 @@ GitHub Actions workflows use:
 ### 4. Reproducible Builds
 
 Every build is reproducible via:
+
 - Git commit SHA tags (`sha-abc123`)
 - Pinned base image digest
 - Locked dependency versions
@@ -332,6 +341,7 @@ cosign verify \
 ```
 
 **Benefits:**
+
 - ✅ Cryptographic proof of authenticity
 - ✅ Verification of image provenance
 - ✅ Protection against supply chain attacks
@@ -340,6 +350,7 @@ cosign verify \
 - ✅ Traceable to specific GitHub workflow runs
 
 **How It Works:**
+
 1. GitHub Actions workflow builds and pushes the image
 2. Cosign signs the image digest using GitHub OIDC identity
 3. Signature is stored in the container registry alongside the image
@@ -347,11 +358,13 @@ cosign verify \
 5. Anyone can verify the signature without needing access to private keys
 
 **What Gets Signed:**
+
 - All published tags (`latest`, version tags, SHA tags)
 - Signed by digest, so signature covers all architectures (amd64, arm64)
 - Signature metadata includes workflow identity and build context
 
 **Verification Example:**
+
 ```bash
 # Install Cosign
 brew install cosign  # macOS
@@ -375,6 +388,7 @@ cosign verify \
 **Status**: 🔮 Planned
 
 Future enhancement will include build provenance attestations:
+
 - SLSA Level 3 compliance
 - Signed provenance metadata
 - Cryptographic verification of build steps
@@ -388,6 +402,7 @@ Future enhancement will include build provenance attestations:
 **Status**: 🔮 Planned
 
 Implement SLSA build attestations:
+
 - Build environment metadata
 - Build inputs and outputs
 - Signed attestation bundles
@@ -398,6 +413,7 @@ Implement SLSA build attestations:
 **Status**: 🔮 Under consideration
 
 Implement OPA (Open Policy Agent) policies:
+
 - Enforce security best practices in CI
 - Policy-based vulnerability acceptance
 - Automated compliance checking
@@ -409,6 +425,7 @@ Implement OPA (Open Policy Agent) policies:
 When using UBI in your projects:
 
 1. **Pin Specific Versions**: Use version tags, not `latest`
+
    ```json
    {
      "image": "ghcr.io/egohygiene/ubi:0.1.5"
@@ -422,6 +439,7 @@ When using UBI in your projects:
 4. **Keep Updated**: Regularly update to latest patched versions
 
 5. **Scan Your Images**: Run Trivy on your derived images
+
    ```bash
    trivy image your-image:tag
    ```
@@ -431,6 +449,7 @@ When using UBI in your projects:
 7. **Use Security Context**: Apply appropriate Docker security options
 
 8. **Limit Resources**: Set memory and CPU limits
+
    ```yaml
    services:
      dev:
@@ -511,14 +530,17 @@ For details on reporting security vulnerabilities, see [SECURITY.md](../SECURITY
 Track security-related changes in UBI:
 
 ### v0.1.5 (2025-12-11)
+
 - Initial security documentation created
 - Trivy scanning workflow established
 - SBOM generation implemented in publish workflow
 
 ### v0.1.4 (2025-12-11)
+
 - Version synchronization fixes (no security changes)
 
 ### v0.1.3 (2025-12-11)
+
 - Removed privileged mode from devcontainer
 - Enhanced container isolation
 - Documented security decision in privileged-mode.md

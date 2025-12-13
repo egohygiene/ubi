@@ -118,11 +118,11 @@ jobs:
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           echo "Signing image with digest: ${DIGEST}"
-          
+
           # Sign the image by digest (covers all tags)
           cosign sign --yes \
             ghcr.io/${{ github.repository_owner }}/ubi@${DIGEST}
-          
+
           echo "✅ Image signed successfully!"
           echo ""
           echo "📋 Signed tags:"

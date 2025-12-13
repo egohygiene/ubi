@@ -91,6 +91,7 @@ Validates the `/opt/universal/*` directory hierarchy:
 - `/opt/universal/reports` - Generated reports
 
 Each directory is tested for:
+
 - Existence
 - Correct permissions (0755)
 - Correct ownership (vscode:vscode)

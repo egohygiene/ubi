@@ -131,7 +131,7 @@ jobs:
             echo "**Image:** ubi:local-${{ steps.version.outputs.version }}"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
-          
+
           if [ -f trivy-report.txt ]; then
             {
               echo "### Scan Results"
@@ -142,7 +142,7 @@ jobs:
           else
             echo "⚠️ Report file not generated" >> "$GITHUB_STEP_SUMMARY"
           fi
-          
+
           {
             echo ""
             echo "📥 Download the full report from the workflow artifacts."

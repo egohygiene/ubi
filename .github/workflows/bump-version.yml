@@ -73,4 +73,3 @@ jobs:
           echo "Version was bumped!"
           echo "From: ${{ steps.bump.outputs.previous-version }}"
           echo "To:   ${{ steps.bump.outputs.current-version }}"
-

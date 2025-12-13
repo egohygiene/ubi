@@ -15,6 +15,7 @@ This directory will contain best practices and recommendations for using UBI eff
 ## Current Recommendations
 
 For now, see:
+
 - [Architecture Documentation](../architecture.md) - Design principles and rationale
 - [Security Overview](../security-overview.md) - Security best practices
 - [Troubleshooting Guide](../troubleshooting.md) - Common issues and solutions

@@ -304,8 +304,8 @@ ERROR: No files were modified
    ```bash
    # Ensure first version header starts at beginning of line
    # Example correct format:
-   ## 0.1.5 (2025-12-11)
-   [Compare the full difference.](https://github.com/egohygiene/ubi/compare/0.1.4...0.1.5)
+   ## {new_version} ({now:%Y-%m-%d})
+   [Compare the full difference.](https://github.com/egohygiene/ubi/compare/{previous_version}...{new_version})
    ```
 
 4. **Test CHANGELOG update:**

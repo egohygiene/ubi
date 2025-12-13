@@ -477,14 +477,17 @@ For details on reporting security vulnerabilities, see [SECURITY.md](../SECURITY
 Track security-related changes in UBI:
 
 ### v0.1.5 (2025-12-11)
-- Initial security documentation
-- Trivy scanning established
-- SBOM generation implemented
+- Initial security documentation created
+- Trivy scanning workflow established
+- SBOM generation implemented in publish workflow
+
+### v0.1.4 (2025-12-11)
+- Version synchronization fixes (no security changes)
 
 ### v0.1.3 (2025-12-11)
 - Removed privileged mode from devcontainer
 - Enhanced container isolation
-- Documented security decision
+- Documented security decision in privileged-mode.md
 
 ---
 

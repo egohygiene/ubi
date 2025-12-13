@@ -110,6 +110,8 @@ UBI follows [Semantic Versioning 2.0.0](https://semver.org/).
 MAJOR.MINOR.PATCH
 ```
 
+**Note:** Pre-release versions (e.g., `1.0.0-alpha`, `2.0.0-beta.1`) are not supported based on the VERSION file format rules. Only stable release versions are allowed.
+
 ### When to Bump Each Component
 
 #### MAJOR version (X.0.0)

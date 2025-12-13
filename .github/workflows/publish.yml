@@ -13,8 +13,27 @@ on:
 
 jobs:
   build-and-push:
-    name: "📦 Build & Publish UBI Image"
+    name: "📦 Build & Publish UBI Image - ${{ matrix.variant }}"
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        variant:
+          - name: "base"
+            dockerfile: ".devcontainer/Dockerfile"
+            suffix: ""
+          - name: "minimal"
+            dockerfile: "variants/minimal/Dockerfile"
+            suffix: "-minimal"
+          - name: "python"
+            dockerfile: "variants/python/Dockerfile"
+            suffix: "-python"
+          - name: "node"
+            dockerfile: "variants/node/Dockerfile"
+            suffix: "-node"
+          - name: "full"
+            dockerfile: "variants/full/Dockerfile"
+            suffix: "-full"
 
     permissions:
       contents: write     # required for reading repo / metadata
@@ -82,22 +101,23 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/ubi
           tags: |
-            type=raw,value=latest
-            type=raw,value=${{ steps.version.outputs.version }}
-            type=sha
+            type=raw,value=latest${{ matrix.variant.suffix }}
+            type=raw,value=${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}
+            type=sha,suffix=${{ matrix.variant.suffix }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.variant=${{ matrix.variant.name }}
 
       # -------------------------------------------------------------
       # 7. Build & Push the UBI Image (multi-platform)
       # -------------------------------------------------------------
-      - name: 🛠️ Build and Push UBI Image
+      - name: 🛠️ Build and Push UBI Image (${{ matrix.variant.name }})
         id: build
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: .devcontainer/Dockerfile
+          file: ${{ matrix.variant.dockerfile }}
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
@@ -134,9 +154,9 @@ jobs:
       - name: 🧾 Generate SBOM with Syft
         uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}
+          image: ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}
           format: spdx-json
-          output-file: ubi-sbom.spdx.json
+          output-file: ubi-${{ matrix.variant.name }}-sbom.spdx.json
 
       # -------------------------------------------------------------
       # 11. Upload SBOM as workflow artifact
@@ -144,8 +164,8 @@ jobs:
       - name: 📤 Upload SBOM artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ubi-sbom-${{ steps.version.outputs.version }}
-          path: ubi-sbom.spdx.json
+          name: ubi-${{ matrix.variant.name }}-sbom-${{ steps.version.outputs.version }}
+          path: ubi-${{ matrix.variant.name }}-sbom.spdx.json
           retention-days: 90
 
       # -------------------------------------------------------------
@@ -155,13 +175,13 @@ jobs:
         if: success() || failure()
         run: |
           {
-            echo "## 🧾 SBOM Generation Summary"
+            echo "## 🧾 SBOM Generation Summary (${{ matrix.variant.name }})"
             echo ""
-            echo "**Image:** ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}"
+            echo "**Image:** ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}"
             echo "**Format:** SPDX-JSON"
-            echo "**File:** ubi-sbom.spdx.json"
+            echo "**File:** ubi-${{ matrix.variant.name }}-sbom.spdx.json"
             echo ""
-            if [ -f ubi-sbom.spdx.json ]; then
+            if [ -f ubi-${{ matrix.variant.name }}-sbom.spdx.json ]; then
               echo "✅ SBOM generated successfully"
               echo ""
             else

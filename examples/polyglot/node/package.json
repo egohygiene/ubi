@@ -1,0 +1,24 @@
+{
+  "name": "polyglot-api",
+  "version": "0.1.0",
+  "description": "API server component of the polyglot example",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "express",
+    "polyglot",
+    "ubi"
+  ],
+  "author": "Ego Hygiene",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

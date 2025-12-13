@@ -76,7 +76,12 @@ if [ -d "$RESULT_DIR" ]; then
     echo -e "${YELLOW}📄 Processing Results:${NC}"
     if [ -f "$RESULT_DIR/result.txt" ]; then
         echo -e "  Latest: ${GREEN}Found${NC} ($RESULT_DIR/result.txt)"
-        MODIFIED=$(stat -c %y "$RESULT_DIR/result.txt" 2>/dev/null || stat -f %Sm "$RESULT_DIR/result.txt" 2>/dev/null || echo "Unknown")
+        # Check OS for appropriate stat command
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            MODIFIED=$(stat -f %Sm "$RESULT_DIR/result.txt" 2>/dev/null || echo "Unknown")
+        else
+            MODIFIED=$(stat -c %y "$RESULT_DIR/result.txt" 2>/dev/null || echo "Unknown")
+        fi
         echo -e "  Modified: $MODIFIED"
     else
         echo -e "  Latest: ${YELLOW}No results yet${NC}"

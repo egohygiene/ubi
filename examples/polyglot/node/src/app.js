@@ -156,13 +156,16 @@ app.use((err, req, res, next) => {
  */
 function runPythonProcessor(input) {
   return new Promise((resolve, reject) => {
+    // Use environment variable or default to relative path
+    const pythonDir = process.env.PYTHON_PROCESSOR_DIR || join(process.cwd(), "..", "python");
+    
     const pythonProcess = spawn("python", [
       "-m",
       "processor.main",
       "--input",
       input,
     ], {
-      cwd: join(process.cwd(), "..", "python"),
+      cwd: pythonDir,
     });
 
     let stdout = "";

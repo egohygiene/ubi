@@ -23,11 +23,11 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 # Install Python dependencies
 echo -e "${YELLOW}📦 Installing Python dependencies...${NC}"
 cd "$PROJECT_ROOT/python"
-if command -v pip &> /dev/null; then
-    pip install -r requirements.txt
+if command -v python &> /dev/null; then
+    python -m pip install -r requirements.txt
     echo -e "${GREEN}✅ Python dependencies installed${NC}\n"
 else
-    echo -e "${RED}❌ pip not found. Please install Python and pip.${NC}\n"
+    echo -e "${RED}❌ python not found. Please install Python.${NC}\n"
     exit 1
 fi
 

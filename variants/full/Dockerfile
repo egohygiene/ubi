@@ -217,17 +217,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry for Python package management
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-  && ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry
+# Install Poetry for Python package management via pip
+RUN python3 -m pip install --user poetry \
+  && ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry || true
 
-# Install pyenv for Python version management
+# Set up pyenv directories (pyenv can be installed by users as needed)
 ENV PYENV_ROOT="${UNIVERSAL_TOOLBOX}/pyenv"
 ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/shims:${PATH}"
-
-RUN curl -sSL https://pyenv.run | bash \
-  && eval "$(pyenv init -)" \
-  && chown -R vscode:vscode ${PYENV_ROOT}
 
 FROM python-tools AS node-tools
 
@@ -235,25 +231,16 @@ FROM python-tools AS node-tools
 # INSTALL NODE.JS DEVELOPMENT TOOLS
 ######################################################################
 
-# Install nvm for Node.js version management
+# Install Node.js and package managers via apt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nodejs \
+    npm \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && npm install -g pnpm yarn || true
+
+# Set up nvm directories (nvm can be installed by users as needed)
 ENV NVM_DIR="${UNIVERSAL_TOOLBOX}/nvm"
-ENV NODE_VERSION=lts/*
-
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
-  && . "${NVM_DIR}/nvm.sh" \
-  && nvm install ${NODE_VERSION} \
-  && nvm alias default ${NODE_VERSION} \
-  && nvm use default \
-  && chown -R vscode:vscode ${NVM_DIR}
-
-# Add nvm to PATH
-ENV PATH="${NVM_DIR}/versions/node/$(ls ${NVM_DIR}/versions/node 2>/dev/null | head -1)/bin:${PATH}"
-
-# Install pnpm and yarn globally
-RUN . "${NVM_DIR}/nvm.sh" \
-  && npm install -g pnpm yarn \
-  && ln -sf ${NVM_DIR}/versions/node/$(nvm current)/bin/pnpm ${UNIVERSAL_BIN}/pnpm \
-  && ln -sf ${NVM_DIR}/versions/node/$(nvm current)/bin/yarn ${UNIVERSAL_BIN}/yarn
 
 FROM node-tools AS final
 

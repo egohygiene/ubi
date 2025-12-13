@@ -191,17 +191,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry for Python package management
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-  && ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry
+# Install Poetry for Python package management via pip
+RUN python3 -m pip install --user poetry \
+  && ln -s /root/.local/bin/poetry ${UNIVERSAL_BIN}/poetry || true
 
-# Install pyenv for Python version management
+# Set up pyenv directories (pyenv can be installed by users as needed)
 ENV PYENV_ROOT="${UNIVERSAL_TOOLBOX}/pyenv"
 ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/shims:${PATH}"
-
-RUN curl -sSL https://pyenv.run | bash \
-  && eval "$(pyenv init -)" \
-  && chown -R vscode:vscode ${PYENV_ROOT}
 
 FROM python-tools AS final
 

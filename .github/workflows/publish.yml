@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: write     # required for reading repo / metadata
       packages: write     # required for pushing GHCR packages
+      id-token: write     # required for Cosign keyless signing (OIDC)
 
     steps:
       # -------------------------------------------------------------
@@ -92,6 +93,7 @@ jobs:
       # 7. Build & Push the UBI Image (multi-platform)
       # -------------------------------------------------------------
       - name: 🛠️ Build and Push UBI Image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -102,7 +104,32 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       # -------------------------------------------------------------
-      # 6. Generate SBOM (Software Bill of Materials)
+      # 8. Install Cosign for keyless image signing
+      # -------------------------------------------------------------
+      - name: 🔐 Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      # -------------------------------------------------------------
+      # 9. Sign the container image with Cosign (keyless)
+      # -------------------------------------------------------------
+      - name: 🔏 Sign container image with Cosign
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          echo "Signing image with digest: ${DIGEST}"
+          
+          # Sign the image by digest (covers all tags)
+          cosign sign --yes \
+            ghcr.io/${{ github.repository_owner }}/ubi@${DIGEST}
+          
+          echo "✅ Image signed successfully!"
+          echo ""
+          echo "📋 Signed tags:"
+          echo "${TAGS}"
+
+      # -------------------------------------------------------------
+      # 10. Generate SBOM (Software Bill of Materials)
       # -------------------------------------------------------------
       - name: 🧾 Generate SBOM with Syft
         uses: anchore/sbom-action@v0
@@ -112,7 +139,7 @@ jobs:
           output-file: ubi-sbom.spdx.json
 
       # -------------------------------------------------------------
-      # 7. Upload SBOM as workflow artifact
+      # 11. Upload SBOM as workflow artifact
       # -------------------------------------------------------------
       - name: 📤 Upload SBOM artifact
         uses: actions/upload-artifact@v4
@@ -122,7 +149,7 @@ jobs:
           retention-days: 90
 
       # -------------------------------------------------------------
-      # 8. Display SBOM generation summary
+      # 12. Display SBOM generation summary
       # -------------------------------------------------------------
       - name: 📊 Display SBOM summary
         if: success() || failure()
@@ -145,7 +172,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # -------------------------------------------------------------
-      # 9. Display final tag list for clarity
+      # 13. Display final tag list for clarity
       # -------------------------------------------------------------
       - name: 📋 Show published tags
         run: |

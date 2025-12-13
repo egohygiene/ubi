@@ -51,7 +51,7 @@ UBI follows a defense-in-depth approach with multiple layers of security:
 | Malicious packages | SBOM tracking, manual review | ✅ Implemented |
 | Credential theft | Non-root user, no credential storage | ✅ Implemented |
 | Host resource exhaustion | Standard container limits (configurable) | ⚠️ User responsibility |
-| Malicious container images | Future: Cosign signing | 🔮 Planned |
+| Malicious container images | Cosign keyless signing | ✅ Implemented |
 
 ### Out of Scope
 
@@ -317,7 +317,60 @@ Every build is reproducible via:
 - Locked dependency versions
 - Documented build process
 
-### 5. Provenance (Future)
+### 5. Image Signing with Cosign
+
+**Status**: ✅ Implemented
+
+UBI images are cryptographically signed using [Sigstore Cosign](https://github.com/sigstore/cosign) with keyless signing:
+
+```bash
+# Verify signed image
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi:latest
+```
+
+**Benefits:**
+- ✅ Cryptographic proof of authenticity
+- ✅ Verification of image provenance
+- ✅ Protection against supply chain attacks
+- ✅ Keyless signing via GitHub OIDC (no key management)
+- ✅ Transparency log backed by Sigstore Rekor
+- ✅ Traceable to specific GitHub workflow runs
+
+**How It Works:**
+1. GitHub Actions workflow builds and pushes the image
+2. Cosign signs the image digest using GitHub OIDC identity
+3. Signature is stored in the container registry alongside the image
+4. Signature is recorded in Sigstore's public transparency log
+5. Anyone can verify the signature without needing access to private keys
+
+**What Gets Signed:**
+- All published tags (`latest`, version tags, SHA tags)
+- Signed by digest, so signature covers all architectures (amd64, arm64)
+- Signature metadata includes workflow identity and build context
+
+**Verification Example:**
+```bash
+# Install Cosign
+brew install cosign  # macOS
+# or download from https://github.com/sigstore/cosign/releases
+
+# Verify latest image
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi:latest
+
+# Verify specific version
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi:0.1.5
+```
+
+### 6. Provenance (Future)
 
 **Status**: 🔮 Planned
 
@@ -329,25 +382,6 @@ Future enhancement will include build provenance attestations:
 ---
 
 ## Future Enhancements
-
-### Cosign Image Signing
-
-**Status**: 🔮 Planned for future release
-
-UBI will implement container image signing using [Cosign](https://github.com/sigstore/cosign):
-
-```bash
-# Future: Verify signed image
-cosign verify ghcr.io/egohygiene/ubi:0.2.0 \
-  --certificate-identity-regexp "https://github.com/egohygiene/ubi" \
-  --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
-```
-
-**Benefits:**
-- Cryptographic proof of authenticity
-- Verification of image provenance
-- Protection against supply chain attacks
-- Compliance with emerging standards
 
 ### Build Attestations
 

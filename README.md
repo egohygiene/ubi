@@ -115,6 +115,57 @@ docker pull ghcr.io/egohygiene/ubi:latest
 docker run -it --rm ghcr.io/egohygiene/ubi:latest bash
 ```
 
+### 🔏 Verifying Image Signatures
+
+UBI images are signed with [Sigstore Cosign](https://docs.sigstore.dev/cosign/overview/) using keyless signing. This provides cryptographic proof that images are authentic and haven't been tampered with.
+
+#### Installing Cosign
+
+```bash
+# macOS
+brew install cosign
+
+# Linux
+curl -O -L "https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64"
+sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+sudo chmod +x /usr/local/bin/cosign
+
+# Or use the official container
+alias cosign="docker run --rm gcr.io/projectsigstore/cosign:latest"
+```
+
+#### Verifying an Image
+
+To verify the signature of a UBI image:
+
+```bash
+# Verify the latest image
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi:latest
+
+# Verify a specific version
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi:0.1.5
+
+# Verify by digest (most secure)
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi@sha256:<digest>
+```
+
+**What does this verify?**
+- ✅ The image was built by an official UBI GitHub Actions workflow
+- ✅ The image hasn't been modified since signing
+- ✅ The signature is backed by Sigstore's transparency log
+- ✅ The build is traceable to a specific GitHub workflow run
+
+**Note**: Verification will fail if the image has been tampered with or wasn't signed by an official workflow. This is a security feature, not a bug!
+
 ---
 
 ## 📦 Versioning

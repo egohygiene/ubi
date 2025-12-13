@@ -70,6 +70,23 @@ UBI employs multiple layers of automated security scanning:
 
 View scan results: [Trivy Scan Workflow](https://github.com/egohygiene/ubi/actions/workflows/trivy-scan.yml)
 
+### Image Signing with Cosign
+
+**[Sigstore Cosign](https://docs.sigstore.dev/cosign/overview/)** cryptographically signs all published UBI images:
+
+- **Signing Method**: Keyless signing using GitHub OIDC
+- **What's Signed**: All published tags (latest, version tags, SHA digests)
+- **Transparency**: Signatures recorded in public Sigstore Rekor log
+- **Verification**: Anyone can verify image authenticity without needing private keys
+
+**Verify an image:**
+```bash
+cosign verify \
+  --certificate-identity-regexp="https://github.com/egohygiene/ubi/" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  ghcr.io/egohygiene/ubi:latest
+```
+
 ### Dependency Management
 
 - **Base Image Pinning**: Upstream DevContainers base image is pinned with a digest for reproducibility

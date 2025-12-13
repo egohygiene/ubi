@@ -98,6 +98,8 @@ Recommendations for using UBI effectively *(coming soon)*
 - [Security Policy](../SECURITY.md) - Security vulnerability reporting
 - [Contributing Guidelines](../CONTRIBUTING.md) - How to contribute
 - [DevContainer Configuration](../.devcontainer/) - Development environment setup
+- [Metrics Documentation](../metrics/README.md) - Build metrics and observability
+- [Benchmarks Documentation](../benchmarks/README.md) - Performance benchmarking
 
 ### External Links
 

@@ -77,15 +77,15 @@ jobs:
         run: |
           echo "Installing Goss..."
           GOSS_VERSION="v0.4.8"
-          
+
           # Download and install goss
           curl -fsSL https://goss.rocks/install | GOSS_VER=${GOSS_VERSION} sh
-          
+
           # Download and install dgoss (Docker wrapper for Goss)
           curl -fsSL -o /usr/local/bin/dgoss \
             https://raw.githubusercontent.com/goss-org/goss/${GOSS_VERSION}/extras/dgoss/dgoss
           chmod +rx /usr/local/bin/dgoss
-          
+
           # Verify installation
           goss --version
           echo "✅ Goss installed successfully"
@@ -99,7 +99,7 @@ jobs:
           GOSS_FILE: tests/goss/goss.yaml
         run: |
           echo "Running Goss tests on UBI image..."
-          
+
           # Run dgoss tests
           # dgoss run = validate container using goss.yaml
           GOSS_FILES_PATH="${GOSS_FILES_PATH}" \
@@ -115,25 +115,25 @@ jobs:
           GOSS_FILE: tests/goss/goss.yaml
         run: |
           echo "Running Goss tests as vscode user..."
-          
+
           # Test that critical CLI tools work as non-root user
           docker run --rm --user vscode ubi:goss-test-${{ steps.version.outputs.version }} bash -c '
             set -e
             echo "Testing as user: $(whoami)"
             echo "User ID: $(id -u)"
             echo "Group ID: $(id -g)"
-            
+
             # Verify basic commands work
             bash --version > /dev/null
             git --version > /dev/null
             curl --version > /dev/null
             python3 --version > /dev/null
-            
+
             # Verify write permissions to universal directories
             touch /opt/universal/cache/.test && rm /opt/universal/cache/.test
             touch /opt/universal/config/.test && rm /opt/universal/config/.test
             touch /opt/universal/logs/.test && rm /opt/universal/logs/.test
-            
+
             echo "✅ All non-root user tests passed"
           '
 
@@ -147,7 +147,7 @@ jobs:
           GOSS_FILE: tests/goss/goss.yaml
         run: |
           echo "Generating Goss test report..."
-          
+
           # Run goss validate with JSON output
           docker run --rm \
             -v $(pwd)/tests/goss:/goss \
@@ -157,7 +157,7 @@ jobs:
               curl -fsSL https://goss.rocks/install | GOSS_VER=v0.4.8 sh > /dev/null 2>&1
               goss --gossfile /goss/goss.yaml validate --format json
             ' > goss-report.json || true
-          
+
           if [ -f goss-report.json ]; then
             echo "✅ Goss report generated"
             cat goss-report.json | jq '.' || cat goss-report.json
@@ -216,7 +216,7 @@ jobs:
               echo "✅ All Goss tests passed successfully! ✨"
             fi
           } > goss-test-summary.md
-          
+
           cat goss-test-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       # -------------------------------------------------------------

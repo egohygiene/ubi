@@ -54,49 +54,53 @@ The most lightweight variant with only foundational environment variables and XD
 ### 🔹 Python
 **Image:** `ghcr.io/egohygiene/ubi:latest-python` or `ghcr.io/egohygiene/ubi:0.1.5-python`
 
-Python-focused variant with Python runtime, pip, poetry, and pyenv for version management.
+Python-focused variant with Python runtime and package management tools.
 
 **Use this when:**
 - Building Python applications or data science projects
-- Need multiple Python versions (via pyenv)
 - Require Python package management (pip, poetry)
 - Working with Python-based workflows
+- Need Python build tools and dependencies
 
 **What's included:**
 - Everything from Minimal variant
-- Python 3 runtime and development headers
+- Python 3.13 runtime and development headers
 - pip (Python package installer)
-- Poetry (dependency management)
-- pyenv (Python version manager) at `$UNIVERSAL_TOOLBOX/pyenv`
-- Python build dependencies (libssl-dev, zlib1g-dev, etc.)
+- poetry (dependency management) - installed via pip
+- Python build dependencies (build-essential, libssl-dev, zlib1g-dev, libbz2-dev, libreadline-dev, libsqlite3-dev, etc.)
 - Python-specific environment variables
+- pyenv environment variables pre-configured (install pyenv as needed)
 
 **Image size:** Medium (~1.2GB)
+
+**Note:** Poetry is installed via pip. You can install additional version managers like pyenv manually if needed.
 
 ---
 
 ### 🔹 Node
 **Image:** `ghcr.io/egohygiene/ubi:latest-node` or `ghcr.io/egohygiene/ubi:0.1.5-node`
 
-Node.js-focused variant with Node.js runtime, npm, pnpm, yarn, and nvm for version management.
+Node.js-focused variant with Node.js runtime and package management tools.
 
 **Use this when:**
 - Building JavaScript/TypeScript applications
-- Need multiple Node.js versions (via nvm)
 - Require Node package management (npm, pnpm, yarn)
 - Working with modern JavaScript tooling
+- Need Node.js build tools
 
 **What's included:**
 - Everything from Minimal variant
-- Node.js LTS runtime via nvm
-- nvm (Node Version Manager) at `$UNIVERSAL_TOOLBOX/nvm`
+- Node.js v20 (LTS) runtime
 - npm (Node package manager)
-- pnpm (fast, disk space efficient package manager)
-- yarn (alternative package manager)
-- Node.js build dependencies
+- pnpm (fast, disk space efficient package manager) - installed globally
+- yarn (alternative package manager) - installed globally
+- Node.js build dependencies (build-essential, libssl-dev)
 - Node-specific environment variables (NODE_OPTIONS)
+- nvm environment variables pre-configured (install nvm as needed)
 
 **Image size:** Medium (~1.1GB)
+
+**Note:** pnpm and yarn are installed globally via npm. You can install additional version managers like nvm or volta manually if needed.
 
 ---
 

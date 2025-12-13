@@ -177,6 +177,17 @@ UBI follows **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 - **MINOR**: New features, tools, or non-breaking enhancements
 - **PATCH**: Bug fixes and minor updates
 
+### Automated Releases
+
+UBI uses **semantic-release** for fully automated versioning, CHANGELOG generation, and GitHub releases based on [Conventional Commits](https://www.conventionalcommits.org/). This means:
+
+- Commits with `feat:` trigger minor version bumps
+- Commits with `fix:`, `perf:`, or `refactor:` trigger patch version bumps
+- Commits with `BREAKING CHANGE:` trigger major version bumps
+- Version, CHANGELOG, and GitHub releases are automatically managed
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on the release workflow.
+
 ### Version File
 
 The current version is defined in the [`VERSION`](./VERSION) file at the root of this repository (for example `0.1.0`):

@@ -240,6 +240,65 @@ git push origin main --follow-tags
   - `ghcr.io/egohygiene/ubi:X.Y.Z` (specific version)
   - `ghcr.io/egohygiene/ubi:sha-<commit>` (git SHA)
 
+#### Option 3: Automated Semantic Release (Recommended)
+
+UBI now supports **semantic-release** for fully automated versioning and CHANGELOG management based on commit messages.
+
+**How it works:**
+
+1. **Commit using Conventional Commits** (see [Commit Message Conventions](#commit-message-conventions)):
+   - `feat:` → triggers a **minor** version bump (0.1.5 → 0.2.0)
+   - `fix:`, `perf:`, `refactor:` → triggers a **patch** version bump (0.1.5 → 0.1.6)
+   - `BREAKING CHANGE:` in commit body → triggers a **major** version bump (0.1.5 → 1.0.0)
+   - `docs:`, `style:`, `chore:`, `test:`, `ci:` → no version bump
+
+2. **Push to main branch**:
+   - The **"🤖 Semantic Release"** workflow automatically runs
+   - Analyzes commits since the last release
+   - Determines the next version based on commit types
+   - Updates `VERSION`, `CHANGELOG.md`, and `package.json`
+   - Creates a git tag and GitHub release
+   - Triggers the **"🚀 Publish UBI Image"** workflow
+
+**Example workflow:**
+
+```bash
+# Make changes and commit with conventional format
+git commit -m "feat(environment): add custom cache directory support"
+git commit -m "fix(dockerfile): correct permissions for /opt/universal/bin"
+
+# Push to main (or merge PR to main)
+git push origin main
+
+# semantic-release automatically:
+# - Detects 1 feat + 1 fix = minor version bump
+# - Updates VERSION from 0.1.5 → 0.2.0
+# - Generates CHANGELOG.md entry with commit details
+# - Creates tag 0.2.0 and GitHub release
+# - Triggers image publish workflow
+```
+
+**Benefits:**
+
+- **Zero manual intervention** for versioning
+- **Automatic CHANGELOG** generation from commits
+- **Consistent releases** based on commit history
+- **GitHub Releases** with detailed release notes
+- **Enforces conventional commits** for clear history
+
+**Testing semantic-release locally:**
+
+```bash
+# Install dependencies
+npm install
+
+# Dry-run to see what would happen (without making changes)
+npx semantic-release --dry-run --no-ci
+
+# Check commit messages locally
+npx semantic-release --dry-run --branches $(git branch --show-current)
+```
+
 ---
 
 ## Development Workflow
@@ -433,7 +492,7 @@ If you need to manually edit the CHANGELOG (e.g., adding more detailed release n
 
 ### Commit Message Conventions
 
-UBI follows **Conventional Commits** for clear and consistent commit history.
+UBI follows **Conventional Commits** for clear and consistent commit history. This is **especially important** with semantic-release, as commit messages directly determine version bumps and CHANGELOG entries.
 
 #### Format
 
@@ -445,16 +504,34 @@ UBI follows **Conventional Commits** for clear and consistent commit history.
 <optional footer>
 ```
 
-#### Types
+#### Types (and their semantic-release impact)
 
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, no logic change)
-- `refactor`: Code refactoring (no functional change)
-- `test`: Adding or updating tests
-- `chore`: Maintenance tasks (dependencies, tooling, etc.)
-- `ci`: CI/CD changes
+- `feat`: New feature → **minor** version bump (0.1.5 → 0.2.0)
+- `fix`: Bug fix → **patch** version bump (0.1.5 → 0.1.6)
+- `perf`: Performance improvement → **patch** version bump
+- `refactor`: Code refactoring → **patch** version bump
+- `docs`: Documentation changes → **no** version bump
+- `style`: Code style changes (formatting) → **no** version bump
+- `test`: Adding or updating tests → **no** version bump
+- `chore`: Maintenance tasks → **no** version bump
+- `ci`: CI/CD changes → **no** version bump
+- `build`: Build system changes → **patch** version bump
+
+#### Breaking Changes
+
+To trigger a **major** version bump (0.1.5 → 1.0.0), include `BREAKING CHANGE:` in the commit body or footer:
+
+```
+feat(api)!: remove deprecated endpoints
+
+BREAKING CHANGE: The /v1/old-endpoint has been removed. Use /v2/new-endpoint instead.
+```
+
+Or use the `!` suffix:
+
+```
+feat(api)!: redesign authentication flow
+```
 
 #### Examples
 

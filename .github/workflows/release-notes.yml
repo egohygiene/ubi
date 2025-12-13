@@ -160,12 +160,11 @@ jobs:
             **Available tags:**
             - `ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}` (pinned version)
             - `ghcr.io/${{ github.repository_owner }}/ubi:latest` (latest release)
-            - `ghcr.io/${{ github.repository_owner }}/ubi:sha-${{ github.sha }}` (exact commit)
+            - `ghcr.io/${{ github.repository_owner }}/ubi:sha-<commit>` (exact commit SHA)
 
             ## 🔗 Links
 
-            - [Compare changes](https://github.com/${{ github.repository }}/compare/${{ steps.version.outputs.version }}...HEAD)
-            - [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
+            - [Full CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
             - [Documentation](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/README.md)
           files: |
             ubi-sbom-*.spdx.json

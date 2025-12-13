@@ -253,9 +253,9 @@ Follow **Conventional Commits**:
 
 ### Required Checks
 All PRs must pass:
-1. **🧪 Image Testing Workflow**: Container sanity tests
-2. **🔒 Trivy Security Scan**: Vulnerability scanning
-3. **📋 CHANGELOG Validation**: Format validation
+1. **🧪 Image Testing Workflow** (`.github/workflows/test-image.yml`): Container sanity tests
+2. **🔒 Trivy Security Scan** (`.github/workflows/trivy-scan.yml`): Vulnerability scanning
+3. **📋 CHANGELOG Validation** (`.github/workflows/validate-changelog.yml`): Format validation
 4. **🛡️ GitHub Code Scanning**: Security and quality checks
 
 ## Important Guidelines

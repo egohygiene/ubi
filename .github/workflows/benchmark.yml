@@ -271,23 +271,39 @@ jobs:
           
           # Parse the output
           CPU_PERCENT=$(echo "$STATS_OUTPUT" | cut -d',' -f1 | sed 's/%//')
-          MEM_USAGE=$(echo "$STATS_OUTPUT" | cut -d',' -f2 | awk '{print $1}')
-          MEM_UNIT=$(echo "$STATS_OUTPUT" | cut -d',' -f2 | awk '{print $3}')
-          MEM_LIMIT=$(echo "$STATS_OUTPUT" | cut -d',' -f2 | awk '{print $5}')
           
-          # Convert memory to MB if needed
-          if [[ "$MEM_UNIT" == *"GiB"* ]]; then
-            MEM_MB=$(echo "$MEM_USAGE * 1024" | bc)
-          else
-            MEM_MB="$MEM_USAGE"
-          fi
+          # Parse memory usage (format: "12.34MiB / 16GiB")
+          MEM_FULL=$(echo "$STATS_OUTPUT" | cut -d',' -f2)
+          MEM_USAGE_STR=$(echo "$MEM_FULL" | awk '{print $1}')
+          MEM_LIMIT_STR=$(echo "$MEM_FULL" | awk '{print $3}')
           
-          # Parse memory limit
-          if [[ "$MEM_LIMIT" == *"GiB"* ]]; then
-            MEM_LIMIT_MB=$(echo "${MEM_LIMIT//GiB/} * 1024" | bc)
-          else
-            MEM_LIMIT_MB="${MEM_LIMIT//MiB/}"
-          fi
+          # Function to convert any memory unit to MB
+          convert_to_mb() {
+            local value_with_unit="$1"
+            local value=$(echo "$value_with_unit" | sed 's/[^0-9.]//g')
+            local unit=$(echo "$value_with_unit" | sed 's/[0-9.]//g')
+            
+            case "$unit" in
+              B|b)
+                echo "scale=2; $value / 1024 / 1024" | bc
+                ;;
+              KiB|KB|K|k)
+                echo "scale=2; $value / 1024" | bc
+                ;;
+              MiB|MB|M|m)
+                echo "$value"
+                ;;
+              GiB|GB|G|g)
+                echo "scale=2; $value * 1024" | bc
+                ;;
+              *)
+                echo "0"
+                ;;
+            esac
+          }
+          
+          MEM_MB=$(convert_to_mb "$MEM_USAGE_STR")
+          MEM_LIMIT_MB=$(convert_to_mb "$MEM_LIMIT_STR")
           
           # Clean up container
           docker stop "$CONTAINER_ID" > /dev/null 2>&1 || true
@@ -630,10 +646,10 @@ jobs:
             # Push to main branch (or current ref if on a branch)
             if [[ "${{ github.ref }}" == refs/tags/* ]]; then
               # On a tag, push to main
-              git push origin HEAD:main
+              git push origin HEAD:refs/heads/main
             else
-              # On a branch, push to the same branch
-              git push origin HEAD:${{ github.ref }}
+              # On a branch, push to the same branch using ref_name
+              git push origin HEAD:refs/heads/${{ github.ref_name }}
             fi
             echo "✅ Benchmark results committed to repository"
           fi

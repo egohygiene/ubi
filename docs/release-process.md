@@ -28,15 +28,15 @@ graph TD
     B --> C[Commit with version changes]
     C --> D[Create Git Tag]
     D --> E[Push to GitHub]
-    E --> F[Auto-trigger Test Workflow]
-    E --> K[Auto-trigger Release Notes Workflow]
-    F --> O[Run Unified Container Tests]
+    E --> F[🧪 Unified Container Testing]
+    E --> K[📝 Create GitHub Release]
+    F --> O[Run Tests on All Variants]
     O --> P{Tests Pass?}
-    P -->|Yes| Q[Auto-trigger Trivy Scan]
+    P -->|Yes| Q[🔒 Container Vulnerability Scan]
     P -->|No| R[Block Pipeline]
-    Q --> S[Security Vulnerability Scan]
+    Q --> S[Scan for Security Issues]
     S --> T{Scan Pass?}
-    T -->|Yes| U[Auto-trigger Publish Workflow]
+    T -->|Yes| U[🚀 Publish UBI Image]
     T -->|No| R
     U --> G[Build Multi-Platform Image]
     G --> H[Generate SBOM]
@@ -322,7 +322,7 @@ test-unified.yml → trivy-scan.yml → publish.yml
 
 The publish workflow runs automatically on:
 
-- **Successful completion of security scan** (workflow_run after trivy-scan.yml succeeds)
+- **Successful completion of security scan** (workflow_run after 🔒 Container Vulnerability Scan succeeds)
 - **Tag creation** (direct trigger for tagged releases)
 - **Manual trigger** (workflow_dispatch for emergency publishes)
 

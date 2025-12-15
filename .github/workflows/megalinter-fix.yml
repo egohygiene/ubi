@@ -1,0 +1,219 @@
+---
+# yaml-language-server:
+# $schema=https://json.schemastore.org/github-workflow.json
+name: "🔧 MegaLinter Auto-Fix"
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply-fixes:
+        description: "Apply auto-fixes (all formatters and linters)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - none
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  megalinter-autofix:
+    name: "🔧 Auto-Fix Linting Issues"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: 🛎️ Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Full git history for better analysis
+
+      # -------------------------------------------------------------
+      # 2. Run MegaLinter in auto-fix mode
+      # -------------------------------------------------------------
+      - name: 🧹 MegaLinter Auto-Fix
+        id: ml
+        uses: oxsecurity/megalinter@v8.1.0
+        env:
+          # Apply all formatters and linters
+          APPLY_FIXES: ${{ inputs.apply-fixes || 'all' }}
+          # Validate all files in the repository
+          VALIDATE_ALL_CODEBASE: true
+          # Use existing configuration file
+          MEGALINTER_CONFIG: .megalinter.yml
+          # GitHub token for commenting on PRs
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Default reporter for console output
+          DEFAULT_WORKSPACE: ${{ github.workspace }}
+
+      # -------------------------------------------------------------
+      # 3. Create a diff patch of all changes
+      # -------------------------------------------------------------
+      - name: 📝 Create Diff Patch
+        if: always()
+        id: diff
+        run: |
+          # Create diff patch
+          git diff > megalinter-fixes.patch
+
+          # Check if there are changes
+          if [ -s megalinter-fixes.patch ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Changes detected - patch file created"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ No changes detected"
+          fi
+
+          # Display summary
+          echo "## 📊 Changes Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -s megalinter-fixes.patch ]; then
+            echo "**Files Changed:**" >> "$GITHUB_STEP_SUMMARY"
+            git diff --name-only | while read -r file; do
+              echo "- \`$file\`" >> "$GITHUB_STEP_SUMMARY"
+            done
+          else
+            echo "✅ No auto-fixable issues found!" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # -------------------------------------------------------------
+      # 4. Upload MegaLinter reports as artifacts
+      # -------------------------------------------------------------
+      - name: 📦 Upload MegaLinter Reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: megalinter-reports
+          path: |
+            reports/megalinter/
+            mega-linter.log
+          retention-days: 30
+
+      # -------------------------------------------------------------
+      # 5. Upload diff patch as artifact
+      # -------------------------------------------------------------
+      - name: 📤 Upload Diff Patch
+        if: always() && steps.diff.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: megalinter-fixes-patch
+          path: megalinter-fixes.patch
+          retention-days: 30
+
+      # -------------------------------------------------------------
+      # 6. Create Pull Request with auto-fixes
+      # -------------------------------------------------------------
+      - name: 🚀 Create Pull Request
+        if: steps.diff.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(lint): apply MegaLinter auto-fixes"
+          committer: >-
+            github-actions[bot]
+            <41898282+github-actions[bot]@users.noreply.github.com>
+          author: >-
+            github-actions[bot]
+            <41898282+github-actions[bot]@users.noreply.github.com>
+          branch: megalinter-auto-fix
+          delete-branch: true
+          title: "🔧 MegaLinter Auto-Fix: Baseline Cleanup"
+          body: |
+            ## 🧹 MegaLinter Auto-Fix Report
+
+            This PR contains automatic fixes applied by MegaLinter to
+            resolve linting issues and establish a clean baseline for
+            the repository.
+
+            ### 📋 What was fixed?
+            MegaLinter applied auto-fixes for:
+            - ✨ Markdown formatting (markdownlint)
+            - 📝 YAML/JSON formatting (prettier)
+            - 🐚 Shell script fixes (ShellCheck)
+            - 📐 EditorConfig compliance
+            - 🎨 Code formatting (language-specific formatters)
+            - 🔗 Documentation improvements
+
+            ### 🔍 Review Instructions
+            1. Review the changes in the "Files changed" tab
+            2. Download `megalinter-reports` artifact for detailed results
+            3. Check `megalinter-fixes-patch` artifact for unified diff
+            4. Verify all changes are appropriate and don't break functionality
+
+            ### 📊 MegaLinter Report
+            Full MegaLinter reports are available in the workflow artifacts.
+
+            ### ✅ Acceptance Criteria
+            - [x] Auto-fixable issues resolved
+            - [x] MegaLinter reports uploaded
+            - [x] Diff patch created and uploaded
+            - [ ] Manual review completed
+            - [ ] No breaking changes introduced
+
+            ### 🤖 Automation
+            This PR was automatically generated by the
+            **MegaLinter Auto-Fix** workflow.
+
+            ---
+
+            **Workflow Run:**
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Triggered by:** @${{ github.actor }}
+          labels: |
+            ci-cd
+            quality
+            linting
+            automated
+            megalinter
+          assignees: ${{ github.actor }}
+
+      # -------------------------------------------------------------
+      # 7. Display final summary
+      # -------------------------------------------------------------
+      - name: 📊 Display Summary
+        if: always()
+        run: |
+          echo "## 🧹 MegaLinter Auto-Fix Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ steps.diff.outputs.has_changes }}" == "true" ]; then
+            echo "✅ **Auto-fixes applied and PR created!**" >> \
+              "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### 📦 Artifacts Available" >> "$GITHUB_STEP_SUMMARY"
+            echo "- 📋 MegaLinter Reports" >> "$GITHUB_STEP_SUMMARY"
+            echo "- 📝 Diff Patch (megalinter-fixes.patch)" >> \
+              "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### 🔄 Next Steps" >> "$GITHUB_STEP_SUMMARY"
+            echo "1. Review the automatically created PR" >> \
+              "$GITHUB_STEP_SUMMARY"
+            echo "2. Download and review the MegaLinter reports" >> \
+              "$GITHUB_STEP_SUMMARY"
+            echo "3. Approve and merge if all changes look good" >> \
+              "$GITHUB_STEP_SUMMARY"
+          else
+            echo "✨ **No auto-fixable issues found!**" >> \
+              "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Your repository is compliant with MegaLinter rules." >> \
+              "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### 📦 Reports Available" >> "$GITHUB_STEP_SUMMARY"
+            echo "Download the MegaLinter reports artifact to see" \
+              "detailed results." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "**ℹ️ Note:** Some issues may require manual fixes." >> \
+            "$GITHUB_STEP_SUMMARY"
+          echo "Review the MegaLinter reports for any remaining issues." >> \
+            "$GITHUB_STEP_SUMMARY"

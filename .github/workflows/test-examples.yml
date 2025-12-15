@@ -398,7 +398,8 @@ jobs:
 
               # Test that processor module can be run
               echo "Running processor.main --help..."
-              python -m processor.main --help > /dev/null 2>&1
+              OUTPUT=$(python -m processor.main --help 2>&1)
+              echo "Help output: $OUTPUT"
               echo "✅ Python processor module works"
             '
 

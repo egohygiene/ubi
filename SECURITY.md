@@ -160,11 +160,31 @@ gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene --f
 - ✅ Reproducibility information for audit trails
 - ✅ Cryptographic link between source code and built artifact
 
+### Dependency Review
+
+**[GitHub Dependency Review Action](https://github.com/actions/dependency-review-action)** analyzes dependency changes in pull requests:
+
+- **Runs on**: All pull requests to main/master branches
+- **Scans for**: Security vulnerabilities, license compatibility issues, and malicious packages
+- **Severity threshold**: Fails CI/CD if HIGH or CRITICAL vulnerabilities are introduced
+- **Coverage**: Analyzes npm (package.json, package-lock.json) and Python (pyproject.toml, poetry.lock) dependencies
+- **License enforcement**: Denies GPL and AGPL licenses (incompatible with MIT)
+- **Results**: Comments directly on PRs with detailed findings and displays summary in PR checks
+
+View workflow: [Dependency Review Workflow](https://github.com/egohygiene/ubi/actions/workflows/dependency-review.yml)
+
+**What gets checked:**
+
+- New or updated dependencies with known CVEs
+- Packages with incompatible licenses
+- Deprecated or withdrawn packages
+- Packages flagged as potentially malicious by GitHub Advisory Database
+
 ### Dependency Management
 
 - **Base Image Pinning**: Upstream DevContainers base image is pinned with a digest for reproducibility
 - **Automated Updates**: Regular monitoring of upstream base image releases for security patches
-- **Supply Chain Security**: All dependencies are tracked and auditable
+- **Supply Chain Security**: All dependencies are tracked and auditable via Dependency Review Action
 
 ### GitHub Security Features
 

@@ -123,41 +123,52 @@ jobs:
           echo "✅ Goss installed successfully"
 
       # -------------------------------------------------------------
-      # 6. Run Goss Tests (only for base variant, as goss.yaml is base-specific)
+      # 6. Run Variant-Specific Goss Tests
       # -------------------------------------------------------------
-      - name: 🧪 Run Goss Container Tests
-        if: matrix.variant.name == 'base'
+      - name: 🧪 Run Goss Container Tests - ${{ matrix.variant.name }}
         env:
           GOSS_FILES_PATH: tests/goss
-          GOSS_FILE: tests/goss/goss.yaml
         run: |
-          echo "Running Goss tests on UBI base image..."
+          # Determine the correct Goss file for this variant
+          if [ "${{ matrix.variant.name }}" == "base" ]; then
+            GOSS_FILE="tests/goss/goss.yaml"
+          else
+            GOSS_FILE="tests/goss/goss-${{ matrix.variant.name }}.yaml"
+          fi
+
+          echo "Running Goss tests on UBI ${{ matrix.variant.name }} variant..."
+          echo "Using Goss file: $GOSS_FILE"
 
           # Run dgoss tests
-          # dgoss run = validate container using goss.yaml
           GOSS_FILES_PATH="${GOSS_FILES_PATH}" \
           GOSS_FILE="${GOSS_FILE}" \
           dgoss run ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}
 
       # -------------------------------------------------------------
-      # 7. Generate Goss Test Report (JSON) - only for base variant
+      # 7. Generate Goss Test Report (JSON)
       # -------------------------------------------------------------
-      - name: 📊 Generate Goss Test Report
-        if: always() && matrix.variant.name == 'base'
+      - name: 📊 Generate Goss Test Report - ${{ matrix.variant.name }}
+        if: always()
         env:
           GOSS_FILES_PATH: tests/goss
-          GOSS_FILE: tests/goss/goss.yaml
         run: |
-          echo "Generating Goss test report..."
+          # Determine the correct Goss file for this variant
+          if [ "${{ matrix.variant.name }}" == "base" ]; then
+            GOSS_FILE="goss.yaml"
+          else
+            GOSS_FILE="goss-${{ matrix.variant.name }}.yaml"
+          fi
+
+          echo "Generating Goss test report for ${{ matrix.variant.name }}..."
 
           # Run goss validate with JSON output
           docker run --rm \
             -v "$(pwd)"/tests/goss:/goss \
-            -e GOSS_FILE=/goss/goss.yaml \
+            -e GOSS_FILE=/goss/$GOSS_FILE \
             ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
             bash -c '
               curl -fsSL https://goss.rocks/install | GOSS_VER=v0.4.8 sh > /dev/null 2>&1
-              goss --gossfile /goss/goss.yaml validate --format json
+              goss --gossfile /goss/'"$GOSS_FILE"' validate --format json
             ' > goss-report-${{ matrix.variant.name }}.json || true
 
           if [ -f goss-report-${{ matrix.variant.name }}.json ]; then
@@ -462,7 +473,76 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 15. Generate test summary
+      # 15. Run Variant Inheritance Tests
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Variant Inheritance (${{ matrix.variant.name }})
+        run: |
+          echo "Running variant inheritance tests for ${{ matrix.variant.name }}..."
+          
+          # Map variant name to test script
+          case "${{ matrix.variant.name }}" in
+            "base")
+              TEST_SCRIPT="tests/integration/test-variant-minimal.sh"
+              ;;
+            "minimal")
+              TEST_SCRIPT="tests/integration/test-variant-minimal.sh"
+              ;;
+            "python")
+              TEST_SCRIPT="tests/integration/test-variant-python.sh"
+              ;;
+            "node")
+              TEST_SCRIPT="tests/integration/test-variant-node.sh"
+              ;;
+            "full")
+              TEST_SCRIPT="tests/integration/test-variant-full.sh"
+              ;;
+            *)
+              echo "⚠️  No variant test for ${{ matrix.variant.name }}"
+              exit 0
+              ;;
+          esac
+
+          # Run the test inside the container
+          docker run --rm \
+            -v "$(pwd)/$TEST_SCRIPT:/test-script.sh:ro" \
+            ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
+            bash /test-script.sh
+
+      # -------------------------------------------------------------
+      # 16. Run Environment Variable Tests
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Environment Variables
+        run: |
+          echo "Running environment variable tests..."
+          docker run --rm \
+            -v "$(pwd)/tests/integration/test-env-vars.sh:/test-env-vars.sh:ro" \
+            ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
+            bash /test-env-vars.sh
+
+      # -------------------------------------------------------------
+      # 17. Run Telemetry Opt-Out Tests
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Telemetry Opt-Out
+        run: |
+          echo "Running telemetry opt-out validation tests..."
+          docker run --rm \
+            -v "$(pwd)/tests/integration/test-telemetry.sh:/test-telemetry.sh:ro" \
+            ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
+            bash /test-telemetry.sh
+
+      # -------------------------------------------------------------
+      # 18. Run Negative Tests (Restrictions)
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Negative Tests (Restrictions)
+        run: |
+          echo "Running negative tests (restrictions validation)..."
+          docker run --rm \
+            -v "$(pwd)/tests/negative/test-restrictions.sh:/test-restrictions.sh:ro" \
+            ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
+            bash /test-restrictions.sh
+
+      # -------------------------------------------------------------
+      # 19. Generate test summary
       # -------------------------------------------------------------
       - name: 📋 Generate Test Summary
         if: always()
@@ -476,15 +556,13 @@ jobs:
             echo ""
             echo "### Test Coverage"
             echo ""
-            if [ "${{ matrix.variant.name }}" == "base" ]; then
-              echo "✅ Goss Container Tests"
-              echo "  - Filesystem structure validation (goss.yaml)"
-              echo "  - Command availability tests"
-              echo "  - Environment variable checks"
-              echo "  - User and group validation"
-              echo "  - Package verification"
-              echo ""
-            fi
+            echo "✅ Variant-Specific Goss Container Tests"
+            echo "  - Filesystem structure validation (goss-${{ matrix.variant.name }}.yaml)"
+            echo "  - Command availability tests"
+            echo "  - Environment variable checks"
+            echo "  - User and group validation"
+            echo "  - Package verification"
+            echo ""
             echo "✅ Universal Directory Structure Tests"
             echo "  - All /opt/universal/* directories exist"
             echo "  - Correct permissions and ownership (vscode user)"
@@ -515,6 +593,24 @@ jobs:
             echo "  - Critical CLI tools run without error"
             echo "  - Write permissions verified"
             echo ""
+            echo "✅ Variant Inheritance Tests"
+            echo "  - Variant-specific toolchain validated"
+            echo "  - Language runtime availability checked"
+            echo "  - Inheritance from base variant confirmed"
+            echo ""
+            echo "✅ Environment Variable Tests"
+            echo "  - Comprehensive env var validation"
+            echo "  - XDG, locale, and universal paths verified"
+            echo ""
+            echo "✅ Telemetry Opt-Out Tests"
+            echo "  - All telemetry disabled flags verified"
+            echo "  - Framework-specific opt-out validated"
+            echo ""
+            echo "✅ Negative Tests (Restrictions)"
+            echo "  - Variant isolation validated"
+            echo "  - Security restrictions verified"
+            echo "  - No build artifacts left behind"
+            echo ""
             echo "### Results"
             echo ""
             if [ "${{ matrix.variant.name }}" == "base" ] && [ -f goss-report-${{ matrix.variant.name }}.json ]; then
@@ -534,7 +630,7 @@ jobs:
           cat test-summary-${{ matrix.variant.name }}.md >> "$GITHUB_STEP_SUMMARY"
 
       # -------------------------------------------------------------
-      # 16. Upload test artifacts
+      # 20. Upload test artifacts
       # -------------------------------------------------------------
       - name: 📦 Upload Test Artifacts
         uses: actions/upload-artifact@v6
@@ -547,10 +643,10 @@ jobs:
           retention-days: 30
 
       # -------------------------------------------------------------
-      # 17. Check Goss test results (only for base variant)
+      # 21. Check Goss test results for all variants
       # -------------------------------------------------------------
       - name: ❌ Check Goss Test Results
-        if: always() && matrix.variant.name == 'base'
+        if: always()
         run: |
           if [ -f goss-report-${{ matrix.variant.name }}.json ]; then
             # Check if there are any failures in the JSON report

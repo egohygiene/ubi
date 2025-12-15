@@ -458,6 +458,42 @@ Both Ruff and Black are configured in `pyproject.toml`:
 - **Ruff**: Enforces comprehensive linting rules (PEP8, security, best practices)
 - **Black**: Google-style docstrings via Ruff
 
+#### MegaLinter (Comprehensive Code Quality)
+
+**MegaLinter** is a comprehensive linting tool that validates the entire codebase across multiple languages and formats. It runs automatically in CI but can also be run locally for faster feedback.
+
+**Running MegaLinter Locally:**
+
+```bash
+# Using npx (requires Node.js)
+npx mega-linter-runner .
+
+# Or using Docker directly
+docker run --rm \
+  -v $(pwd):/tmp/lint \
+  oxsecurity/megalinter:v8
+```
+
+**What MegaLinter validates:**
+
+- Markdown formatting & links (markdownlint, markdown-link-check)
+- YAML schemas (yamllint)
+- Dockerfile best practices (hadolint)
+- Shell script quality (shellcheck)
+- Python structure (ruff, black, bandit)
+- JSON formatting (jsonlint, prettier)
+- Editorconfig compliance
+- Security vulnerabilities (gitleaks, trivy, checkov)
+- And more (see `.megalinter.yml` for full configuration)
+
+**Configuration:**
+
+MegaLinter is configured via `.megalinter.yml` in the repository root. All linter-specific configs are in the `config/` directory.
+
+**CI Integration:**
+
+The MegaLinter workflow (`.github/workflows/megalinter.yml`) runs on all PRs and pushes to main, providing detailed reports as artifacts.
+
 #### Other Linters
 
 - **ShellCheck**: For shell scripts (runs automatically in VS Code if extension is installed)

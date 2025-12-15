@@ -123,19 +123,27 @@ jobs:
           echo "✅ Goss installed successfully"
 
       # -------------------------------------------------------------
-      # 6. Run Variant-Specific Goss Tests
+      # 6. Determine Goss File for Variant
+      # -------------------------------------------------------------
+      - name: 🔍 Determine Goss File
+        id: goss-file
+        run: |
+          if [ "${{ matrix.variant.name }}" == "base" ]; then
+            echo "file=goss.yaml" >> "$GITHUB_OUTPUT"
+            echo "path=tests/goss/goss.yaml" >> "$GITHUB_OUTPUT"
+          else
+            echo "file=goss-${{ matrix.variant.name }}.yaml" >> "$GITHUB_OUTPUT"
+            echo "path=tests/goss/goss-${{ matrix.variant.name }}.yaml" >> "$GITHUB_OUTPUT"
+          fi
+
+      # -------------------------------------------------------------
+      # 7. Run Variant-Specific Goss Tests
       # -------------------------------------------------------------
       - name: 🧪 Run Goss Container Tests - ${{ matrix.variant.name }}
         env:
           GOSS_FILES_PATH: tests/goss
+          GOSS_FILE: ${{ steps.goss-file.outputs.path }}
         run: |
-          # Determine the correct Goss file for this variant
-          if [ "${{ matrix.variant.name }}" == "base" ]; then
-            GOSS_FILE="tests/goss/goss.yaml"
-          else
-            GOSS_FILE="tests/goss/goss-${{ matrix.variant.name }}.yaml"
-          fi
-
           echo "Running Goss tests on UBI ${{ matrix.variant.name }} variant..."
           echo "Using Goss file: $GOSS_FILE"
 
@@ -145,20 +153,14 @@ jobs:
           dgoss run ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}
 
       # -------------------------------------------------------------
-      # 7. Generate Goss Test Report (JSON)
+      # 8. Generate Goss Test Report (JSON)
       # -------------------------------------------------------------
       - name: 📊 Generate Goss Test Report - ${{ matrix.variant.name }}
         if: always()
         env:
           GOSS_FILES_PATH: tests/goss
+          GOSS_FILE: ${{ steps.goss-file.outputs.file }}
         run: |
-          # Determine the correct Goss file for this variant
-          if [ "${{ matrix.variant.name }}" == "base" ]; then
-            GOSS_FILE="goss.yaml"
-          else
-            GOSS_FILE="goss-${{ matrix.variant.name }}.yaml"
-          fi
-
           echo "Generating Goss test report for ${{ matrix.variant.name }}..."
 
           # Run goss validate with JSON output
@@ -179,7 +181,7 @@ jobs:
           fi
 
       # -------------------------------------------------------------
-      # 8. Run Sanity Tests - Universal Directory Structure
+      # 9. Run Sanity Tests - Universal Directory Structure
       # -------------------------------------------------------------
       - name: 🧪 Test - Validate Universal Directory Structure
         run: |
@@ -215,7 +217,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 9. Run Sanity Tests - XDG Environment Variables
+      # 10. Run Sanity Tests - XDG Environment Variables
       # -------------------------------------------------------------
       - name: 🧪 Test - Validate XDG Environment Variables
         run: |
@@ -287,7 +289,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 10. Run Sanity Tests - Permissions (vscode user)
+      # 11. Run Sanity Tests - Permissions (vscode user)
       # -------------------------------------------------------------
       - name: 🧪 Test - Validate Permissions (vscode user)
         run: |
@@ -318,7 +320,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 11. Run Sanity Tests - Locale Configuration
+      # 12. Run Sanity Tests - Locale Configuration
       # -------------------------------------------------------------
       - name: 🧪 Test - Validate Locale Configuration
         run: |
@@ -349,7 +351,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 12. Run Sanity Tests - Fundamental Tools
+      # 13. Run Sanity Tests - Fundamental Tools
       # -------------------------------------------------------------
       - name: 🧪 Test - Validate Fundamental Tools
         run: |
@@ -390,7 +392,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 13. Run Sanity Tests - Command Suite Smoke Tests
+      # 14. Run Sanity Tests - Command Suite Smoke Tests
       # -------------------------------------------------------------
       - name: 🧪 Test - Command Suite Smoke Tests
         run: |
@@ -446,7 +448,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 14. Run Non-Root User Tests
+      # 15. Run Non-Root User Tests
       # -------------------------------------------------------------
       - name: 🧪 Test - Non-Root User Verification
         run: |
@@ -473,7 +475,7 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 15. Run Variant Inheritance Tests
+      # 16. Run Variant Inheritance Tests
       # -------------------------------------------------------------
       - name: 🧪 Test - Variant Inheritance (${{ matrix.variant.name }})
         run: |
@@ -509,7 +511,7 @@ jobs:
             bash /test-script.sh
 
       # -------------------------------------------------------------
-      # 16. Run Environment Variable Tests
+      # 17. Run Environment Variable Tests
       # -------------------------------------------------------------
       - name: 🧪 Test - Environment Variables
         run: |
@@ -520,7 +522,7 @@ jobs:
             bash /test-env-vars.sh
 
       # -------------------------------------------------------------
-      # 17. Run Telemetry Opt-Out Tests
+      # 18. Run Telemetry Opt-Out Tests
       # -------------------------------------------------------------
       - name: 🧪 Test - Telemetry Opt-Out
         run: |
@@ -531,7 +533,7 @@ jobs:
             bash /test-telemetry.sh
 
       # -------------------------------------------------------------
-      # 18. Run Negative Tests (Restrictions)
+      # 19. Run Negative Tests (Restrictions)
       # -------------------------------------------------------------
       - name: 🧪 Test - Negative Tests (Restrictions)
         run: |
@@ -542,7 +544,7 @@ jobs:
             bash /test-restrictions.sh
 
       # -------------------------------------------------------------
-      # 19. Generate test summary
+      # 20. Generate test summary
       # -------------------------------------------------------------
       - name: 📋 Generate Test Summary
         if: always()
@@ -630,7 +632,7 @@ jobs:
           cat test-summary-${{ matrix.variant.name }}.md >> "$GITHUB_STEP_SUMMARY"
 
       # -------------------------------------------------------------
-      # 20. Upload test artifacts
+      # 21. Upload test artifacts
       # -------------------------------------------------------------
       - name: 📦 Upload Test Artifacts
         uses: actions/upload-artifact@v6
@@ -643,7 +645,7 @@ jobs:
           retention-days: 30
 
       # -------------------------------------------------------------
-      # 21. Check Goss test results for all variants
+      # 22. Check Goss test results for all variants
       # -------------------------------------------------------------
       - name: ❌ Check Goss Test Results
         if: always()

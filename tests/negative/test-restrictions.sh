@@ -88,7 +88,14 @@ fi
 echo "🔒 Testing security restrictions..."
 check "No .env files in root" test ! -f /.env
 check "No .git directory in /opt" test ! -d /opt/.git
-check "No root .ssh directory exposed" test ! -d /root/.ssh || test ! -r /root/.ssh
+
+# Check that /root/.ssh either doesn't exist or is not readable
+if [ -d /root/.ssh ] && [ -r /root/.ssh ]; then
+  echo "❌ No root .ssh directory exposed"
+  ((FAILURES++))
+else
+  echo "✅ No root .ssh directory exposed"
+fi
 echo ""
 
 # =============================================================================

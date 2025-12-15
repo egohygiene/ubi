@@ -50,10 +50,17 @@ echo ""
 # =============================================================================
 echo "🔒 Testing Privacy Configuration..."
 
-# Ensure no analytics or telemetry endpoints are configured
-if env | grep -iq "analytics\|telemetry\|tracking" | grep -v "DISABLED\|OPTOUT\|DO_NOT_TRACK\|TELEMETRY_ENABLED"; then
-  echo "⚠️  Warning: Found potential telemetry-related env vars"
-  env | grep -i "analytics\|telemetry\|tracking" | grep -v "DISABLED\|OPTOUT\|DO_NOT_TRACK\|TELEMETRY_ENABLED" || true
+# Ensure no unexpected analytics or telemetry endpoints are configured
+# We filter out the expected opt-out variables
+UNEXPECTED_TELEMETRY=$(env | grep -i "analytics\|telemetry\|tracking" | \
+  grep -v "DISABLED=1" | \
+  grep -v "OPTOUT=1" | \
+  grep -v "DO_NOT_TRACK=1" | \
+  grep -v "TELEMETRY_ENABLED=0" || true)
+
+if [ -n "$UNEXPECTED_TELEMETRY" ]; then
+  echo "⚠️  Warning: Found potential telemetry-related env vars:"
+  echo "$UNEXPECTED_TELEMETRY"
 fi
 
 echo "✅ Privacy configuration validated"

@@ -184,36 +184,37 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${{ steps.diff.outputs.has_changes }}" == "true" ]; then
-            echo "✅ **Auto-fixes applied and PR created!**" >> \
-              "$GITHUB_STEP_SUMMARY"
+            echo "✅ **Auto-fixes applied and PR created!**" \
+              >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "### 📦 Artifacts Available" >> "$GITHUB_STEP_SUMMARY"
             echo "- 📋 MegaLinter Reports" >> "$GITHUB_STEP_SUMMARY"
-            echo "- 📝 Diff Patch (megalinter-fixes.patch)" >> \
-              "$GITHUB_STEP_SUMMARY"
+            echo "- 📝 Diff Patch (megalinter-fixes.patch)" \
+              >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "### 🔄 Next Steps" >> "$GITHUB_STEP_SUMMARY"
-            echo "1. Review the automatically created PR" >> \
-              "$GITHUB_STEP_SUMMARY"
-            echo "2. Download and review the MegaLinter reports" >> \
-              "$GITHUB_STEP_SUMMARY"
-            echo "3. Approve and merge if all changes look good" >> \
-              "$GITHUB_STEP_SUMMARY"
+            echo "1. Review the automatically created PR" \
+              >> "$GITHUB_STEP_SUMMARY"
+            echo "2. Download and review the MegaLinter reports" \
+              >> "$GITHUB_STEP_SUMMARY"
+            echo "3. Approve and merge if all changes look good" \
+              >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "✨ **No auto-fixable issues found!**" >> \
-              "$GITHUB_STEP_SUMMARY"
+            echo "✨ **No auto-fixable issues found!**" \
+              >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Your repository is compliant with MegaLinter rules." >> \
-              "$GITHUB_STEP_SUMMARY"
+            echo "Your repository is compliant with MegaLinter rules." \
+              >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "### 📦 Reports Available" >> "$GITHUB_STEP_SUMMARY"
-            echo "Download the MegaLinter reports artifact to see" \
-              "detailed results." >> "$GITHUB_STEP_SUMMARY"
+            echo "Download the MegaLinter reports artifact" \
+              >> "$GITHUB_STEP_SUMMARY"
+            echo "to see detailed results." >> "$GITHUB_STEP_SUMMARY"
           fi
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "---" >> "$GITHUB_STEP_SUMMARY"
-          echo "**ℹ️ Note:** Some issues may require manual fixes." >> \
-            "$GITHUB_STEP_SUMMARY"
-          echo "Review the MegaLinter reports for any remaining issues." >> \
-            "$GITHUB_STEP_SUMMARY"
+          echo "**ℹ️ Note:** Some issues may require manual fixes." \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "Review the MegaLinter reports for any remaining issues." \
+            >> "$GITHUB_STEP_SUMMARY"

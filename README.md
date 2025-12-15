@@ -60,6 +60,13 @@ UBI is distributed via GitHub Container Registry (GHCR) and consumed by other re
 - 🔄 **Reproducible Builds & Semantic Versioning**
   Every release is tagged with a semantic version, ensuring immutable and auditable deployments.
 
+- 🏗️ **Multi-Architecture Support**
+  Native support for multiple CPU architectures:
+  - `linux/amd64` (x86_64) - Intel/AMD processors
+  - `linux/arm64` (ARM64) - Apple Silicon (M1/M2/M3), AWS Graviton, Raspberry Pi
+  
+  Docker automatically pulls the correct architecture for your platform.
+
 - 📦 **Distributed via GHCR**
   Pull from GitHub Container Registry for fast, reliable access:
   `ghcr.io/egohygiene/ubi`

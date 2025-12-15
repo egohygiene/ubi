@@ -114,6 +114,47 @@ cosign verify \
   ghcr.io/egohygiene/ubi:latest
 ```
 
+### SLSA Build Provenance Attestation
+
+**[SLSA (Supply-chain Levels for Software Artifacts)](https://slsa.dev/)** attestations provide verifiable build provenance:
+
+- **Attestation Type**: SLSA Build Provenance (in-toto format)
+- **SLSA Level**: Level 2+ compliance
+- **What's Attested**: Build environment, inputs, outputs, and GitHub Actions workflow
+- **Storage**: Attestations stored in GitHub's attestation registry and pushed to GHCR
+- **Verification**: Anyone can verify build provenance using GitHub CLI
+
+**Verify attestations:**
+
+```bash
+# Install GitHub CLI (gh)
+# macOS
+brew install gh
+
+# Linux
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh
+
+# Verify attestation for an image
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene
+
+# Verify specific version
+gh attestation verify oci://ghcr.io/egohygiene/ubi:0.1.5 --owner egohygiene
+
+# View attestation details
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene --format json
+```
+
+**What the attestation proves:**
+
+- ✅ Image was built by GitHub Actions in the egohygiene/ubi repository
+- ✅ Specific workflow and commit that produced the image
+- ✅ Build environment details (runner, timestamp)
+- ✅ Reproducibility information for audit trails
+- ✅ Cryptographic link between source code and built artifact
+
 ### Dependency Management
 
 - **Base Image Pinning**: Upstream DevContainers base image is pinned with a digest for reproducibility

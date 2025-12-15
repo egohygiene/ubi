@@ -41,7 +41,7 @@ jobs:
           comment-summary-in-pr: always
 
           # Deny licenses that are incompatible with MIT
-          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
+          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later
 
           # Allow specific licenses that are compatible with MIT
           allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, CC0-1.0

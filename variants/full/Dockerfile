@@ -253,6 +253,14 @@ ENV NVM_DIR="${UNIVERSAL_TOOLBOX}/nvm"
 FROM node-tools AS final
 
 ######################################################################
+# HEALTHCHECK
+######################################################################
+# Validates container health by checking bash, python3, and node availability.
+# This ensures the shell environment and both language runtimes are operational.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD test -x /bin/bash && command -v python3 >/dev/null 2>&1 && command -v node >/dev/null 2>&1 || exit 1
+
+######################################################################
 # Final container command
 ######################################################################
 CMD ["bash", "-lc", "sleep infinity"]

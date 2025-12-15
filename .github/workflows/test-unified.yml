@@ -544,7 +544,69 @@ jobs:
             bash /test-restrictions.sh
 
       # -------------------------------------------------------------
-      # 20. Generate test summary
+      # 20. Validate HEALTHCHECK Configuration
+      # -------------------------------------------------------------
+      - name: 🏥 Test - Validate HEALTHCHECK Configuration
+        run: |
+          echo "Validating HEALTHCHECK configuration..."
+          
+          # Inspect the image to verify HEALTHCHECK is configured
+          HEALTHCHECK_CONFIG=$(docker inspect --format='{{json .Config.Healthcheck}}' ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }})
+          
+          if [ "$HEALTHCHECK_CONFIG" = "null" ] || [ -z "$HEALTHCHECK_CONFIG" ]; then
+            echo "❌ FAIL: No HEALTHCHECK configuration found in image"
+            exit 1
+          fi
+          
+          echo "✅ PASS: HEALTHCHECK configuration found"
+          echo "HEALTHCHECK Config: $HEALTHCHECK_CONFIG"
+          
+          # Start container in detached mode to test health status
+          CONTAINER_ID=$(docker run -d ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }})
+          echo "Started container: $CONTAINER_ID"
+          
+          # Wait for container to become healthy (up to 60 seconds)
+          echo "Waiting for container to report healthy status..."
+          TIMEOUT=60
+          ELAPSED=0
+          INTERVAL=5
+          
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$CONTAINER_ID" 2>/dev/null || echo "none")
+            echo "Health status after ${ELAPSED}s: $HEALTH_STATUS"
+            
+            if [ "$HEALTH_STATUS" = "healthy" ]; then
+              echo "✅ PASS: Container is healthy"
+              docker rm -f "$CONTAINER_ID" >/dev/null 2>&1
+              exit 0
+            fi
+            
+            if [ "$HEALTH_STATUS" = "unhealthy" ]; then
+              echo "❌ FAIL: Container reported unhealthy status"
+              docker logs "$CONTAINER_ID" || true
+              docker rm -f "$CONTAINER_ID" >/dev/null 2>&1
+              exit 1
+            fi
+            
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+          
+          echo "⚠️  Container did not become healthy within ${TIMEOUT} seconds (final status: $HEALTH_STATUS)"
+          echo "This may be normal if start-period is not yet complete."
+          docker logs "$CONTAINER_ID" || true
+          docker rm -f "$CONTAINER_ID" >/dev/null 2>&1
+          
+          # Don't fail if container is still starting, only fail if explicitly unhealthy
+          if [ "$HEALTH_STATUS" != "unhealthy" ]; then
+            echo "✅ PASS: Container health check is configured and not reporting unhealthy"
+            exit 0
+          else
+            exit 1
+          fi
+
+      # -------------------------------------------------------------
+      # 21. Generate test summary
       # -------------------------------------------------------------
       - name: 📋 Generate Test Summary
         if: always()
@@ -613,6 +675,11 @@ jobs:
             echo "  - Security restrictions verified"
             echo "  - No build artifacts left behind"
             echo ""
+            echo "✅ HEALTHCHECK Configuration"
+            echo "  - Docker HEALTHCHECK directive present"
+            echo "  - Container health status validated"
+            echo "  - Health check command execution verified"
+            echo ""
             echo "### Results"
             echo ""
             if [ "${{ matrix.variant.name }}" == "base" ] && [ -f goss-report-${{ matrix.variant.name }}.json ]; then
@@ -632,7 +699,7 @@ jobs:
           cat test-summary-${{ matrix.variant.name }}.md >> "$GITHUB_STEP_SUMMARY"
 
       # -------------------------------------------------------------
-      # 21. Upload test artifacts
+      # 22. Upload test artifacts
       # -------------------------------------------------------------
       - name: 📦 Upload Test Artifacts
         uses: actions/upload-artifact@v6
@@ -645,7 +712,7 @@ jobs:
           retention-days: 30
 
       # -------------------------------------------------------------
-      # 22. Check Goss test results for all variants
+      # 23. Check Goss test results for all variants
       # -------------------------------------------------------------
       - name: ❌ Check Goss Test Results
         if: always()

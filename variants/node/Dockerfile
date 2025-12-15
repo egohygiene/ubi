@@ -184,6 +184,14 @@ ENV NVM_DIR="${UNIVERSAL_TOOLBOX}/nvm"
 FROM node-tools AS final
 
 ######################################################################
+# HEALTHCHECK
+######################################################################
+# Validates container health by checking bash and node availability.
+# This ensures both the shell environment and Node.js runtime are operational.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD test -x /bin/bash && command -v node >/dev/null 2>&1 || exit 1
+
+######################################################################
 # Final container command
 ######################################################################
 CMD ["bash", "-lc", "sleep infinity"]

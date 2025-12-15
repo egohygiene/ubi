@@ -206,6 +206,14 @@ ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/shims:${PATH}"
 FROM python-tools AS final
 
 ######################################################################
+# HEALTHCHECK
+######################################################################
+# Validates container health by checking bash and python3 availability.
+# This ensures both the shell environment and Python runtime are operational.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD test -x /bin/bash && command -v python3 >/dev/null 2>&1 || exit 1
+
+######################################################################
 # Final container command
 ######################################################################
 CMD ["bash", "-lc", "sleep infinity"]

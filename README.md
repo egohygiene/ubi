@@ -70,6 +70,12 @@ UBI is distributed via GitHub Container Registry (GHCR) and consumed by other re
   docker pull --platform=linux/arm64 ghcr.io/egohygiene/ubi:latest
   ```
 
+- 🏥 **Built-in Health Checks**
+  All variants include Docker HEALTHCHECK instructions for improved observability and runtime stability:
+  - Validates essential tools (bash, python3, node) are operational
+  - Enables container orchestrators to monitor and restart unhealthy containers
+  - Improves CI testing accuracy with health status validation
+
 - 📦 **Distributed via GHCR**
   Pull from GitHub Container Registry for fast, reliable access:
   `ghcr.io/egohygiene/ubi`

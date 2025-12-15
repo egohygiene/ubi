@@ -21,6 +21,7 @@ The original UBI image as defined in `.devcontainer/Dockerfile`. This is the def
 - Comprehensive environment variables for locale, colors, and tooling
 - Base devcontainer utilities
 - All telemetry disabled by default
+- Docker HEALTHCHECK validates bash availability
 
 ---
 
@@ -40,6 +41,7 @@ The most lightweight variant with only foundational environment variables and XD
 - Essential environment variables (locale, colors, basic tooling)
 - Telemetry controls
 - Basic system utilities from the devcontainer base
+- Docker HEALTHCHECK validates bash availability
 
 **What's NOT included:**
 - Python runtime, pip, or development tools
@@ -70,6 +72,7 @@ Python-focused variant with Python runtime and package management tools.
 - Python build dependencies (build-essential, libssl-dev, zlib1g-dev, libbz2-dev, libreadline-dev, libsqlite3-dev, libxml2-dev, libxmlsec1-dev, libffi-dev, liblzma-dev, etc.)
 - Python-specific environment variables (PYTHONUNBUFFERED, PYTHONUTF8, PIP_NO_CACHE_DIR, etc.)
 - pyenv environment variables pre-configured at `$UNIVERSAL_TOOLBOX/pyenv` (install pyenv manually if needed)
+- Docker HEALTHCHECK validates bash and python3 availability
 
 **Image size:** Medium (~1.2GB)
 
@@ -97,6 +100,7 @@ Node.js-focused variant with Node.js runtime and package management tools.
 - Node.js build dependencies (build-essential, libssl-dev)
 - Node-specific environment variables (NODE_OPTIONS, telemetry controls)
 - nvm environment variables pre-configured at `$UNIVERSAL_TOOLBOX/nvm` (install nvm manually if needed)
+- Docker HEALTHCHECK validates bash and node availability
 
 **Image size:** Medium (~1.1GB)
 
@@ -121,6 +125,7 @@ The full-featured "kitchen sink" variant with all development tools and runtimes
 - Everything from Node variant
 - All language runtimes and package managers
 - Complete development toolchain
+- Docker HEALTHCHECK validates bash, python3, and node availability
 
 **Image size:** Largest (~2.0GB+)
 

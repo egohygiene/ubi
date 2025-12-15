@@ -216,6 +216,14 @@ RUN mkdir -p \
 FROM environment AS final
 
 ######################################################################
+# HEALTHCHECK
+######################################################################
+# Validates container health by checking bash executable availability.
+# This ensures the container's fundamental shell environment is operational.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD test -x /bin/bash || exit 1
+
+######################################################################
 # Final container command
 ######################################################################
 CMD ["bash", "-lc", "sleep infinity"]

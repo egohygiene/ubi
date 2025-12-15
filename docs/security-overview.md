@@ -240,22 +240,61 @@ UBI generates an SBOM for every published image, providing full transparency int
 
 ### Accessing SBOMs
 
-1. **GitHub Artifacts:**
-   - Published with every release
-   - 90-day retention
-   - Download from workflow runs
+SBOMs are generated for **each UBI variant** during the publish workflow and are available in multiple ways:
 
-2. **Generate Locally:**
+#### 1. GitHub Release Assets
+
+Download pre-generated SBOMs from any release:
+
+```bash
+# Download SBOM for base variant
+curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-base-sbom-0.1.5.spdx.json
+
+# Download SBOM for python variant
+curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-python-sbom-0.1.5.spdx.json
+
+# Download SBOM for node variant
+curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-node-sbom-0.1.5.spdx.json
+
+# Download SBOM for full variant
+curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-full-sbom-0.1.5.spdx.json
+
+# Download SBOM for minimal variant
+curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-minimal-sbom-0.1.5.spdx.json
+```
+
+**Benefits:**
+- ✅ Pre-generated at build time (no need to generate locally)
+- ✅ Permanently archived with each release
+- ✅ Cryptographically tied to image digest
+- ✅ Supports compliance and audit requirements
+
+#### 2. GitHub Workflow Artifacts
+
+Download from workflow runs (90-day retention):
+- Navigate to: <https://github.com/egohygiene/ubi/actions/workflows/publish.yml>
+- Select a workflow run
+- Download artifacts: `ubi-{variant}-sbom-{version}`
+
+#### 3. Generate Locally
+
+Generate SBOMs on-demand for any variant:
 
    ```bash
    # Install Syft
    brew install syft
 
-   # Generate SBOM
-   syft ghcr.io/egohygiene/ubi:0.1.5 -o spdx-json > ubi-sbom.json
+   # Generate SBOM for base variant
+   syft ghcr.io/egohygiene/ubi:0.1.5 -o spdx-json > ubi-base-sbom.json
 
-   # View summary
+   # Generate SBOM for python variant
+   syft ghcr.io/egohygiene/ubi:0.1.5-python -o spdx-json > ubi-python-sbom.json
+
+   # View summary (table format)
    syft ghcr.io/egohygiene/ubi:0.1.5 -o table
+
+   # Generate in CycloneDX format (alternative to SPDX)
+   syft ghcr.io/egohygiene/ubi:0.1.5 -o cyclonedx-json > ubi-base-sbom.cyclonedx.json
    ```
 
 ### SBOM Use Cases
@@ -266,12 +305,67 @@ UBI generates an SBOM for every published image, providing full transparency int
 - **Regulatory Compliance**: Meet NTIA minimum elements
 - **Incident Response**: Quickly identify affected components
 
+### Verifying and Consuming SBOMs
+
+#### Validate SBOM Structure
+
+```bash
+# Install SPDX tools
+pip install spdx-tools
+
+# Validate SBOM structure
+pyspdxtools -i ubi-base-sbom-0.1.5.spdx.json
+
+# Extract package list
+jq '.packages[] | .name' ubi-base-sbom-0.1.5.spdx.json
+```
+
+#### Scan SBOM for Vulnerabilities
+
+```bash
+# Use Grype to scan SBOM for vulnerabilities
+grype sbom:./ubi-base-sbom-0.1.5.spdx.json
+
+# Use Trivy to scan SBOM
+trivy sbom ubi-base-sbom-0.1.5.spdx.json --severity HIGH,CRITICAL
+```
+
+#### Compare Variants
+
+```bash
+# Compare package counts between variants
+echo "Base packages: $(jq '.packages | length' ubi-base-sbom-0.1.5.spdx.json)"
+echo "Python packages: $(jq '.packages | length' ubi-python-sbom-0.1.5.spdx.json)"
+echo "Full packages: $(jq '.packages | length' ubi-full-sbom-0.1.5.spdx.json)"
+
+# Find packages unique to python variant
+comm -13 \
+  <(jq -r '.packages[].name' ubi-base-sbom-0.1.5.spdx.json | sort) \
+  <(jq -r '.packages[].name' ubi-python-sbom-0.1.5.spdx.json | sort)
+```
+
+#### Integrate with CI/CD
+
+```yaml
+# Example GitHub Action to verify SBOM in downstream projects
+- name: Download and verify UBI SBOM
+  run: |
+    VERSION="0.1.5"
+    curl -L -O "https://github.com/egohygiene/ubi/releases/download/${VERSION}/ubi-base-sbom-${VERSION}.spdx.json"
+    
+    # Scan for vulnerabilities
+    grype sbom:./ubi-base-sbom-${VERSION}.spdx.json --fail-on high
+```
+
 ### SBOM Best Practices
 
-1. **Archive SBOMs**: Store with release artifacts
-2. **Regular Review**: Periodically audit components
-3. **Automate Checks**: Integrate SBOM scanning into CI/CD
-4. **Share with Consumers**: Make available to downstream users
+1. **Pin Specific Versions**: Use version-specific SBOMs, not `latest`
+2. **Archive SBOMs**: Store with your own release artifacts alongside derived images
+3. **Regular Review**: Periodically audit components in your base image
+4. **Automate Checks**: Integrate SBOM vulnerability scanning into CI/CD
+5. **Variant Selection**: Choose the minimal variant needed to reduce supply chain risk
+6. **Share with Consumers**: Make SBOMs available to your downstream users
+7. **Track Changes**: Monitor SBOM differences between versions to understand what changed
 
 ---
 

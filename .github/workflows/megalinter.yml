@@ -37,7 +37,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 🧹 MegaLinter
         id: ml
-        uses: oxsecurity/megalinter@v8.1.0
+        uses: oxsecurity/megalinter@v9.2.0
         env:
           # Apply all formatters and linters
           # Don't apply fixes in CI (controlled by .megalinter.yml)

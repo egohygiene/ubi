@@ -1,0 +1,200 @@
+---
+# =============================================================================
+# Goss Container Test Configuration for UBI Minimal Variant
+# =============================================================================
+# This file validates the UBI Minimal variant container environment.
+# The minimal variant should only have base system tools without heavy
+# language runtimes like Python or Node.js.
+#
+# Test Categories:
+# - Filesystem Structure: /opt/universal/* directories
+# - Permissions: vscode user access
+# - Commands: Only base system utilities (no python, node)
+# - Environment Variables: XDG paths, locale, telemetry
+# =============================================================================
+
+# =============================================================================
+# FILESYSTEM STRUCTURE TESTS
+# =============================================================================
+file:
+  # Universal Home Directory
+  /opt/universal:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Bin Directory
+  /opt/universal/bin:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Toolbox Directory (XDG_DATA_HOME)
+  /opt/universal/toolbox:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Cache Directory (XDG_CACHE_HOME)
+  /opt/universal/cache:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Logs Directory
+  /opt/universal/logs:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Config Directory (XDG_CONFIG_HOME)
+  /opt/universal/config:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Runtime Directory (XDG_STATE_HOME)
+  /opt/universal/runtime:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+# =============================================================================
+# COMMAND AVAILABILITY TESTS - BASE UTILITIES ONLY
+# =============================================================================
+command:
+  # Shell
+  bash:
+    exit-status: 0
+    exec: "bash --version"
+    stdout:
+      - "GNU bash"
+
+  # Coreutils
+  ls:
+    exit-status: 0
+    exec: "ls --version"
+    stdout:
+      - "GNU coreutils"
+
+  cat:
+    exit-status: 0
+    exec: "cat --version"
+    stdout:
+      - "GNU coreutils"
+
+  grep:
+    exit-status: 0
+    exec: "grep --version"
+    stdout:
+      - "GNU grep"
+
+  # Network Tools
+  curl:
+    exit-status: 0
+    exec: "curl --version"
+    stdout:
+      - "curl"
+
+  wget:
+    exit-status: 0
+    exec: "wget --version"
+    stdout:
+      - "GNU Wget"
+
+  # Version Control
+  git:
+    exit-status: 0
+    exec: "git --version"
+    stdout:
+      - "git version"
+
+# =============================================================================
+# ENVIRONMENT VARIABLE TESTS
+# =============================================================================
+env:
+  # XDG Base Directory Specification
+  XDG_CONFIG_HOME:
+    contains:
+      - "/opt/universal/config"
+
+  XDG_CACHE_HOME:
+    contains:
+      - "/opt/universal/cache"
+
+  XDG_DATA_HOME:
+    contains:
+      - "/opt/universal/toolbox"
+
+  XDG_STATE_HOME:
+    contains:
+      - "/opt/universal/runtime"
+
+  # Locale Configuration
+  LANG:
+    contains:
+      - "en_US.UTF-8"
+
+  LC_ALL:
+    contains:
+      - "en_US.UTF-8"
+
+  # Telemetry Opt-Out Variables
+  DO_NOT_TRACK:
+    contains:
+      - "1"
+
+  TELEMETRY_ENABLED:
+    contains:
+      - "0"
+
+# =============================================================================
+# USER TESTS
+# =============================================================================
+user:
+  vscode:
+    exists: true
+    uid: 1000
+    gid: 1000
+    home: /home/vscode
+
+# =============================================================================
+# GROUP TESTS
+# =============================================================================
+group:
+  vscode:
+    exists: true
+    gid: 1000
+
+# =============================================================================
+# PACKAGE TESTS
+# =============================================================================
+package:
+  bash:
+    installed: true
+
+  coreutils:
+    installed: true
+
+  curl:
+    installed: true
+
+  wget:
+    installed: true
+
+  git:
+    installed: true

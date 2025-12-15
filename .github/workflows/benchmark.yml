@@ -544,7 +544,7 @@ jobs:
           echo "version=$VERSION_CONTENT" >> "$GITHUB_OUTPUT"
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
 

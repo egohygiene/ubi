@@ -1170,6 +1170,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#verifying-and-consuming-sboms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying and Consuming SBOMs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sbom-best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2064,6 +2075,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#verifying-and-consuming-sboms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying and Consuming SBOMs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sbom-best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2765,25 +2787,56 @@
 <li><strong>Tool</strong>: Syft by Anchore</li>
 </ul>
 <h3 id="accessing-sboms">Accessing SBOMs<a class="headerlink" href="#accessing-sboms" title="Permanent link">&para;</a></h3>
-<ol>
-<li><strong>GitHub Artifacts:</strong></li>
-<li>Published with every release</li>
-<li>90-day retention</li>
-<li>
-<p>Download from workflow runs</p>
-</li>
-<li>
-<p><strong>Generate Locally:</strong></p>
-</li>
-</ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Install Syft</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>brew<span class="w"> </span>install<span class="w"> </span>syft
+<p>SBOMs are generated for <strong>each UBI variant</strong> during the publish workflow and are available in multiple ways:</p>
+<h4 id="1-github-release-assets">1. GitHub Release Assets<a class="headerlink" href="#1-github-release-assets" title="Permanent link">&para;</a></h4>
+<p>Download pre-generated SBOMs from any release:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Set your desired version</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Generate SBOM</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:0.1.5<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-sbom.json
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Download SBOM for base variant</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># View summary</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:0.1.5<span class="w"> </span>-o<span class="w"> </span>table
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Download SBOM for python variant</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># Download SBOM for node variant</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-node-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="c1"># Download SBOM for full variant</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-full-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="c1"># Download SBOM for minimal variant</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-minimal-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span></code></pre></div>
+<p><strong>Benefits:</strong>
+- ✅ Pre-generated at build time (no need to generate locally)
+- ✅ Permanently archived with each release
+- ✅ Cryptographically tied to image digest
+- ✅ Supports compliance and audit requirements</p>
+<h4 id="2-github-workflow-artifacts">2. GitHub Workflow Artifacts<a class="headerlink" href="#2-github-workflow-artifacts" title="Permanent link">&para;</a></h4>
+<p>Download from workflow runs (90-day retention):
+- Navigate to: <a href="https://github.com/egohygiene/ubi/actions/workflows/publish.yml">https://github.com/egohygiene/ubi/actions/workflows/publish.yml</a>
+- Select a workflow run
+- Download artifacts: <code>ubi-{variant}-sbom-{version}</code></p>
+<h4 id="3-generate-locally">3. Generate Locally<a class="headerlink" href="#3-generate-locally" title="Permanent link">&para;</a></h4>
+<p>Generate SBOMs on-demand for any variant:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Install Syft</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>brew<span class="w"> </span>install<span class="w"> </span>syft
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Set your desired version</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Generate SBOM for base variant</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.json&quot;</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Generate SBOM for python variant</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">-python&quot;</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.json&quot;</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="c1"># View summary (table format)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span>table
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="c1"># Generate in CycloneDX format (alternative to SPDX)</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span>cyclonedx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.cyclonedx.json&quot;</span>
 </span></code></pre></div>
 <h3 id="sbom-use-cases">SBOM Use Cases<a class="headerlink" href="#sbom-use-cases" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2793,19 +2846,70 @@
 <li><strong>Regulatory Compliance</strong>: Meet NTIA minimum elements</li>
 <li><strong>Incident Response</strong>: Quickly identify affected components</li>
 </ul>
+<h3 id="verifying-and-consuming-sboms">Verifying and Consuming SBOMs<a class="headerlink" href="#verifying-and-consuming-sboms" title="Permanent link">&para;</a></h3>
+<h4 id="validate-sbom-structure">Validate SBOM Structure<a class="headerlink" href="#validate-sbom-structure" title="Permanent link">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Install SPDX tools</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>pip<span class="w"> </span>install<span class="w"> </span>spdx-tools
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Set your version</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Validate SBOM structure</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>pyspdxtools<span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># Extract package list</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>jq<span class="w"> </span><span class="s1">&#39;.packages[] | .name&#39;</span><span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span></code></pre></div>
+<h4 id="scan-sbom-for-vulnerabilities">Scan SBOM for Vulnerabilities<a class="headerlink" href="#scan-sbom-for-vulnerabilities" title="Permanent link">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Set your version</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Use Grype to scan SBOM for vulnerabilities</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>grype<span class="w"> </span><span class="s2">&quot;sbom:./ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Use Trivy to scan SBOM</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>trivy<span class="w"> </span>sbom<span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span><span class="w"> </span>--severity<span class="w"> </span>HIGH,CRITICAL
+</span></code></pre></div>
+<h4 id="compare-variants">Compare Variants<a class="headerlink" href="#compare-variants" title="Permanent link">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Set your version</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Compare package counts between variants</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Base packages: </span><span class="k">$(</span>jq<span class="w"> </span><span class="s1">&#39;.packages | length&#39;</span><span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span><span class="k">)</span><span class="s2">&quot;</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Python packages: </span><span class="k">$(</span>jq<span class="w"> </span><span class="s1">&#39;.packages | length&#39;</span><span class="w"> </span><span class="s2">&quot;ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span><span class="k">)</span><span class="s2">&quot;</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Full packages: </span><span class="k">$(</span>jq<span class="w"> </span><span class="s1">&#39;.packages | length&#39;</span><span class="w"> </span><span class="s2">&quot;ubi-full-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span><span class="k">)</span><span class="s2">&quot;</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="c1"># Find packages unique to python variant</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>comm<span class="w"> </span>-13<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">  </span>&lt;<span class="o">(</span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.packages[].name&#39;</span><span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">  </span>&lt;<span class="o">(</span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.packages[].name&#39;</span><span class="w"> </span><span class="s2">&quot;ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span>
+</span></code></pre></div>
+<h4 id="integrate-with-cicd">Integrate with CI/CD<a class="headerlink" href="#integrate-with-cicd" title="Permanent link">&para;</a></h4>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Example GitHub Action to verify SBOM in downstream projects</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Download and verify UBI SBOM</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="no">VERSION=&quot;0.1.5&quot;</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="no">curl -L -O &quot;https://github.com/egohygiene/ubi/releases/download/${VERSION}/ubi-base-sbom-${VERSION}.spdx.json&quot;</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="no"># Scan for vulnerabilities</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="no">grype sbom:./ubi-base-sbom-${VERSION}.spdx.json --fail-on high</span>
+</span></code></pre></div>
 <h3 id="sbom-best-practices">SBOM Best Practices<a class="headerlink" href="#sbom-best-practices" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Archive SBOMs</strong>: Store with release artifacts</li>
-<li><strong>Regular Review</strong>: Periodically audit components</li>
-<li><strong>Automate Checks</strong>: Integrate SBOM scanning into CI/CD</li>
-<li><strong>Share with Consumers</strong>: Make available to downstream users</li>
+<li><strong>Pin Specific Versions</strong>: Use version-specific SBOMs, not <code>latest</code></li>
+<li><strong>Archive SBOMs</strong>: Store with your own release artifacts alongside derived images</li>
+<li><strong>Regular Review</strong>: Periodically audit components in your base image</li>
+<li><strong>Automate Checks</strong>: Integrate SBOM vulnerability scanning into CI/CD</li>
+<li><strong>Variant Selection</strong>: Choose the minimal variant needed to reduce supply chain risk</li>
+<li><strong>Share with Consumers</strong>: Make SBOMs available to your downstream users</li>
+<li><strong>Track Changes</strong>: Monitor SBOM differences between versions to understand what changed</li>
 </ol>
 <hr />
 <h2 id="supply-chain-security">Supply Chain Security<a class="headerlink" href="#supply-chain-security" title="Permanent link">&para;</a></h2>
 <p>UBI implements multiple supply chain security measures:</p>
 <h3 id="1-base-image-pinning">1. Base Image Pinning<a class="headerlink" href="#1-base-image-pinning" title="Permanent link">&para;</a></h3>
 <p>The base image is pinned with a cryptographic digest:</p>
-<div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4</span>
+<div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4</span>
 </span></code></pre></div>
 <p><strong>Benefits:</strong></p>
 <ul>
@@ -2846,11 +2950,11 @@
 <h3 id="5-image-signing-with-cosign">5. Image Signing with Cosign<a class="headerlink" href="#5-image-signing-with-cosign" title="Permanent link">&para;</a></h3>
 <p><strong>Status</strong>: ✅ Implemented</p>
 <p>UBI images are cryptographically signed using <a href="https://github.com/sigstore/cosign">Sigstore Cosign</a> with keyless signing:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Verify signed image</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>cosign<span class="w"> </span>verify<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--certificate-identity-regexp<span class="o">=</span><span class="s2">&quot;https://github.com/egohygiene/ubi/&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:latest
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Verify signed image</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>cosign<span class="w"> </span>verify<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>--certificate-identity-regexp<span class="o">=</span><span class="s2">&quot;https://github.com/egohygiene/ubi/&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:latest
 </span></code></pre></div>
 <p><strong>Benefits:</strong></p>
 <ul>
@@ -2876,21 +2980,21 @@
 <li>Signature metadata includes workflow identity and build context</li>
 </ul>
 <p><strong>Verification Example:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Install Cosign</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>brew<span class="w"> </span>install<span class="w"> </span>cosign<span class="w">  </span><span class="c1"># macOS</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># or download from https://github.com/sigstore/cosign/releases</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Verify latest image</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>cosign<span class="w"> </span>verify<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span>--certificate-identity-regexp<span class="o">=</span><span class="s2">&quot;https://github.com/egohygiene/ubi/&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:latest
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1"># Verify specific version</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>cosign<span class="w"> </span>verify<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">  </span>--certificate-identity-regexp<span class="o">=</span><span class="s2">&quot;https://github.com/egohygiene/ubi/&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:0.1.5
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Install Cosign</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>brew<span class="w"> </span>install<span class="w"> </span>cosign<span class="w">  </span><span class="c1"># macOS</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1"># or download from https://github.com/sigstore/cosign/releases</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Verify latest image</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>cosign<span class="w"> </span>verify<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span>--certificate-identity-regexp<span class="o">=</span><span class="s2">&quot;https://github.com/egohygiene/ubi/&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:latest
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="c1"># Verify specific version</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>cosign<span class="w"> </span>verify<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">  </span>--certificate-identity-regexp<span class="o">=</span><span class="s2">&quot;https://github.com/egohygiene/ubi/&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:0.1.5
 </span></code></pre></div>
 <h3 id="6-provenance-future">6. Provenance (Future)<a class="headerlink" href="#6-provenance-future" title="Permanent link">&para;</a></h3>
 <p><strong>Status</strong>: 🔮 Planned</p>
@@ -2925,9 +3029,9 @@
 <ol>
 <li><strong>Pin Specific Versions</strong>: Use version tags, not <code>latest</code></li>
 </ol>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:0.1.5&quot;</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:0.1.5&quot;</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <ol>
 <li>
@@ -2943,7 +3047,7 @@
 <p><strong>Scan Your Images</strong>: Run Trivy on your derived images</p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>trivy<span class="w"> </span>image<span class="w"> </span>your-image:tag
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>trivy<span class="w"> </span>image<span class="w"> </span>your-image:tag
 </span></code></pre></div>
 <ol>
 <li>
@@ -2956,10 +3060,10 @@
 <p><strong>Limit Resources</strong>: Set memory and CPU limits</p>
 </li>
 </ol>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">services</span><span class="p">:</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">dev</span><span class="p">:</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">mem_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4g</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;2.0&#39;</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">services</span><span class="p">:</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">dev</span><span class="p">:</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="nt">mem_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4g</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;2.0&#39;</span>
 </span></code></pre></div>
 <hr />
 <h2 id="reporting-vulnerabilities">Reporting Vulnerabilities<a class="headerlink" href="#reporting-vulnerabilities" title="Permanent link">&para;</a></h2>

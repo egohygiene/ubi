@@ -1386,7 +1386,8 @@
 - XDG-compliant directory structure (<code>/opt/universal/*</code>)
 - Comprehensive environment variables for locale, colors, and tooling
 - Base devcontainer utilities
-- All telemetry disabled by default</p>
+- All telemetry disabled by default
+- Docker HEALTHCHECK validates bash availability</p>
 <hr />
 <h3 id="minimal">🔹 Minimal<a class="headerlink" href="#minimal" title="Permanent link">&para;</a></h3>
 <p><strong>Image:</strong> <code>ghcr.io/egohygiene/ubi:latest-minimal</code> or <code>ghcr.io/egohygiene/ubi:0.1.5-minimal</code></p>
@@ -1400,7 +1401,8 @@
 - XDG-compliant directory structure (<code>/opt/universal/*</code>)
 - Essential environment variables (locale, colors, basic tooling)
 - Telemetry controls
-- Basic system utilities from the devcontainer base</p>
+- Basic system utilities from the devcontainer base
+- Docker HEALTHCHECK validates bash availability</p>
 <p><strong>What's NOT included:</strong>
 - Python runtime, pip, or development tools
 - Node.js runtime, npm, or package managers
@@ -1423,7 +1425,8 @@
 - poetry (dependency management) - best-effort install via pip
 - Python build dependencies (build-essential, libssl-dev, zlib1g-dev, libbz2-dev, libreadline-dev, libsqlite3-dev, libxml2-dev, libxmlsec1-dev, libffi-dev, liblzma-dev, etc.)
 - Python-specific environment variables (PYTHONUNBUFFERED, PYTHONUTF8, PIP_NO_CACHE_DIR, etc.)
-- pyenv environment variables pre-configured at <code>$UNIVERSAL_TOOLBOX/pyenv</code> (install pyenv manually if needed)</p>
+- pyenv environment variables pre-configured at <code>$UNIVERSAL_TOOLBOX/pyenv</code> (install pyenv manually if needed)
+- Docker HEALTHCHECK validates bash and python3 availability</p>
 <p><strong>Image size:</strong> Medium (~1.2GB)</p>
 <p><strong>Note:</strong> Poetry installation may fail in restricted environments but the core Python tooling (python3, pip, venv) is always available. You can install additional version managers like pyenv manually if needed.</p>
 <hr />
@@ -1443,7 +1446,8 @@
 - yarn (alternative package manager) - best-effort install via npm
 - Node.js build dependencies (build-essential, libssl-dev)
 - Node-specific environment variables (NODE_OPTIONS, telemetry controls)
-- nvm environment variables pre-configured at <code>$UNIVERSAL_TOOLBOX/nvm</code> (install nvm manually if needed)</p>
+- nvm environment variables pre-configured at <code>$UNIVERSAL_TOOLBOX/nvm</code> (install nvm manually if needed)
+- Docker HEALTHCHECK validates bash and node availability</p>
 <p><strong>Image size:</strong> Medium (~1.1GB)</p>
 <p><strong>Note:</strong> pnpm and yarn installation may fail in restricted environments but the core Node.js tooling (node, npm) is always available. You can install additional version managers like nvm or volta manually if needed.</p>
 <hr />
@@ -1460,7 +1464,8 @@
 - Everything from Python variant
 - Everything from Node variant
 - All language runtimes and package managers
-- Complete development toolchain</p>
+- Complete development toolchain
+- Docker HEALTHCHECK validates bash, python3, and node availability</p>
 <p><strong>Image size:</strong> Largest (~2.0GB+)</p>
 <hr />
 <h2 id="choosing-a-variant">Choosing a Variant<a class="headerlink" href="#choosing-a-variant" title="Permanent link">&para;</a></h2>

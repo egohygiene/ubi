@@ -1209,10 +1209,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-base-image-pinning" class="md-nav__link">
+  <a href="#1-dependency-review" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Base Image Pinning
+        1. Dependency Review
       
     </span>
   </a>
@@ -1220,10 +1220,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-dependency-tracking" class="md-nav__link">
+  <a href="#2-base-image-pinning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Dependency Tracking
+        2. Base Image Pinning
       
     </span>
   </a>
@@ -1231,10 +1231,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-secure-build-pipeline" class="md-nav__link">
+  <a href="#3-dependency-tracking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Secure Build Pipeline
+        3. Dependency Tracking
       
     </span>
   </a>
@@ -1242,10 +1242,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-reproducible-builds" class="md-nav__link">
+  <a href="#4-secure-build-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Reproducible Builds
+        4. Secure Build Pipeline
       
     </span>
   </a>
@@ -1253,10 +1253,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-image-signing-with-cosign" class="md-nav__link">
+  <a href="#5-reproducible-builds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Image Signing with Cosign
+        5. Reproducible Builds
       
     </span>
   </a>
@@ -1264,10 +1264,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-slsa-build-provenance-attestation" class="md-nav__link">
+  <a href="#6-image-signing-with-cosign" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. SLSA Build Provenance Attestation
+        6. Image Signing with Cosign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-slsa-build-provenance-attestation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. SLSA Build Provenance Attestation
       
     </span>
   </a>
@@ -2103,10 +2114,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-base-image-pinning" class="md-nav__link">
+  <a href="#1-dependency-review" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Base Image Pinning
+        1. Dependency Review
       
     </span>
   </a>
@@ -2114,10 +2125,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-dependency-tracking" class="md-nav__link">
+  <a href="#2-base-image-pinning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Dependency Tracking
+        2. Base Image Pinning
       
     </span>
   </a>
@@ -2125,10 +2136,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-secure-build-pipeline" class="md-nav__link">
+  <a href="#3-dependency-tracking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Secure Build Pipeline
+        3. Dependency Tracking
       
     </span>
   </a>
@@ -2136,10 +2147,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-reproducible-builds" class="md-nav__link">
+  <a href="#4-secure-build-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Reproducible Builds
+        4. Secure Build Pipeline
       
     </span>
   </a>
@@ -2147,10 +2158,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-image-signing-with-cosign" class="md-nav__link">
+  <a href="#5-reproducible-builds" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Image Signing with Cosign
+        5. Reproducible Builds
       
     </span>
   </a>
@@ -2158,10 +2169,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-slsa-build-provenance-attestation" class="md-nav__link">
+  <a href="#6-image-signing-with-cosign" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. SLSA Build Provenance Attestation
+        6. Image Signing with Cosign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-slsa-build-provenance-attestation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. SLSA Build Provenance Attestation
       
     </span>
   </a>
@@ -2885,7 +2907,30 @@
 <hr />
 <h2 id="supply-chain-security">Supply Chain Security<a class="headerlink" href="#supply-chain-security" title="Permanent link">&para;</a></h2>
 <p>UBI implements multiple supply chain security measures:</p>
-<h3 id="1-base-image-pinning">1. Base Image Pinning<a class="headerlink" href="#1-base-image-pinning" title="Permanent link">&para;</a></h3>
+<h3 id="1-dependency-review">1. Dependency Review<a class="headerlink" href="#1-dependency-review" title="Permanent link">&para;</a></h3>
+<p><strong>Status</strong>: ✅ Implemented</p>
+<p>GitHub's Dependency Review Action automatically analyzes dependency changes in all pull requests:</p>
+<ul>
+<li><strong>What it checks</strong>: npm (package.json, package-lock.json) and Python (pyproject.toml) dependencies</li>
+<li><strong>When it runs</strong>: On every pull request to main/master branches</li>
+<li><strong>Scans for</strong>:</li>
+<li>Security vulnerabilities (CVEs from GitHub Advisory Database)</li>
+<li>License compatibility issues (denies GPL/AGPL)</li>
+<li>Deprecated or withdrawn packages</li>
+<li>Potentially malicious packages</li>
+<li><strong>Build Policy</strong>: Fails CI/CD if HIGH or CRITICAL vulnerabilities are introduced</li>
+<li><strong>Results</strong>: Comments directly on PRs with detailed findings and severity information</li>
+</ul>
+<p><strong>View workflow</strong>: <a href="https://github.com/egohygiene/ubi/actions/workflows/dependency-review.yml">Dependency Review Workflow</a></p>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>✅ Prevents vulnerable dependencies from being merged</li>
+<li>✅ Enforces license compliance automatically</li>
+<li>✅ Provides immediate feedback in pull requests</li>
+<li>✅ Strengthens supply chain security posture</li>
+<li>✅ Detects malicious or compromised packages</li>
+</ul>
+<h3 id="2-base-image-pinning">2. Base Image Pinning<a class="headerlink" href="#2-base-image-pinning" title="Permanent link">&para;</a></h3>
 <p>The base image is pinned with a cryptographic digest:</p>
 <div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4</span>
 </span></code></pre></div>
@@ -2902,14 +2947,15 @@
 <li>Man-in-the-middle attacks during pull</li>
 <li>Accidental upstream changes</li>
 </ul>
-<h3 id="2-dependency-tracking">2. Dependency Tracking<a class="headerlink" href="#2-dependency-tracking" title="Permanent link">&para;</a></h3>
+<h3 id="3-dependency-tracking">3. Dependency Tracking<a class="headerlink" href="#3-dependency-tracking" title="Permanent link">&para;</a></h3>
 <p>All dependencies are tracked via:</p>
 <ul>
 <li>SBOM generation (Syft)</li>
 <li>Vulnerability scanning (Trivy)</li>
+<li>Dependency Review Action (for changes in PRs)</li>
 <li>Version pinning in Dockerfile (where applicable)</li>
 </ul>
-<h3 id="3-secure-build-pipeline">3. Secure Build Pipeline<a class="headerlink" href="#3-secure-build-pipeline" title="Permanent link">&para;</a></h3>
+<h3 id="4-secure-build-pipeline">4. Secure Build Pipeline<a class="headerlink" href="#4-secure-build-pipeline" title="Permanent link">&para;</a></h3>
 <p>GitHub Actions workflows use:</p>
 <ul>
 <li>Pinned action versions (e.g., <code>actions/checkout@v4</code>)</li>
@@ -2917,7 +2963,7 @@
 <li>Secrets management via GitHub Secrets</li>
 <li>Isolated build environments</li>
 </ul>
-<h3 id="4-reproducible-builds">4. Reproducible Builds<a class="headerlink" href="#4-reproducible-builds" title="Permanent link">&para;</a></h3>
+<h3 id="5-reproducible-builds">5. Reproducible Builds<a class="headerlink" href="#5-reproducible-builds" title="Permanent link">&para;</a></h3>
 <p>Every build is reproducible via:</p>
 <ul>
 <li>Git commit SHA tags (<code>sha-abc123</code>)</li>
@@ -2925,7 +2971,7 @@
 <li>Locked dependency versions</li>
 <li>Documented build process</li>
 </ul>
-<h3 id="5-image-signing-with-cosign">5. Image Signing with Cosign<a class="headerlink" href="#5-image-signing-with-cosign" title="Permanent link">&para;</a></h3>
+<h3 id="6-image-signing-with-cosign">6. Image Signing with Cosign<a class="headerlink" href="#6-image-signing-with-cosign" title="Permanent link">&para;</a></h3>
 <p><strong>Status</strong>: ✅ Implemented</p>
 <p>UBI images are cryptographically signed using <a href="https://github.com/sigstore/cosign">Sigstore Cosign</a> with keyless signing:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Verify signed image</span>
@@ -2974,7 +3020,7 @@
 </span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">  </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">&quot;https://token.actions.githubusercontent.com&quot;</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">  </span>ghcr.io/egohygiene/ubi:0.1.5
 </span></code></pre></div>
-<h3 id="6-slsa-build-provenance-attestation">6. SLSA Build Provenance Attestation<a class="headerlink" href="#6-slsa-build-provenance-attestation" title="Permanent link">&para;</a></h3>
+<h3 id="7-slsa-build-provenance-attestation">7. SLSA Build Provenance Attestation<a class="headerlink" href="#7-slsa-build-provenance-attestation" title="Permanent link">&para;</a></h3>
 <p><strong>Status</strong>: ✅ Implemented</p>
 <p>UBI generates SLSA build provenance attestations for every published image:</p>
 <ul>

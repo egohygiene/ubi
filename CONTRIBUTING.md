@@ -23,6 +23,11 @@ This document provides comprehensive guidance on how to contribute to the projec
   - [Linting and Formatting](#linting-and-formatting)
   - [Updating CHANGELOG](#updating-changelog)
   - [Commit Message Conventions](#commit-message-conventions)
+- [Automated Dependency Updates](#automated-dependency-updates)
+  - [How Dependabot Works](#how-dependabot-works)
+  - [What Gets Updated](#what-gets-updated)
+  - [Handling Dependabot PRs](#handling-dependabot-prs)
+  - [Configuration](#configuration)
 - [Pull Requests](#pull-requests)
   - [PR Expectations](#pr-expectations)
   - [Required Checks](#required-checks)
@@ -552,6 +557,162 @@ git commit -m "chore: bump version to 0.2.0"
 # CI change
 git commit -m "ci(publish): add support for multi-arch builds"
 ```
+
+---
+
+## Automated Dependency Updates
+
+UBI uses **Dependabot** to automatically monitor and update dependencies across multiple ecosystems. This ensures security vulnerabilities are addressed promptly and dependencies stay current with minimal manual effort.
+
+### How Dependabot Works
+
+Dependabot runs on a **weekly schedule (Mondays at 09:00 UTC)** and checks for updates to:
+
+- **GitHub Actions** used in workflows
+- **Docker base images** in Dockerfiles
+- **Python packages** in `pyproject.toml` (via pip)
+- **Node.js packages** in `package.json` (via npm)
+
+When updates are available, Dependabot automatically:
+
+1. Creates a pull request with the dependency update
+2. Groups related updates together (e.g., all GitHub Actions in one PR)
+3. Adds appropriate labels (`dependencies`, `github-actions`, `python`, `npm`, `docker`)
+4. Uses conventional commit messages (`chore(deps): ...`)
+5. Runs all CI checks on the PR
+
+### What Gets Updated
+
+#### GitHub Actions
+
+All action versions across workflows are updated and grouped into a single PR:
+
+```yaml
+# Example: actions/checkout@v4 → actions/checkout@v5
+```
+
+**Monitoring:** All workflows in `.github/workflows/`
+
+#### Docker Base Images
+
+Base images in the following Dockerfiles are monitored:
+
+- `.devcontainer/Dockerfile` - Main UBI base image
+- `variants/minimal/Dockerfile` - Minimal variant
+- `variants/python/Dockerfile` - Python variant
+- `variants/node/Dockerfile` - Node.js variant
+- `variants/full/Dockerfile` - Full-featured variant
+
+**Important:** Docker updates require careful review because UBI uses **digest pinning** for reproducibility. When accepting Docker updates:
+
+1. Verify the new digest is correct
+2. Update the version comment in the Dockerfile
+3. Test the build locally
+4. Review security scan results
+
+#### Python Packages
+
+Python dependencies in `pyproject.toml` are monitored via pip:
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.5.48"
+```
+
+All Python updates are grouped into a single PR.
+
+#### Node.js Packages
+
+Node.js dependencies in `package.json` are monitored via npm:
+
+```json
+"devDependencies": {
+  "semantic-release": "^24.2.9",
+  "@semantic-release/changelog": "^6.0.3",
+  ...
+}
+```
+
+All npm updates are grouped into a single PR.
+
+### Handling Dependabot PRs
+
+When a Dependabot PR appears:
+
+1. **Review the changes**:
+   - Check the CHANGELOG or release notes for the updated dependency
+   - Verify there are no breaking changes
+   - For Docker updates, check the digest matches the version
+
+2. **Wait for CI checks**:
+   - All PRs must pass automated tests
+   - Security scans must complete successfully
+   - No HIGH or CRITICAL vulnerabilities should be introduced
+
+3. **Test locally (optional but recommended for major updates)**:
+   ```bash
+   # Check out the Dependabot branch
+   gh pr checkout <PR_NUMBER>
+   
+   # For Docker updates, rebuild and test
+   docker build -f .devcontainer/Dockerfile -t ubi:test .
+   docker run -it --rm ubi:test bash
+   
+   # For Python/npm updates, test the affected functionality
+   ```
+
+4. **Approve and merge**:
+   - If CI passes and changes look good, approve the PR
+   - Use "Squash and merge" to keep history clean
+   - Dependabot will automatically rebase if needed
+
+5. **Monitor for issues**:
+   - After merging, verify the next build succeeds
+   - Check for any unexpected behavior
+
+### Configuration
+
+Dependabot is configured in `.github/dependabot.yml`. Key settings:
+
+- **Schedule**: Weekly on Mondays at 09:00 UTC
+- **Commit message prefix**: `chore(deps)` for conventional commits
+- **Grouping**: Related updates bundled into single PRs
+- **Labels**: Automatic labels for filtering and automation
+- **PR limits**: Max 5 open PRs per ecosystem (except GitHub Actions)
+
+**To modify Dependabot behavior:**
+
+1. Edit `.github/dependabot.yml`
+2. Adjust schedules, labels, or grouping rules
+3. See [Dependabot configuration docs](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file)
+
+**Common customizations:**
+
+```yaml
+# Change update frequency
+schedule:
+  interval: "monthly"  # or "daily", "weekly"
+
+# Update timezone
+schedule:
+  timezone: "America/New_York"
+
+# Increase PR limit
+open-pull-requests-limit: 10
+
+# Add custom labels
+labels:
+  - "high-priority"
+  - "auto-merge"
+```
+
+**Disabling Dependabot for a specific ecosystem:**
+
+Comment out or remove the corresponding section in `.github/dependabot.yml`.
 
 ---
 

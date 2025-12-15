@@ -73,3 +73,107 @@ updates:
       python-dependencies:
         patterns:
           - "*"
+
+  # ================================================================
+  # npm - Update Node.js dependencies in package.json
+  # ================================================================
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "npm"
+      - "javascript"
+    # Group all npm dependencies together
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+
+  # ================================================================
+  # Docker - Variant Images (Minimal)
+  # ================================================================
+  - package-ecosystem: "docker"
+    directory: "/variants/minimal"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "variant-minimal"
+    open-pull-requests-limit: 5
+
+  # ================================================================
+  # Docker - Variant Images (Python)
+  # ================================================================
+  - package-ecosystem: "docker"
+    directory: "/variants/python"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "variant-python"
+    open-pull-requests-limit: 5
+
+  # ================================================================
+  # Docker - Variant Images (Node)
+  # ================================================================
+  - package-ecosystem: "docker"
+    directory: "/variants/node"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "variant-node"
+    open-pull-requests-limit: 5
+
+  # ================================================================
+  # Docker - Variant Images (Full)
+  # ================================================================
+  - package-ecosystem: "docker"
+    directory: "/variants/full"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "variant-full"
+    open-pull-requests-limit: 5

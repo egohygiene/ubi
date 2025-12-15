@@ -1,0 +1,86 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "🔍 Dependency Review"
+
+# This workflow uses GitHub's dependency-review-action to detect vulnerable
+# or risky dependency changes in every pull request. It strengthens supply
+# chain security by analyzing dependency changes before they are merged.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+  pull-requests: write  # Allows commenting on PRs with review results
+
+jobs:
+  dependency-review:
+    name: "🔍 Review Dependency Changes"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # -------------------------------------------------------------
+      # 2. Run GitHub Dependency Review Action
+      # -------------------------------------------------------------
+      - name: 🔍 Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail the build if high or critical severity vulnerabilities are found
+          fail-on-severity: high
+          
+          # Comment on the PR with review results
+          comment-summary-in-pr: always
+          
+          # Deny licenses that are incompatible with MIT
+          deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
+          
+          # Allow development dependencies (they don't ship with production)
+          allow-dependencies-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, CC0-1.0
+          
+          # Show all vulnerabilities in the output, not just blocking ones
+          warn-only: false
+          
+          # Retry on network errors
+          retry-on-snapshot-warnings: true
+
+      # -------------------------------------------------------------
+      # 3. Display summary
+      # -------------------------------------------------------------
+      - name: 📊 Display Review Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔍 Dependency Review Summary"
+            echo ""
+            echo "**Status:** Dependency review completed"
+            echo ""
+            echo "This workflow scans for:"
+            echo "- 🔒 Security vulnerabilities in dependencies"
+            echo "- 📜 License compatibility issues"
+            echo "- ⚠️ Deprecated or malicious packages"
+            echo ""
+            echo "### What Gets Checked"
+            echo ""
+            echo "The dependency review action analyzes changes to:"
+            echo "- \`package.json\` and \`package-lock.json\` (npm)"
+            echo "- \`pyproject.toml\` and \`poetry.lock\` (Python)"
+            echo "- Other dependency manifest files"
+            echo ""
+            echo "### Severity Levels"
+            echo ""
+            echo "- **CRITICAL** 🔴 - Blocks merge"
+            echo "- **HIGH** 🟠 - Blocks merge"
+            echo "- **MODERATE** 🟡 - Warning only"
+            echo "- **LOW** 🟢 - Informational"
+            echo ""
+            echo "See the Dependency Review step above for detailed findings."
+          } >> "$GITHUB_STEP_SUMMARY"

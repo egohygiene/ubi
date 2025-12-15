@@ -2,6 +2,18 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: "🧪 Goss Container Testing"
 
+# =============================================================================
+# MULTI-ARCHITECTURE TESTING NOTE
+# =============================================================================
+# This workflow tests images on linux/amd64 (GitHub Actions default).
+# Multi-architecture images (amd64, arm64) are built in publish.yml.
+# ARM64 testing via QEMU emulation is not performed due to:
+# - Performance overhead and longer test times
+# - Potential emulation compatibility issues
+# - Common practice: test on native architecture, build for multiple platforms
+# ARM64 images are validated through the multi-platform build process.
+# =============================================================================
+
 on:
   pull_request:
     branches:

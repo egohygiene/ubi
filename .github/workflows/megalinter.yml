@@ -1,0 +1,110 @@
+---
+# yaml-language-server:
+# $schema=https://json.schemastore.org/github-workflow.json
+name: "🧹 MegaLinter Code Quality"
+
+"on":
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  megalinter:
+    name: "🔍 MegaLinter Analysis"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Full git history for better analysis
+
+      # -------------------------------------------------------------
+      # 2. Run MegaLinter
+      # -------------------------------------------------------------
+      - name: 🧹 MegaLinter
+        id: ml
+        uses: oxsecurity/megalinter@v8.1.0
+        env:
+          # Apply all formatters and linters
+          # Don't apply fixes in CI (controlled by .megalinter.yml)
+          APPLY_FIXES: none
+          # Validate all files in the repository
+          VALIDATE_ALL_CODEBASE: true
+          # Use existing configuration file
+          MEGALINTER_CONFIG: .megalinter.yml
+          # GitHub token for commenting on PRs
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # -------------------------------------------------------------
+      # 3. Upload MegaLinter reports as artifacts
+      # -------------------------------------------------------------
+      - name: 📦 Upload MegaLinter Reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: megalinter-reports
+          path: |
+            reports/megalinter/
+            mega-linter.log
+          retention-days: 30
+
+      # -------------------------------------------------------------
+      # 4. Upload MegaLinter scan results (for GitHub Code Scanning)
+      # -------------------------------------------------------------
+      - name: >-
+          📤 Upload MegaLinter scan results to GitHub Security
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: >-
+            reports/megalinter/megalinter-report.sarif
+
+      # -------------------------------------------------------------
+      # 5. Display summary of findings
+      # -------------------------------------------------------------
+      - name: 📊 Display MegaLinter Summary
+        if: always()
+        run: |
+          {
+            echo "## 🧹 MegaLinter Code Quality Summary"
+            echo ""
+            if [ "${{ steps.ml.outputs.has_updated_sources }}" == "1" ]; then
+              echo "**Status:** ⚠️ Issues Found"
+            else
+              echo "**Status:** ✅ Clean"
+            fi
+            echo ""
+            if [ -f reports/megalinter/SUMMARY.md ]; then
+              cat reports/megalinter/SUMMARY.md
+            else
+              echo "⚠️ Summary file not generated"
+            fi
+            echo ""
+            echo "📥 Download the full MegaLinter reports from the"
+            echo "workflow artifacts for detailed results."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # -------------------------------------------------------------
+      # 6. Fail if linting errors were detected
+      # -------------------------------------------------------------
+      - name: ❌ Check MegaLinter Status
+        if: steps.ml.outputs.has_updated_sources == '1'
+        run: |
+          echo "❌ MegaLinter detected issues in the codebase"
+          echo "Please review the MegaLinter reports and fix the issues"
+          exit 1

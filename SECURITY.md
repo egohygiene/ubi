@@ -70,6 +70,32 @@ UBI employs multiple layers of automated security scanning:
 
 View scan results: [Trivy Scan Workflow](https://github.com/egohygiene/ubi/actions/workflows/trivy-scan.yml)
 
+### Secrets Scanning
+
+**[detect-secrets](https://github.com/Yelp/detect-secrets)** prevents accidental credential leaks:
+
+- **Runs on**: Pull requests and pushes to main
+- **Scans for**: API keys, tokens, passwords, private keys, and other sensitive credentials
+- **Baseline**: Uses `.secrets.baseline` to track known false positives
+- **Enforcement**: Fails CI/CD if new secrets are detected
+- **Local Protection**: Also runs as a pre-commit hook for early detection
+
+View scan results: [Secrets Scan Workflow](https://github.com/egohygiene/ubi/actions/workflows/secrets-scan.yml)
+
+**Handling false positives:**
+
+If the scanner flags non-sensitive data as a secret, update the baseline:
+
+```bash
+# Audit and update baseline
+detect-secrets scan --baseline .secrets.baseline
+
+# Or regenerate from scratch
+detect-secrets scan > .secrets.baseline
+```
+
+After updating the baseline, commit the changes and the workflow will pass.
+
 ### Image Signing with Cosign
 
 **[Sigstore Cosign](https://docs.sigstore.dev/cosign/overview/)** cryptographically signs all published UBI images:

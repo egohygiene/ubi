@@ -39,7 +39,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 🧹 MegaLinter Auto-Fix
         id: ml
-        uses: oxsecurity/megalinter@v8.1.0
+        uses: oxsecurity/megalinter@v9.2.0
         env:
           # Apply all formatters and linters
           APPLY_FIXES: ${{ inputs.apply-fixes || 'all' }}
@@ -112,7 +112,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 🚀 Create Pull Request
         if: steps.diff.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore(lint): apply MegaLinter auto-fixes"

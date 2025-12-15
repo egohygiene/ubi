@@ -504,6 +504,10 @@ UBI generates SLSA build provenance attestations for every published image:
 - **Storage**: GitHub attestation registry and GHCR
 - **Coverage**: All image variants (base, minimal, python, node, full)
 
+**How It Works:**
+
+Each image variant (base, minimal, python, node, full) is built separately with its own Dockerfile and receives its own unique attestation. The attestation is cryptographically linked to the image digest, so any tag pointing to that digest can be verified.
+
 **What's Included:**
 
 - Build environment metadata (GitHub Actions runner details)
@@ -519,13 +523,14 @@ UBI generates SLSA build provenance attestations for every published image:
 brew install gh  # macOS
 # or follow instructions at https://cli.github.com/
 
-# Verify attestation for latest image
+# Verify attestation for base image (latest)
 gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene
 
-# Verify specific variant
-gh attestation verify oci://ghcr.io/egohygiene/ubi:0.1.5-python --owner egohygiene
+# Verify attestation for a specific variant
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest-python --owner egohygiene
+gh attestation verify oci://ghcr.io/egohygiene/ubi:0.1.5-node --owner egohygiene
 
-# View full attestation details
+# View full attestation details in JSON
 gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene --format json | jq
 ```
 

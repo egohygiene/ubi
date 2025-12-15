@@ -123,6 +123,7 @@ cosign verify \
 - **What's Attested**: Build environment, inputs, outputs, and GitHub Actions workflow
 - **Storage**: Attestations stored in GitHub's attestation registry and pushed to GHCR
 - **Verification**: Anyone can verify build provenance using GitHub CLI
+- **Coverage**: Each image variant (base, minimal, python, node, full) has its own attestation linked to its unique digest
 
 **Verify attestations:**
 
@@ -137,13 +138,17 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githu
 sudo apt update
 sudo apt install gh
 
-# Verify attestation for an image
+# Verify attestation for base image
 gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene
 
-# Verify specific version
+# Verify specific version of base image
 gh attestation verify oci://ghcr.io/egohygiene/ubi:0.1.5 --owner egohygiene
 
-# View attestation details
+# Verify a specific variant (e.g., python)
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest-python --owner egohygiene
+gh attestation verify oci://ghcr.io/egohygiene/ubi:0.1.5-python --owner egohygiene
+
+# View attestation details in JSON format
 gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene --format json
 ```
 

@@ -94,7 +94,8 @@ jobs:
               set -e
               pip install -e . --quiet
               echo "Running greet --help..."
-              greet --help
+              OUTPUT=$(greet --help 2>&1)
+              echo "Output: $OUTPUT"
               echo "✅ Help command executed successfully"
             '
 
@@ -394,9 +395,11 @@ jobs:
               echo "Testing Python component..."
               cd python
               pip install -r requirements.txt --quiet
-              python -m processor.main --help || \
-                echo "Python module can be imported"
-              echo "✅ Python component works"
+
+              # Test that processor module can be run
+              echo "Running processor.main --help..."
+              python -m processor.main --help > /dev/null 2>&1
+              echo "✅ Python processor module works"
             '
 
       - name: 🧪 Test Polyglot - Test Node.js Component

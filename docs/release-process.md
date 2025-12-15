@@ -28,9 +28,17 @@ graph TD
     B --> C[Commit with version changes]
     C --> D[Create Git Tag]
     D --> E[Push to GitHub]
-    E --> F[Auto-trigger Publish Workflow]
+    E --> F[Auto-trigger Test Workflow]
     E --> K[Auto-trigger Release Notes Workflow]
-    F --> G[Build Multi-Platform Image]
+    F --> O[Run Unified Container Tests]
+    O --> P{Tests Pass?}
+    P -->|Yes| Q[Auto-trigger Trivy Scan]
+    P -->|No| R[Block Pipeline]
+    Q --> S[Security Vulnerability Scan]
+    S --> T{Scan Pass?}
+    T -->|Yes| U[Auto-trigger Publish Workflow]
+    T -->|No| R
+    U --> G[Build Multi-Platform Image]
     G --> H[Generate SBOM]
     H --> I[Push to GHCR]
     I --> J[Tag: latest, version, sha-XXX]
@@ -45,6 +53,7 @@ graph TD
 - Automated synchronization across files
 - Git tags trigger image publishing
 - Semantic versioning (SemVer) enforced
+- **Quality gates**: Tests and security scans must pass before publishing
 
 ---
 
@@ -277,13 +286,45 @@ git reset --hard HEAD~1
 
 The `publish.yml` workflow builds and publishes the UBI image to GHCR.
 
+### Workflow Dependencies
+
+UBI implements a **chained CI/CD pipeline** with quality gates to ensure only tested and secure images are published:
+
+```
+test-unified.yml → trivy-scan.yml → publish.yml
+```
+
+**Pipeline Flow:**
+
+1. **🧪 Unified Container Testing** (`test-unified.yml`)
+   - Runs comprehensive tests on all variants
+   - Validates directory structure, environment variables, permissions
+   - Executes Goss container tests
+
+2. **🔒 Container Vulnerability Scan** (`trivy-scan.yml`)
+   - **Dependency**: Only runs after tests pass
+   - Scans image for security vulnerabilities
+   - Fails on CRITICAL or HIGH severity issues
+
+3. **🚀 Publish UBI Image** (`publish.yml`)
+   - **Dependency**: Only runs after security scan passes
+   - Builds and publishes multi-platform images
+   - Generates SBOM and signs images with Cosign
+
+**Benefits:**
+
+- ✅ Prevents publishing broken images
+- ✅ Prevents publishing insecure images
+- ✅ Automated quality assurance
+- ✅ Reduced risk in production
+
 ### Triggers
 
 The publish workflow runs automatically on:
 
-- **Push to main branch** (after version bump commit)
-- **Tag creation** (after version bump workflow)
-- **Manual trigger** (workflow_dispatch)
+- **Successful completion of security scan** (workflow_run after trivy-scan.yml succeeds)
+- **Tag creation** (direct trigger for tagged releases)
+- **Manual trigger** (workflow_dispatch for emergency publishes)
 
 ### Build Process
 
@@ -538,7 +579,11 @@ Use this checklist when preparing a release:
 - [ ] Trigger "🔼 Bump UBI Version" workflow with correct type
 - [ ] Verify workflow completes successfully
 - [ ] Confirm commit and tag created in repository
-- [ ] Wait for "🚀 Publish UBI Image" workflow to trigger
+- [ ] Wait for "🧪 Unified Container Testing" workflow to trigger
+- [ ] Verify all tests pass across all variants
+- [ ] Wait for "🔒 Container Vulnerability Scan" workflow to trigger (after tests pass)
+- [ ] Verify security scan passes with no critical/high vulnerabilities
+- [ ] Wait for "🚀 Publish UBI Image" workflow to trigger (after scan passes)
 - [ ] Verify publish workflow completes successfully
 - [ ] Wait for "📝 Create GitHub Release" workflow to trigger
 - [ ] Verify GitHub Release is created with correct notes and SBOM
@@ -647,6 +692,45 @@ Use this checklist when preparing a release:
    # Then attach to release via GitHub UI
    ```
 
+### Publish Workflow Not Triggered
+
+**Problem:** Tests and security scans pass but publish workflow doesn't run
+
+**Solutions:**
+
+1. Verify the triggering workflow (trivy-scan.yml) completed successfully
+2. Check that the branch is `main` or `master` (workflow_run triggers are branch-specific)
+3. Review GitHub Actions logs for workflow_run trigger events
+4. Manually trigger publish workflow using workflow_dispatch:
+   - Go to: <https://github.com/egohygiene/ubi/actions/workflows/publish.yml>
+   - Click "Run workflow"
+   - Select branch and run
+
+### Tests or Security Scan Failing
+
+**Problem:** Pipeline blocked because tests or security scan failed
+
+**Solutions:**
+
+1. **For test failures:**
+   - Review test-unified.yml workflow logs
+   - Identify which variant or test is failing
+   - Fix the issue in code
+   - Push fix to trigger new test run
+
+2. **For security scan failures:**
+   - Review trivy-scan.yml workflow logs
+   - Check SARIF report in GitHub Security tab
+   - Address CRITICAL or HIGH vulnerabilities
+   - Update base image or dependencies
+   - Push fix to trigger new scan
+
+3. **Emergency publish** (use with caution):
+   - Only if fix will take significant time
+   - Use workflow_dispatch to manually trigger publish
+   - Document known issues in release notes
+   - Create follow-up issue to fix properly
+
 ---
 
 ## Manual Release (Emergency)
@@ -720,6 +804,8 @@ syft ghcr.io/egohygiene/ubi:$VERSION-full -o spdx-json > ubi-full-sbom-$VERSION.
 6. **Keep VERSION file clean** (no extra whitespace)
 7. **Document breaking changes** prominently in CHANGELOG
 8. **Use specific tags** in production, not `latest`
+9. **Monitor the full pipeline** - ensure all quality gates pass
+10. **Don't bypass quality gates** - use manual publish only in emergencies
 
 ---
 

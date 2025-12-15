@@ -379,6 +379,24 @@ Evaluate base image updates when:
 
 **Note**: Always review the [devcontainers release notes](https://github.com/devcontainers/images/releases) before updating to understand what's changing.
 
+#### Automated Monitoring
+
+UBI includes **automated base image monitoring** that runs daily to check for new releases:
+
+- **Workflow**: `.github/workflows/monitor-base-image.yml`
+- **Schedule**: Daily at 00:00 UTC
+- **Actions**: Automatically creates PRs when updates are detected
+- **Security**: Includes Trivy vulnerability scans of new base images
+- **Coverage**: Updates all Dockerfiles (main + variants) simultaneously
+
+When the monitoring workflow detects a new base image version:
+1. It automatically creates a PR with all Dockerfile updates
+2. Runs a Trivy security scan on the new base image
+3. Uploads scan results to GitHub Security and workflow artifacts
+4. Includes version change details and security assessment in the PR
+
+This automation complements Dependabot and provides specialized handling for the critical base image dependency. See [CONTRIBUTING.md](CONTRIBUTING.md#automated-base-image-monitoring) for details.
+
 ---
 
 ## 🔒 Security Scanning

@@ -787,6 +787,141 @@ Comment out or remove the corresponding section in `.github/dependabot.yml`.
 
 ---
 
+## Automated Base Image Monitoring
+
+In addition to Dependabot, UBI includes a **scheduled workflow** that proactively monitors the devcontainers base image for new releases and security updates. This workflow provides an additional layer of automation specifically designed for base image management.
+
+### How It Works
+
+The **Base Image Monitoring workflow** (`.github/workflows/monitor-base-image.yml`) runs **daily at 00:00 UTC** and automatically:
+
+1. **Fetches** the latest version of `mcr.microsoft.com/devcontainers/base` from Microsoft Container Registry
+2. **Compares** the latest digest against the currently pinned digest in all Dockerfiles
+3. **Scans** the new base image for vulnerabilities using Trivy
+4. **Creates** a pull request with updated base image references if an update is available
+5. **Uploads** security scan results to GitHub Security and workflow artifacts
+
+### What Gets Updated
+
+When a new base image version is detected, the workflow automatically updates:
+
+- `.devcontainer/Dockerfile` - Main UBI Dockerfile
+- `variants/minimal/Dockerfile` - Minimal variant
+- `variants/python/Dockerfile` - Python variant
+- `variants/node/Dockerfile` - Node.js variant
+- `variants/full/Dockerfile` - Full-featured variant
+
+Each Dockerfile update includes:
+- New version number in the `FROM` line
+- New SHA256 digest for reproducible builds
+- Updated version comments
+- Updated "LAST UPDATED" timestamp
+
+### Security Scanning
+
+Before creating a PR, the workflow performs a comprehensive Trivy security scan on the new base image:
+
+- **Scan coverage**: CRITICAL, HIGH, MEDIUM, and LOW vulnerabilities
+- **Results location**: 
+  - GitHub Security tab (SARIF format for code scanning)
+  - Workflow artifacts (human-readable table format)
+- **Non-blocking**: The PR is created regardless of findings, but scan results are prominently displayed
+
+### Reviewing Base Image Update PRs
+
+When the monitoring workflow creates a PR:
+
+1. **Review the PR description**:
+   - Check the version change (e.g., `2.1.2` → `2.1.3`)
+   - Note the digest change
+   - Review the automated checklist
+
+2. **Check security scan results**:
+   - View the workflow artifacts for the vulnerability report
+   - Check GitHub Security tab for any new findings
+   - Assess whether vulnerability levels are acceptable
+
+3. **Verify CI checks**:
+   - Ensure all tests pass
+   - Confirm the build succeeds for all variants
+   - Check that no new security issues are introduced
+
+4. **Test locally (recommended)**:
+   ```bash
+   # Check out the PR branch
+   gh pr checkout <PR_NUMBER>
+   
+   # Build and test the updated image
+   docker build -f .devcontainer/Dockerfile -t ubi:test . --no-cache
+   docker run -it --rm ubi:test bash
+   
+   # Verify environment and directory structure
+   ls -la /opt/universal/
+   echo $XDG_CONFIG_HOME
+   ```
+
+5. **Approve and merge**:
+   - If everything looks good, approve the PR
+   - Use "Squash and merge" to keep history clean
+   - The workflow will automatically close after merge
+
+### Manual Workflow Trigger
+
+You can manually trigger the base image monitoring workflow at any time:
+
+1. Go to **Actions** → **🔍 Monitor Base Image Updates**
+2. Click **Run workflow**
+3. Select the `main` branch
+4. Click **Run workflow**
+
+This is useful when:
+- You want to check for updates immediately
+- Testing workflow changes
+- Verifying the workflow runs successfully
+
+### Workflow Configuration
+
+The monitoring workflow is configured with:
+
+- **Schedule**: Daily at 00:00 UTC (via cron: `0 0 * * *`)
+- **Permissions**: 
+  - `contents: write` - For creating branches and commits
+  - `pull-requests: write` - For creating PRs
+  - `security-events: write` - For uploading Trivy SARIF results
+- **PR Labels**: `dependencies`, `docker`, `security`, `automated`
+
+### Disabling or Modifying the Workflow
+
+To modify the monitoring workflow:
+
+1. Edit `.github/workflows/monitor-base-image.yml`
+2. Adjust the schedule, scan settings, or PR creation logic
+3. Test changes by manually triggering the workflow
+
+To disable the workflow:
+
+1. Remove or comment out the `schedule` trigger
+2. Or delete the workflow file entirely
+
+**Note:** Dependabot will still create PRs for Docker base image updates even if this workflow is disabled.
+
+### Comparison with Dependabot
+
+Both automation systems work together to keep base images up to date:
+
+| Feature | Dependabot | Base Image Monitoring |
+|---------|-----------|----------------------|
+| **Trigger** | Weekly (Mondays) | Daily |
+| **Scope** | All Docker images | Devcontainers base only |
+| **Detection** | Version tags | Latest version + digest |
+| **Security Scan** | No | Yes (Trivy) |
+| **Updates** | Version references | Version + digest + comments |
+| **SARIF Upload** | No | Yes (GitHub Security) |
+
+**Recommendation:** Keep both enabled for comprehensive coverage. Dependabot provides broad dependency management, while the monitoring workflow adds specialized handling for the critical base image.
+
+---
+
 ## Pull Requests
 
 ### PR Expectations

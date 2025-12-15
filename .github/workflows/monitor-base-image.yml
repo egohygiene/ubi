@@ -1,0 +1,295 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "🔍 Monitor Base Image Updates"
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC to check for new base image versions
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write       # Required to create branches and commits
+  pull-requests: write  # Required to create PRs
+  issues: write         # Required to create issues
+  security-events: write # Required for Trivy SARIF upload
+
+jobs:
+  check-base-image:
+    name: "🔎 Check for Base Image Updates"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # -------------------------------------------------------------
+      # 2. Determine current base image version and digest
+      # -------------------------------------------------------------
+      - name: 📋 Extract Current Base Image Info
+        id: current
+        run: |
+          # Extract the FROM line from the main Dockerfile
+          FROM_LINE=$(grep -m 1 "^FROM mcr.microsoft.com/devcontainers/base:" .devcontainer/Dockerfile)
+          
+          # Extract version (e.g., "2.1.2")
+          CURRENT_VERSION=$(echo "$FROM_LINE" | sed -n 's/.*base:\([0-9.]*\)@.*/\1/p')
+          
+          # Extract digest (e.g., "sha256:abc123...")
+          CURRENT_DIGEST=$(echo "$FROM_LINE" | sed -n 's/.*@\(sha256:[a-f0-9]*\).*/\1/p')
+          
+          echo "Current version: $CURRENT_VERSION"
+          echo "Current digest: $CURRENT_DIGEST"
+          
+          echo "version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "digest=$CURRENT_DIGEST" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 3. Fetch available tags from Microsoft Container Registry
+      # -------------------------------------------------------------
+      - name: 🌐 Fetch Available Tags
+        id: available
+        run: |
+          # Query MCR for available tags
+          TAGS_JSON=$(curl -s "https://mcr.microsoft.com/v2/devcontainers/base/tags/list" | \
+            jq -r '.tags[] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' | \
+            sort -V | tail -1)
+          
+          LATEST_VERSION="$TAGS_JSON"
+          
+          echo "Latest available version: $LATEST_VERSION"
+          echo "version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 4. Get digest for the latest version
+      # -------------------------------------------------------------
+      - name: 🔐 Get Latest Version Digest
+        id: latest
+        run: |
+          LATEST_VERSION="${{ steps.available.outputs.version }}"
+          
+          # Pull the latest version to get its digest
+          docker pull "mcr.microsoft.com/devcontainers/base:$LATEST_VERSION"
+          
+          # Get the digest
+          LATEST_DIGEST=$(docker inspect "mcr.microsoft.com/devcontainers/base:$LATEST_VERSION" \
+            --format='{{index .RepoDigests 0}}' | sed 's/.*@//')
+          
+          echo "Latest digest: $LATEST_DIGEST"
+          echo "digest=$LATEST_DIGEST" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 5. Compare versions and digests
+      # -------------------------------------------------------------
+      - name: 🔄 Compare Versions
+        id: compare
+        run: |
+          CURRENT_VERSION="${{ steps.current.outputs.version }}"
+          CURRENT_DIGEST="${{ steps.current.outputs.digest }}"
+          LATEST_VERSION="${{ steps.available.outputs.version }}"
+          LATEST_DIGEST="${{ steps.latest.outputs.digest }}"
+          
+          echo "Current: $CURRENT_VERSION ($CURRENT_DIGEST)"
+          echo "Latest:  $LATEST_VERSION ($LATEST_DIGEST)"
+          
+          UPDATE_AVAILABLE="false"
+          
+          # Check if version or digest differs
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ] || [ "$CURRENT_DIGEST" != "$LATEST_DIGEST" ]; then
+            echo "✅ Update available!"
+            UPDATE_AVAILABLE="true"
+          else
+            echo "✅ Already up to date"
+          fi
+          
+          echo "update_available=$UPDATE_AVAILABLE" >> "$GITHUB_OUTPUT"
+
+      # -------------------------------------------------------------
+      # 6. Run Trivy scan on the new base image (if update available)
+      # -------------------------------------------------------------
+      - name: 🔒 Scan New Base Image with Trivy
+        if: steps.compare.outputs.update_available == 'true'
+        id: trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: mcr.microsoft.com/devcontainers/base:${{ steps.available.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-base-scan.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          exit-code: '0'  # Don't fail on vulnerabilities, just report them
+
+      # -------------------------------------------------------------
+      # 7. Upload Trivy scan results
+      # -------------------------------------------------------------
+      - name: 📤 Upload Trivy Results
+        if: steps.compare.outputs.update_available == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-base-scan.sarif'
+          category: 'base-image-update-scan'
+
+      # -------------------------------------------------------------
+      # 8. Generate human-readable vulnerability report
+      # -------------------------------------------------------------
+      - name: 📋 Generate Vulnerability Report
+        if: steps.compare.outputs.update_available == 'true'
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: mcr.microsoft.com/devcontainers/base:${{ steps.available.outputs.version }}
+          format: 'table'
+          output: 'trivy-base-report.txt'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+
+      # -------------------------------------------------------------
+      # 9. Upload vulnerability report as artifact
+      # -------------------------------------------------------------
+      - name: 📦 Upload Vulnerability Report
+        if: steps.compare.outputs.update_available == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: base-image-vulnerability-report
+          path: trivy-base-report.txt
+          retention-days: 30
+
+      # -------------------------------------------------------------
+      # 10. Create PR with base image update (if update available)
+      # -------------------------------------------------------------
+      - name: 🔧 Update Dockerfile with New Base Image
+        if: steps.compare.outputs.update_available == 'true'
+        id: update
+        run: |
+          LATEST_VERSION="${{ steps.available.outputs.version }}"
+          LATEST_DIGEST="${{ steps.latest.outputs.digest }}"
+          CURRENT_VERSION="${{ steps.current.outputs.version }}"
+          CURRENT_DIGEST="${{ steps.current.outputs.digest }}"
+          
+          # Create a new branch for the update
+          BRANCH_NAME="automated/base-image-update-${LATEST_VERSION}"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          
+          # Update all Dockerfiles
+          FILES_TO_UPDATE=(
+            ".devcontainer/Dockerfile"
+            "variants/minimal/Dockerfile"
+            "variants/python/Dockerfile"
+            "variants/node/Dockerfile"
+            "variants/full/Dockerfile"
+          )
+          
+          for FILE in "${FILES_TO_UPDATE[@]}"; do
+            if [ -f "$FILE" ]; then
+              echo "Updating $FILE..."
+              
+              # Update version in FROM line
+              sed -i "s|FROM mcr.microsoft.com/devcontainers/base:${CURRENT_VERSION}@${CURRENT_DIGEST}|FROM mcr.microsoft.com/devcontainers/base:${LATEST_VERSION}@${LATEST_DIGEST}|g" "$FILE"
+              
+              # Update version comment
+              sed -i "s|CURRENT VERSION: ${CURRENT_VERSION}|CURRENT VERSION: ${LATEST_VERSION}|g" "$FILE"
+              
+              # Update digest comment
+              sed -i "s|CURRENT DIGEST: ${CURRENT_DIGEST}|CURRENT DIGEST: ${LATEST_DIGEST}|g" "$FILE"
+              
+              # Update LAST UPDATED comment
+              sed -i "s|LAST UPDATED: .*|LAST UPDATED: $(date +%Y-%m-%d)|g" "$FILE"
+            fi
+          done
+          
+          # Check if there are any changes
+          if git diff --quiet; then
+            echo "No changes detected"
+            echo "changes_made=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changes detected"
+            git add -A
+            
+            # Create commit with message
+            COMMIT_MSG="chore(docker): update base image to ${LATEST_VERSION}"$'\n\n'"Automated update of devcontainers/base image from ${CURRENT_VERSION} to ${LATEST_VERSION}"$'\n\n'"- Version: ${LATEST_VERSION}"$'\n'"- Digest: ${LATEST_DIGEST}"$'\n'"- Previous version: ${CURRENT_VERSION}"$'\n'"- Previous digest: ${CURRENT_DIGEST}"$'\n\n'"This PR was automatically generated by the base image monitoring workflow."$'\n\n'"Security scan results are attached as artifacts and uploaded to GitHub Security."
+            
+            git commit -m "$COMMIT_MSG"
+            git push origin "$BRANCH_NAME"
+            echo "changes_made=true" >> "$GITHUB_OUTPUT"
+            echo "branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          fi
+
+      # -------------------------------------------------------------
+      # 11. Create Pull Request
+      # -------------------------------------------------------------
+      - name: 🔀 Create Pull Request
+        if: steps.compare.outputs.update_available == 'true' && steps.update.outputs.changes_made == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.update.outputs.branch }}
+          title: "chore(docker): update base image to ${{ steps.available.outputs.version }}"
+          body: |
+            ## 🔄 Base Image Update
+            
+            This PR updates the devcontainers base image to version **${{ steps.available.outputs.version }}**.
+            
+            ### Changes
+            - **Previous version:** `${{ steps.current.outputs.version }}`
+            - **New version:** `${{ steps.available.outputs.version }}`
+            - **Previous digest:** `${{ steps.current.outputs.digest }}`
+            - **New digest:** `${{ steps.latest.outputs.digest }}`
+            
+            ### Security Scan
+            A Trivy vulnerability scan has been performed on the new base image. Review the scan results:
+            - Check the workflow artifacts for the detailed vulnerability report
+            - Review the GitHub Security tab for any new vulnerabilities
+            
+            ### Testing
+            Before merging this PR, ensure:
+            - [ ] All CI checks pass
+            - [ ] Security scan shows acceptable vulnerability levels
+            - [ ] Manual testing confirms no breaking changes
+            
+            ### Upgrade Process Documentation
+            For manual base image updates, see [CONTRIBUTING.md](CONTRIBUTING.md).
+            
+            ---
+            
+            🤖 This PR was automatically generated by the [Base Image Monitoring workflow](.github/workflows/monitor-base-image.yml).
+          labels: |
+            dependencies
+            docker
+            security
+            automated
+          draft: false
+
+      # -------------------------------------------------------------
+      # 12. Display summary
+      # -------------------------------------------------------------
+      - name: 📊 Display Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔍 Base Image Monitoring Summary"
+            echo ""
+            echo "**Current Version:** ${{ steps.current.outputs.version }}"
+            echo "**Current Digest:** \`${{ steps.current.outputs.digest }}\`"
+            echo ""
+            echo "**Latest Version:** ${{ steps.available.outputs.version }}"
+            echo "**Latest Digest:** \`${{ steps.latest.outputs.digest }}\`"
+            echo ""
+            
+            if [ "${{ steps.compare.outputs.update_available }}" == "true" ]; then
+              echo "### ✅ Update Available"
+              echo ""
+              echo "A pull request has been created to update the base image."
+              echo ""
+              echo "📋 [View vulnerability scan results in artifacts]"
+              echo ""
+              echo "🔒 [View security scan in GitHub Security tab]"
+            else
+              echo "### ✅ Up to Date"
+              echo ""
+              echo "The base image is already at the latest version."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

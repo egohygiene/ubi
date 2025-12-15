@@ -38,7 +38,8 @@ jobs:
     permissions:
       contents: write     # required for reading repo / metadata
       packages: write     # required for pushing GHCR packages
-      id-token: write     # required for Cosign keyless signing (OIDC)
+      id-token: write     # required for Cosign keyless signing (OIDC) and attestations
+      attestations: write # required for SLSA attestation generation
 
     steps:
       # -------------------------------------------------------------
@@ -155,7 +156,17 @@ jobs:
           echo "${TAGS}"
 
       # -------------------------------------------------------------
-      # 10. Generate SBOM (Software Bill of Materials)
+      # 10. Generate SLSA Build Provenance Attestation
+      # -------------------------------------------------------------
+      - name: 🔐 Generate SLSA Provenance Attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/ubi
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      # -------------------------------------------------------------
+      # 11. Generate SBOM (Software Bill of Materials)
       # -------------------------------------------------------------
       - name: 🧾 Generate SBOM with Syft
         uses: anchore/sbom-action@v0
@@ -165,7 +176,7 @@ jobs:
           output-file: ubi-${{ matrix.variant.name }}-sbom.spdx.json
 
       # -------------------------------------------------------------
-      # 11. Upload SBOM as workflow artifact
+      # 12. Upload SBOM as workflow artifact
       # -------------------------------------------------------------
       - name: 📤 Upload SBOM artifact
         uses: actions/upload-artifact@v6
@@ -175,7 +186,7 @@ jobs:
           retention-days: 90
 
       # -------------------------------------------------------------
-      # 12. Display SBOM generation summary
+      # 13. Display SBOM generation summary
       # -------------------------------------------------------------
       - name: 📊 Display SBOM summary
         if: success() || failure()
@@ -198,7 +209,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       # -------------------------------------------------------------
-      # 13. Display final tag list for clarity
+      # 14. Display final tag list for clarity
       # -------------------------------------------------------------
       - name: 📋 Show published tags
         run: |

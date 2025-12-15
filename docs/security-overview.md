@@ -492,30 +492,59 @@ cosign verify \
   ghcr.io/egohygiene/ubi:0.1.5
 ```
 
-### 6. Provenance (Future)
+### 6. SLSA Build Provenance Attestation
 
-**Status**: 🔮 Planned
+**Status**: ✅ Implemented
 
-Future enhancement will include build provenance attestations:
+UBI generates SLSA build provenance attestations for every published image:
 
-- SLSA Level 3 compliance
-- Signed provenance metadata
-- Cryptographic verification of build steps
+- **SLSA Level**: Level 2+ compliance
+- **Attestation Format**: In-toto SLSA Provenance (v1.0)
+- **Generation**: GitHub Actions `actions/attest-build-provenance@v2`
+- **Storage**: GitHub attestation registry and GHCR
+- **Coverage**: All image variants (base, minimal, python, node, full)
+
+**How It Works:**
+
+Each image variant (base, minimal, python, node, full) is built separately with its own Dockerfile and receives its own unique attestation. The attestation is cryptographically linked to the image digest, so any tag pointing to that digest can be verified.
+
+**What's Included:**
+
+- Build environment metadata (GitHub Actions runner details)
+- Source repository and commit SHA
+- Workflow identity and build parameters
+- Image digest and subject information
+- Cryptographic signature via Sigstore
+
+**Verification:**
+
+```bash
+# Install GitHub CLI
+brew install gh  # macOS
+# or follow instructions at https://cli.github.com/
+
+# Verify attestation for base image (latest)
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene
+
+# Verify attestation for a specific variant
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest-python --owner egohygiene
+gh attestation verify oci://ghcr.io/egohygiene/ubi:0.1.5-node --owner egohygiene
+
+# View full attestation details in JSON
+gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene --format json | jq
+```
+
+**Benefits:**
+
+- ✅ Verifiable build provenance for supply chain security
+- ✅ Proof that images were built by authorized GitHub workflows
+- ✅ Tamper-proof cryptographic link between source and artifact
+- ✅ Compliance with SLSA framework requirements
+- ✅ Enhanced transparency for downstream consumers
 
 ---
 
 ## Future Enhancements
-
-### Build Attestations
-
-**Status**: 🔮 Planned
-
-Implement SLSA build attestations:
-
-- Build environment metadata
-- Build inputs and outputs
-- Signed attestation bundles
-- In-toto provenance format
 
 ### Security Policy as Code
 
@@ -624,12 +653,15 @@ For details on reporting security vulnerabilities, see [SECURITY.md](../SECURITY
 - [NIST Container Security Guide](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf)
 - [Trivy Documentation](https://aquasecurity.github.io/trivy/)
 - [SBOM Minimum Elements (NTIA)](https://www.ntia.gov/files/ntia/publications/sbom_minimum_elements_report.pdf)
+- [SLSA Framework](https://slsa.dev/) - Supply-chain Levels for Software Artifacts
+- [GitHub Attestations](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds) - Build provenance documentation
 
 ### Tools
 
 - [Trivy](https://github.com/aquasecurity/trivy) - Vulnerability scanner
 - [Syft](https://github.com/anchore/syft) - SBOM generator
-- [Cosign](https://github.com/sigstore/cosign) - Container signing (future)
+- [Cosign](https://github.com/sigstore/cosign) - Container image signing
+- [GitHub CLI](https://cli.github.com/) - Attestation verification
 - [Docker Bench Security](https://github.com/docker/docker-bench-security) - Security audit tool
 
 ---

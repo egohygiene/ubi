@@ -101,16 +101,67 @@ jobs:
           allowed-conclusions: success,skipped,neutral
 
       # -------------------------------------------------------------
-      # 5. Download SBOM artifact from publish workflow
+      # 5. Download SBOM artifacts from publish workflow (all variants)
       # -------------------------------------------------------------
-      - name: 📥 Download SBOM artifact
-        id: download-sbom
+      - name: 📥 Download SBOM artifacts (base)
         continue-on-error: true
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: publish.yml
           workflow_conclusion: success
-          name: ubi-sbom-${{ steps.version.outputs.version }}
+          name: ubi-base-sbom-${{ steps.version.outputs.version }}
+          path: ./sbom-artifacts
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: warn
+
+      - name: 📥 Download SBOM artifacts (minimal)
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: publish.yml
+          workflow_conclusion: success
+          name: ubi-minimal-sbom-${{ steps.version.outputs.version }}
+          path: ./sbom-artifacts
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: warn
+
+      - name: 📥 Download SBOM artifacts (python)
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: publish.yml
+          workflow_conclusion: success
+          name: ubi-python-sbom-${{ steps.version.outputs.version }}
+          path: ./sbom-artifacts
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: warn
+
+      - name: 📥 Download SBOM artifacts (node)
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: publish.yml
+          workflow_conclusion: success
+          name: ubi-node-sbom-${{ steps.version.outputs.version }}
+          path: ./sbom-artifacts
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          check_artifacts: true
+          search_artifacts: true
+          if_no_artifact_found: warn
+
+      - name: 📥 Download SBOM artifacts (full)
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: publish.yml
+          workflow_conclusion: success
+          name: ubi-full-sbom-${{ steps.version.outputs.version }}
           path: ./sbom-artifacts
           github_token: ${{ secrets.GITHUB_TOKEN }}
           check_artifacts: true
@@ -123,19 +174,32 @@ jobs:
       - name: 📦 Prepare release assets
         id: prepare-assets
         run: |
-          SBOM_EXISTS=false
+          SBOM_COUNT=0
 
-          if [ -d "./sbom-artifacts" ] && [ -f "./sbom-artifacts/ubi-sbom.spdx.json" ]; then
-            echo "✅ SBOM artifact found"
-            SBOM_EXISTS=true
+          # Create release assets directory if it doesn't exist
+          mkdir -p ./release-assets
 
-            # Rename SBOM file to include version
-            cp ./sbom-artifacts/ubi-sbom.spdx.json "./ubi-sbom-${{ steps.version.outputs.version }}.spdx.json"
+          # Check for each variant SBOM and copy to release assets
+          # NOTE: This list should match the variant matrix in publish.yml
+          # TODO: Consider extracting to a shared configuration file
+          for variant in base minimal python node full; do
+            SBOM_FILE="./sbom-artifacts/ubi-${variant}-sbom.spdx.json"
+            if [ -f "$SBOM_FILE" ]; then
+              echo "✅ SBOM found for variant: $variant"
+              cp "$SBOM_FILE" "./release-assets/ubi-${variant}-sbom-${{ steps.version.outputs.version }}.spdx.json"
+              SBOM_COUNT=$((SBOM_COUNT + 1))
+            else
+              echo "⚠️ SBOM not found for variant: $variant"
+            fi
+          done
+
+          echo "sbom_count=$SBOM_COUNT" >> "$GITHUB_OUTPUT"
+
+          if [ "$SBOM_COUNT" -gt 0 ]; then
+            echo "✅ Total SBOMs prepared: $SBOM_COUNT"
           else
-            echo "⚠️ SBOM artifact not found, release will not include SBOM"
+            echo "⚠️ No SBOM artifacts found, release will not include SBOMs"
           fi
-
-          echo "sbom_exists=$SBOM_EXISTS" >> "$GITHUB_OUTPUT"
 
       # -------------------------------------------------------------
       # 7. Create GitHub Release
@@ -157,17 +221,36 @@ jobs:
             docker pull ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}
             ```
 
-            **Available tags:**
-            - `ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}` (pinned version)
-            - `ghcr.io/${{ github.repository_owner }}/ubi:latest` (latest release)
-            - `ghcr.io/${{ github.repository_owner }}/ubi:sha-<commit>` (exact commit SHA)
+            **Available variants:**
+            - `base` - Base UBI image with essential tools
+            - `minimal` - Minimal footprint variant
+            - `python` - Python development environment
+            - `node` - Node.js development environment  
+            - `full` - Full-featured development environment
+
+            **Image tags format:**
+            - `ghcr.io/${{ github.repository_owner }}/ubi:${{ steps.version.outputs.version }}[-variant]`
+            - `ghcr.io/${{ github.repository_owner }}/ubi:latest[-variant]`
+            - `ghcr.io/${{ github.repository_owner }}/ubi:sha-<commit>[-variant]`
+
+            ## 🧾 Software Bill of Materials (SBOM)
+
+            SPDX JSON SBOMs are attached to this release for each variant:
+            - `ubi-base-sbom-${{ steps.version.outputs.version }}.spdx.json`
+            - `ubi-minimal-sbom-${{ steps.version.outputs.version }}.spdx.json`
+            - `ubi-python-sbom-${{ steps.version.outputs.version }}.spdx.json`
+            - `ubi-node-sbom-${{ steps.version.outputs.version }}.spdx.json`
+            - `ubi-full-sbom-${{ steps.version.outputs.version }}.spdx.json`
+
+            Download and inspect with [Syft](https://github.com/anchore/syft) or any SPDX-compatible tool.
 
             ## 🔗 Links
 
             - [Full CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
             - [Documentation](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/README.md)
+            - [Security Overview](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/docs/security-overview.md)
           files: |
-            ubi-sbom-*.spdx.json
+            release-assets/*.spdx.json
           draft: false
           prerelease: false
           generate_release_notes: false
@@ -186,10 +269,12 @@ jobs:
             echo ""
             echo "### 📦 Release Contents"
             echo "- ✅ Changelog notes extracted"
-            if [ "${{ steps.prepare-assets.outputs.sbom_exists }}" = "true" ]; then
-              echo "- ✅ SBOM attached (ubi-sbom-${{ steps.version.outputs.version }}.spdx.json)"
+            SBOM_COUNT="${{ steps.prepare-assets.outputs.sbom_count }}"
+            if [ "$SBOM_COUNT" -gt 0 ]; then
+              echo "- ✅ SBOMs attached for $SBOM_COUNT variant(s)"
+              echo "  - \`ubi-{variant}-sbom-${{ steps.version.outputs.version }}.spdx.json\`"
             else
-              echo "- ⚠️ SBOM not attached (not yet available)"
+              echo "- ⚠️ SBOMs not attached (not yet available)"
             fi
             echo ""
             echo "### 🔗 View Release"

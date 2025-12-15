@@ -223,9 +223,25 @@ jobs:
             ubi:test-${{ steps.version.outputs.version }} \
             bash -c 'npm install --quiet && npm start'
 
-          # Wait for server to start
+          # Wait for server to start with retry loop
           echo "Waiting for server to start..."
-          sleep 5
+          MAX_RETRIES=30
+          RETRY_COUNT=0
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -s http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "✅ Server is ready after $RETRY_COUNT seconds"
+              break
+            fi
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            sleep 1
+          done
+
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "❌ Server failed to start within 30 seconds"
+            docker logs test-node-express
+            docker stop test-node-express
+            exit 1
+          fi
 
           # Test root endpoint
           echo "Testing root endpoint..."
@@ -434,9 +450,20 @@ jobs:
               set -e
               chmod +x ./scripts/status.sh
               echo "Running status script..."
-              ./scripts/status.sh || \
-                echo "Status script executed (no services expected)"
-              echo "✅ Status script is executable and runs"
+
+              # Run status script and capture output
+              OUTPUT=$(./scripts/status.sh 2>&1 || true)
+              echo "Status output: $OUTPUT"
+
+              # Verify expected output patterns
+              if echo "$OUTPUT" | grep -q "Polyglot Example Status" && \
+                 echo "$OUTPUT" | grep -q "Node.js API Server" && \
+                 echo "$OUTPUT" | grep -q "Python Processor"; then
+                echo "✅ Status script shows expected components"
+              else
+                echo "❌ Status script missing expected output"
+                exit 1
+              fi
             '
 
   # -------------------------------------------------------------

@@ -1,0 +1,225 @@
+---
+# =============================================================================
+# Goss Container Test Configuration for UBI Full Variant
+# =============================================================================
+# This file validates the UBI Full variant container environment.
+# The Full variant should have both Python 3.13+ and Node.js v20.
+#
+# Test Categories:
+# - Filesystem Structure: /opt/universal/* directories
+# - Permissions: vscode user access
+# - Commands: Base utilities + Python + Node.js toolchains
+# - Environment Variables: XDG paths + Python + Node vars
+# - Polyglot tests: Both python and node available
+# =============================================================================
+
+# =============================================================================
+# FILESYSTEM STRUCTURE TESTS
+# =============================================================================
+file:
+  # Universal Home Directory
+  /opt/universal:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Bin Directory
+  /opt/universal/bin:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Toolbox Directory (XDG_DATA_HOME)
+  /opt/universal/toolbox:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Cache Directory (XDG_CACHE_HOME)
+  /opt/universal/cache:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Config Directory (XDG_CONFIG_HOME)
+  /opt/universal/config:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+  # Universal Runtime Directory (XDG_STATE_HOME)
+  /opt/universal/runtime:
+    exists: true
+    filetype: directory
+    owner: vscode
+    group: vscode
+    mode: "0755"
+
+# =============================================================================
+# COMMAND AVAILABILITY TESTS - BASE + PYTHON + NODE
+# =============================================================================
+command:
+  # Shell
+  bash:
+    exit-status: 0
+    exec: "bash --version"
+    stdout:
+      - "GNU bash"
+
+  # Coreutils
+  ls:
+    exit-status: 0
+    exec: "ls --version"
+    stdout:
+      - "GNU coreutils"
+
+  grep:
+    exit-status: 0
+    exec: "grep --version"
+    stdout:
+      - "GNU grep"
+
+  # Version Control
+  git:
+    exit-status: 0
+    exec: "git --version"
+    stdout:
+      - "git version"
+
+  # Python Toolchain
+  python3:
+    exit-status: 0
+    exec: "python3 --version"
+    stdout:
+      - "Python 3"
+
+  pip3:
+    exit-status: 0
+    exec: "pip3 --version"
+    stdout:
+      - "pip"
+
+  python:
+    exit-status: 0
+    exec: "python --version"
+    stdout:
+      - "Python 3"
+
+  pip:
+    exit-status: 0
+    exec: "pip --version"
+    stdout:
+      - "pip"
+
+  # Node.js Toolchain
+  node:
+    exit-status: 0
+    exec: "node --version"
+    stdout:
+      - "v"
+
+  npm:
+    exit-status: 0
+    exec: "npm --version"
+
+# =============================================================================
+# ENVIRONMENT VARIABLE TESTS
+# =============================================================================
+env:
+  # XDG Base Directory Specification
+  XDG_CONFIG_HOME:
+    contains:
+      - "/opt/universal/config"
+
+  XDG_CACHE_HOME:
+    contains:
+      - "/opt/universal/cache"
+
+  XDG_DATA_HOME:
+    contains:
+      - "/opt/universal/toolbox"
+
+  XDG_STATE_HOME:
+    contains:
+      - "/opt/universal/runtime"
+
+  # Locale Configuration
+  LANG:
+    contains:
+      - "en_US.UTF-8"
+
+  LC_ALL:
+    contains:
+      - "en_US.UTF-8"
+
+  # Telemetry Opt-Out Variables
+  DO_NOT_TRACK:
+    contains:
+      - "1"
+
+  TELEMETRY_ENABLED:
+    contains:
+      - "0"
+
+  NEXT_TELEMETRY_DISABLED:
+    contains:
+      - "1"
+
+  # Python-specific environment
+  PYTHONDONTWRITEBYTECODE:
+    contains:
+      - "1"
+
+  PYTHONUNBUFFERED:
+    contains:
+      - "1"
+
+  # Node-specific environment
+  NODE_ENV:
+    contains:
+      - "development"
+
+# =============================================================================
+# USER TESTS
+# =============================================================================
+user:
+  vscode:
+    exists: true
+    uid: 1000
+    gid: 1000
+    home: /home/vscode
+
+# =============================================================================
+# GROUP TESTS
+# =============================================================================
+group:
+  vscode:
+    exists: true
+    gid: 1000
+
+# =============================================================================
+# PACKAGE TESTS
+# =============================================================================
+package:
+  bash:
+    installed: true
+
+  coreutils:
+    installed: true
+
+  git:
+    installed: true
+
+  # Python 3 should be installed
+  python3:
+    installed: true

@@ -388,7 +388,33 @@ comm -13 \
 
 UBI implements multiple supply chain security measures:
 
-### 1. Base Image Pinning
+### 1. Dependency Review
+
+**Status**: ✅ Implemented
+
+GitHub's Dependency Review Action automatically analyzes dependency changes in all pull requests:
+
+- **What it checks**: npm (package.json, package-lock.json) and Python (pyproject.toml) dependencies
+- **When it runs**: On every pull request to main/master branches
+- **Scans for**:
+  - Security vulnerabilities (CVEs from GitHub Advisory Database)
+  - License compatibility issues (denies GPL/AGPL)
+  - Deprecated or withdrawn packages
+  - Potentially malicious packages
+- **Build Policy**: Fails CI/CD if HIGH or CRITICAL vulnerabilities are introduced
+- **Results**: Comments directly on PRs with detailed findings and severity information
+
+**View workflow**: [Dependency Review Workflow](https://github.com/egohygiene/ubi/actions/workflows/dependency-review.yml)
+
+**Benefits:**
+
+- ✅ Prevents vulnerable dependencies from being merged
+- ✅ Enforces license compliance automatically
+- ✅ Provides immediate feedback in pull requests
+- ✅ Strengthens supply chain security posture
+- ✅ Detects malicious or compromised packages
+
+### 2. Base Image Pinning
 
 The base image is pinned with a cryptographic digest:
 
@@ -409,15 +435,16 @@ FROM mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b
 - Man-in-the-middle attacks during pull
 - Accidental upstream changes
 
-### 2. Dependency Tracking
+### 3. Dependency Tracking
 
 All dependencies are tracked via:
 
 - SBOM generation (Syft)
 - Vulnerability scanning (Trivy)
+- Dependency Review Action (for changes in PRs)
 - Version pinning in Dockerfile (where applicable)
 
-### 3. Secure Build Pipeline
+### 4. Secure Build Pipeline
 
 GitHub Actions workflows use:
 
@@ -426,7 +453,7 @@ GitHub Actions workflows use:
 - Secrets management via GitHub Secrets
 - Isolated build environments
 
-### 4. Reproducible Builds
+### 5. Reproducible Builds
 
 Every build is reproducible via:
 
@@ -435,7 +462,7 @@ Every build is reproducible via:
 - Locked dependency versions
 - Documented build process
 
-### 5. Image Signing with Cosign
+### 6. Image Signing with Cosign
 
 **Status**: ✅ Implemented
 
@@ -492,7 +519,7 @@ cosign verify \
   ghcr.io/egohygiene/ubi:0.1.5
 ```
 
-### 6. SLSA Build Provenance Attestation
+### 7. SLSA Build Provenance Attestation
 
 **Status**: ✅ Implemented
 

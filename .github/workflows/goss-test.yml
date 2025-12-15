@@ -10,7 +10,7 @@ name: "🧪 Goss Container Testing"
 # ARM64 testing via QEMU emulation is not performed due to:
 # - Performance overhead and longer test times
 # - Potential emulation compatibility issues
-# - Standard industry practice is to test on native architecture
+# - Common practice: test on native architecture, build for multiple platforms
 # ARM64 images are validated through the multi-platform build process.
 # =============================================================================
 

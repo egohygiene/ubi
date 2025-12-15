@@ -43,8 +43,8 @@ jobs:
           # Deny licenses that are incompatible with MIT
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
 
-          # Allow development dependencies (they don't ship with production)
-          allow-dependencies-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, CC0-1.0
+          # Allow specific licenses that are compatible with MIT
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, CC0-1.0
 
           # Show all vulnerabilities in the output, not just blocking ones
           warn-only: false
@@ -72,7 +72,7 @@ jobs:
             echo ""
             echo "The dependency review action analyzes changes to:"
             echo "- \`package.json\` and \`package-lock.json\` (npm)"
-            echo "- \`pyproject.toml\` and \`poetry.lock\` (Python)"
+            echo "- \`pyproject.toml\` (Python)"
             echo "- Other dependency manifest files"
             echo ""
             echo "### Severity Levels"

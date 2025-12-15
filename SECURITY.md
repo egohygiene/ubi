@@ -167,7 +167,7 @@ gh attestation verify oci://ghcr.io/egohygiene/ubi:latest --owner egohygiene --f
 - **Runs on**: All pull requests to main/master branches
 - **Scans for**: Security vulnerabilities, license compatibility issues, and malicious packages
 - **Severity threshold**: Fails CI/CD if HIGH or CRITICAL vulnerabilities are introduced
-- **Coverage**: Analyzes npm (package.json, package-lock.json) and Python (pyproject.toml, poetry.lock) dependencies
+- **Coverage**: Analyzes npm (package.json, package-lock.json) and Python (pyproject.toml) dependencies
 - **License enforcement**: Denies GPL and AGPL licenses (incompatible with MIT)
 - **Results**: Comments directly on PRs with detailed findings and displays summary in PR checks
 

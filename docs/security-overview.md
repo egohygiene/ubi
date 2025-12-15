@@ -394,7 +394,7 @@ UBI implements multiple supply chain security measures:
 
 GitHub's Dependency Review Action automatically analyzes dependency changes in all pull requests:
 
-- **What it checks**: npm (package.json, package-lock.json) and Python (pyproject.toml, poetry.lock) dependencies
+- **What it checks**: npm (package.json, package-lock.json) and Python (pyproject.toml) dependencies
 - **When it runs**: On every pull request to main/master branches
 - **Scans for**:
   - Security vulnerabilities (CVEs from GitHub Advisory Database)

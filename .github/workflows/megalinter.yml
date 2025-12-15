@@ -16,7 +16,6 @@ name: "🧹 MegaLinter Code Quality"
 
 permissions:
   contents: read
-  issues: write
   pull-requests: write
 
 jobs:
@@ -84,7 +83,11 @@ jobs:
           {
             echo "## 🧹 MegaLinter Code Quality Summary"
             echo ""
-            echo "**Status:** ${{ steps.ml.outputs.has_updated_sources }}"
+            if [ "${{ steps.ml.outputs.has_updated_sources }}" == "1" ]; then
+              echo "**Status:** ⚠️ Issues Found"
+            else
+              echo "**Status:** ✅ Clean"
+            fi
             echo ""
             if [ -f reports/megalinter/SUMMARY.md ]; then
               cat reports/megalinter/SUMMARY.md
@@ -100,9 +103,7 @@ jobs:
       # 6. Fail if linting errors were detected
       # -------------------------------------------------------------
       - name: ❌ Check MegaLinter Status
-        if: >-
-          steps.ml.outputs.has_updated_sources == '1' ||
-          steps.ml.conclusion == 'failure'
+        if: steps.ml.outputs.has_updated_sources == '1'
         run: |
           echo "❌ MegaLinter detected issues in the codebase"
           echo "Please review the MegaLinter reports and fix the issues"

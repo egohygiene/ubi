@@ -3,18 +3,24 @@
 name: "🚀 Publish UBI Image"
 
 on:
-  push:
+  workflow_run:
+    workflows: ["🔒 Container Vulnerability Scan"]
+    types:
+      - completed
     branches:
       - main
       - master
+  push:
     tags:
-        - "*"        # trigger publish on ANY tag push
+      - "*"        # trigger publish on ANY tag push
   workflow_dispatch:
 
 jobs:
   build-and-push:
     name: "📦 Build & Publish UBI Image - ${{ matrix.variant }}"
     runs-on: ubuntu-latest
+    # Only run if the triggering workflow succeeded (for workflow_run) or for other trigger types
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     strategy:
       matrix:

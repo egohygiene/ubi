@@ -7,7 +7,10 @@ on:
     branches:
       - main
       - master
-  push:
+  workflow_run:
+    workflows: ["🧪 Unified Container Testing"]
+    types:
+      - completed
     branches:
       - main
       - master
@@ -25,6 +28,8 @@ jobs:
   trivy-scan:
     name: "🔍 Scan UBI Image for Vulnerabilities"
     runs-on: ubuntu-latest
+    # Only run if the triggering workflow succeeded (for workflow_run) or for other trigger types
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       # -------------------------------------------------------------

@@ -111,12 +111,12 @@ jobs:
 
       # -------------------------------------------------------------
       # 7. Build & Push the UBI Image (multi-platform)
-      # 
+      #
       # Builds and pushes images for multiple architectures:
       # - linux/amd64 (x86_64): Intel/AMD processors
-      # - linux/arm64 (ARM64): Apple Silicon (M1/M2/M3), AWS Graviton, Raspberry Pi
-      # 
-      # Docker will automatically serve the correct architecture when pulled.
+      # - linux/arm64 (ARM64): Apple Silicon, AWS Graviton, Raspberry Pi
+      #
+      # Docker will automatically serve the correct architecture.
       # -------------------------------------------------------------
       - name: 🛠️ Build and Push UBI Image (${{ matrix.variant.name }})
         id: build

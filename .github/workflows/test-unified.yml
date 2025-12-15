@@ -140,7 +140,7 @@ jobs:
 
           # Run goss validate with JSON output
           docker run --rm \
-            -v $(pwd)/tests/goss:/goss \
+            -v "$(pwd)"/tests/goss:/goss \
             -e GOSS_FILE=/goss/goss.yaml \
             ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
             bash -c '
@@ -150,7 +150,7 @@ jobs:
 
           if [ -f goss-report-${{ matrix.variant.name }}.json ]; then
             echo "✅ Goss report generated"
-            cat goss-report-${{ matrix.variant.name }}.json | jq '.' || cat goss-report-${{ matrix.variant.name }}.json
+            jq '.' < goss-report-${{ matrix.variant.name }}.json || cat goss-report-${{ matrix.variant.name }}.json
           else
             echo "⚠️ Goss report not generated (tests may have passed without report)"
           fi
@@ -506,7 +506,7 @@ jobs:
             echo "### Results"
             echo ""
             if [ "${{ matrix.variant.name }}" == "base" ] && [ -f goss-report-${{ matrix.variant.name }}.json ]; then
-              SUMMARY=$(cat goss-report-${{ matrix.variant.name }}.json | jq -r '.summary // empty' 2>/dev/null || echo "")
+              SUMMARY=$(jq -r '.summary // empty' < goss-report-${{ matrix.variant.name }}.json 2>/dev/null || echo "")
               if [ -n "$SUMMARY" ]; then
                 echo "\`\`\`json"
                 echo "$SUMMARY"
@@ -542,7 +542,7 @@ jobs:
         run: |
           if [ -f goss-report-${{ matrix.variant.name }}.json ]; then
             # Check if there are any failures in the JSON report
-            FAILURES=$(cat goss-report-${{ matrix.variant.name }}.json | jq -r '.summary.failed-count // 0' 2>/dev/null || echo "0")
+            FAILURES=$(jq -r '.summary.failed-count // 0' < goss-report-${{ matrix.variant.name }}.json 2>/dev/null || echo "0")
             if [ "$FAILURES" -gt 0 ]; then
               echo "❌ Goss tests failed with $FAILURES failure(s)"
               echo "See goss-report-${{ matrix.variant.name }}.json for details"

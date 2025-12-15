@@ -48,7 +48,7 @@ This file provides context and guidelines for GitHub Copilot when working in the
 ├── .github/
 │   ├── workflows/          # CI/CD workflows
 │   │   ├── publish.yml     # Image build & publish
-│   │   ├── test-image.yml  # Comprehensive image testing (XDG, env vars, permissions)
+│   │   ├── test-unified.yml # Unified container testing (Goss + image validation)
 │   │   ├── trivy-scan.yml  # Security scanning
 │   │   ├── sanity.yml      # Basic CI sanity check
 │   │   ├── bump-version.yml # Automated version bumps
@@ -186,7 +186,7 @@ docker run --rm ubi:test bash -c '
 ```
 
 #### CI/CD Testing
-- **Image Testing**: `.github/workflows/test-image.yml` (runs on PRs and pushes)
+- **Unified Container Testing**: `.github/workflows/test-unified.yml` (runs on PRs and pushes, includes Goss validation and image sanity tests)
 - **Security Scanning**: `.github/workflows/trivy-scan.yml` (runs on PRs, pushes, and weekly)
 - **CHANGELOG Validation**: `.github/workflows/validate-changelog.yml`
 
@@ -254,7 +254,7 @@ Follow **Conventional Commits**:
 
 ### Required Checks
 All PRs must pass:
-1. **🧪 Image Testing Workflow** (`.github/workflows/test-image.yml`): Comprehensive container tests (directory structure, XDG environment variables, permissions, locale, and fundamental tools)
+1. **🧪 Unified Container Testing Workflow** (`.github/workflows/test-unified.yml`): Comprehensive container tests including Goss validation, directory structure, XDG environment variables, permissions, locale, and fundamental tools across all variants
 2. **🔒 Trivy Security Scan** (`.github/workflows/trivy-scan.yml`): Vulnerability scanning
 3. **📋 CHANGELOG Validation** (`.github/workflows/validate-changelog.yml`): Format validation
 4. **🛡️ GitHub Code Scanning**: Security and quality checks

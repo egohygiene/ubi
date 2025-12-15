@@ -311,13 +311,28 @@ npx semantic-release --dry-run --branches $(git branch --show-current)
 
 ### Running Tests
 
-UBI includes automated image testing via the **"🧪 Image Testing Workflow"** (`.github/workflows/test-image.yml`).
+UBI includes automated container testing via the **"🧪 Unified Container Testing Workflow"** (`.github/workflows/test-unified.yml`).
 
 #### Tests Included
 
-1. **Universal Directory Structure**: Validates `/opt/universal/*` paths exist
-2. **Environment Variables**: Checks XDG paths and other ENV vars
-3. **Sanity Checks**: Confirms basic container functionality
+1. **Goss Container Tests**: Comprehensive validation using goss.yaml (base variant only)
+   - Filesystem structure and permissions
+   - Command availability (bash, git, curl, etc.)
+   - Environment variables and XDG compliance
+   - User and group configuration
+   - Package installation verification
+
+2. **Universal Directory Structure**: Validates `/opt/universal/*` paths exist across all variants
+
+3. **Environment Variables**: Checks XDG paths and other ENV vars
+
+4. **Permissions Tests**: Validates vscode user write access
+
+5. **Locale Configuration**: Ensures proper UTF-8 setup
+
+6. **Command Suite**: Tests fundamental tools and operations
+
+7. **Non-Root User Tests**: Verifies container runs correctly as vscode user
 
 #### Run Tests Locally
 
@@ -751,10 +766,12 @@ When submitting a Pull Request, please:
 
 All PRs must pass the following automated checks:
 
-1. **🧪 Image Testing Workflow** (`.github/workflows/test-image.yml`):
-   - Builds the UBI image
-   - Runs container sanity tests
-   - Validates directory structure and environment
+1. **🧪 Unified Container Testing Workflow** (`.github/workflows/test-unified.yml`):
+   - Builds all UBI variants (base, minimal, python, node, full)
+   - Runs Goss validation tests (base variant)
+   - Executes container sanity tests across all variants
+   - Validates directory structure, environment variables, permissions, and tools
+   - Generates structured test reports (JSON + Markdown)
 
 2. **🔒 Trivy Security Scan** (`.github/workflows/trivy-scan.yml`):
    - Scans for vulnerabilities in base image and dependencies

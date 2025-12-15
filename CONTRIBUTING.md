@@ -494,6 +494,26 @@ MegaLinter is configured via `.megalinter.yml` in the repository root. All linte
 
 The MegaLinter workflow (`.github/workflows/megalinter.yml`) runs on all PRs and pushes to main, providing detailed reports as artifacts.
 
+**Auto-Fix Workflow:**
+
+To automatically fix all linting issues and establish a clean baseline:
+
+1. Go to: **Actions** → **"🔧 MegaLinter Auto-Fix"** workflow
+2. Click **"Run workflow"**
+3. Select the branch (usually `main`)
+4. Choose apply-fixes option (default: `all`)
+5. Click **"Run workflow"**
+
+The workflow will:
+
+- Run MegaLinter with auto-fix mode enabled
+- Apply all supported auto-fixes (Markdown, YAML, JSON, Shell scripts, etc.)
+- Create a diff patch of changes
+- Upload MegaLinter reports and patch as artifacts
+- Automatically create a PR titled "🔧 MegaLinter Auto-Fix: Baseline Cleanup"
+
+**Review the auto-generated PR** to ensure all changes are appropriate before merging.
+
 #### Other Linters
 
 - **ShellCheck**: For shell scripts (runs automatically in VS Code if extension is installed)

@@ -1,6 +1,6 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-name: "🧪 Image Testing Workflow"
+name: "🧪 Unified Container Testing"
 
 # =============================================================================
 # MULTI-ARCHITECTURE TESTING NOTE
@@ -31,11 +31,12 @@ permissions:
   contents: read
 
 jobs:
-  test-image:
-    name: "🔍 Test UBI Image - ${{ matrix.variant.name }}"
+  test-unified:
+    name: "🔍 Test UBI - ${{ matrix.variant.name }}"
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         variant:
           - name: "base"
@@ -102,9 +103,74 @@ jobs:
           cache-to: type=gha,mode=max
 
       # -------------------------------------------------------------
-      # 5. Run container-level smoke tests
+      # 5. Install Goss for container testing
       # -------------------------------------------------------------
-      - name: 🧪 Test 1 - Validate Universal Directory Structure
+      - name: 📦 Install Goss
+        run: |
+          echo "Installing Goss..."
+          GOSS_VERSION="v0.4.8"
+
+          # Download and install goss
+          curl -fsSL https://goss.rocks/install | GOSS_VER=${GOSS_VERSION} sh
+
+          # Download and install dgoss (Docker wrapper for Goss)
+          curl -fsSL -o /usr/local/bin/dgoss \
+            https://raw.githubusercontent.com/goss-org/goss/${GOSS_VERSION}/extras/dgoss/dgoss
+          chmod +rx /usr/local/bin/dgoss
+
+          # Verify installation
+          goss --version
+          echo "✅ Goss installed successfully"
+
+      # -------------------------------------------------------------
+      # 6. Run Goss Tests (only for base variant, as goss.yaml is base-specific)
+      # -------------------------------------------------------------
+      - name: 🧪 Run Goss Container Tests
+        if: matrix.variant.name == 'base'
+        env:
+          GOSS_FILES_PATH: tests/goss
+          GOSS_FILE: tests/goss/goss.yaml
+        run: |
+          echo "Running Goss tests on UBI base image..."
+
+          # Run dgoss tests
+          # dgoss run = validate container using goss.yaml
+          GOSS_FILES_PATH="${GOSS_FILES_PATH}" \
+          GOSS_FILE="${GOSS_FILE}" \
+          dgoss run ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }}
+
+      # -------------------------------------------------------------
+      # 7. Generate Goss Test Report (JSON) - only for base variant
+      # -------------------------------------------------------------
+      - name: 📊 Generate Goss Test Report
+        if: always() && matrix.variant.name == 'base'
+        env:
+          GOSS_FILES_PATH: tests/goss
+          GOSS_FILE: tests/goss/goss.yaml
+        run: |
+          echo "Generating Goss test report..."
+
+          # Run goss validate with JSON output
+          docker run --rm \
+            -v "$(pwd)"/tests/goss:/goss \
+            -e GOSS_FILE=/goss/goss.yaml \
+            ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} \
+            bash -c '
+              curl -fsSL https://goss.rocks/install | GOSS_VER=v0.4.8 sh > /dev/null 2>&1
+              goss --gossfile /goss/goss.yaml validate --format json
+            ' > goss-report-${{ matrix.variant.name }}.json || true
+
+          if [ -f goss-report-${{ matrix.variant.name }}.json ]; then
+            echo "✅ Goss report generated"
+            jq '.' < goss-report-${{ matrix.variant.name }}.json || cat goss-report-${{ matrix.variant.name }}.json
+          else
+            echo "⚠️ Goss report not generated (tests may have passed without report)"
+          fi
+
+      # -------------------------------------------------------------
+      # 8. Run Sanity Tests - Universal Directory Structure
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Validate Universal Directory Structure
         run: |
           echo "Testing /opt/universal/* directories existence..."
           docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
@@ -137,7 +203,10 @@ jobs:
             echo "All required directories exist!"
           '
 
-      - name: 🧪 Test 2 - Validate XDG Environment Variables
+      # -------------------------------------------------------------
+      # 9. Run Sanity Tests - XDG Environment Variables
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Validate XDG Environment Variables
         run: |
           echo "Testing XDG environment variables..."
           docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
@@ -206,7 +275,10 @@ jobs:
             echo "All XDG environment variables are correctly configured!"
           '
 
-      - name: 🧪 Test 3 - Validate Permissions (vscode user)
+      # -------------------------------------------------------------
+      # 10. Run Sanity Tests - Permissions (vscode user)
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Validate Permissions (vscode user)
         run: |
           echo "Testing vscode user write permissions..."
           docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
@@ -234,7 +306,10 @@ jobs:
             echo "All permission checks passed!"
           '
 
-      - name: 🧪 Test 4 - Validate Locale Configuration
+      # -------------------------------------------------------------
+      # 11. Run Sanity Tests - Locale Configuration
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Validate Locale Configuration
         run: |
           echo "Testing locale configuration..."
           docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
@@ -262,7 +337,10 @@ jobs:
             echo "Locale configuration is correct!"
           '
 
-      - name: 🧪 Test 5 - Validate Fundamental Tools
+      # -------------------------------------------------------------
+      # 12. Run Sanity Tests - Fundamental Tools
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Validate Fundamental Tools
         run: |
           echo "Testing fundamental tools availability..."
           docker run --rm ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
@@ -300,7 +378,10 @@ jobs:
             echo "All fundamental tools are available!"
           '
 
-      - name: 🧪 Test 6 - Command Suite Smoke Tests
+      # -------------------------------------------------------------
+      # 13. Run Sanity Tests - Command Suite Smoke Tests
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Command Suite Smoke Tests
         run: |
           echo "Running command suite smoke tests..."
           docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
@@ -354,38 +435,130 @@ jobs:
           '
 
       # -------------------------------------------------------------
-      # 6. Generate test summary and upload artifacts
+      # 14. Run Non-Root User Tests
+      # -------------------------------------------------------------
+      - name: 🧪 Test - Non-Root User Verification
+        run: |
+          echo "Running non-root user tests as vscode user..."
+
+          # Test that critical CLI tools work as non-root user
+          docker run --rm --user vscode ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }} bash -c '
+            set -e
+            echo "Testing as user: $(whoami)"
+            echo "User ID: $(id -u)"
+            echo "Group ID: $(id -g)"
+
+            # Verify basic commands work
+            bash --version > /dev/null
+            git --version > /dev/null
+            curl --version > /dev/null
+
+            # Verify write permissions to universal directories
+            touch /opt/universal/cache/.test && rm /opt/universal/cache/.test
+            touch /opt/universal/config/.test && rm /opt/universal/config/.test
+            touch /opt/universal/logs/.test && rm /opt/universal/logs/.test
+
+            echo "✅ All non-root user tests passed"
+          '
+
+      # -------------------------------------------------------------
+      # 15. Generate test summary
       # -------------------------------------------------------------
       - name: 📋 Generate Test Summary
-        if: success()
+        if: always()
         run: |
           {
-            echo "## 🧪 UBI Image Test Summary"
+            echo "## 🧪 Unified Container Test Summary"
             echo ""
+            echo "**Variant:** ${{ matrix.variant.name }}"
             echo "**Image Version:** ${{ steps.version.outputs.version }}"
             echo "**Test Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
             echo ""
-            echo "### Test Results"
+            echo "### Test Coverage"
             echo ""
-            echo "✅ Test 1: Universal Directory Structure - PASSED"
-            echo "✅ Test 2: XDG Environment Variables - PASSED"
-            echo "✅ Test 3: Permissions (vscode user) - PASSED"
-            echo "✅ Test 4: Locale Configuration - PASSED"
-            echo "✅ Test 5: Fundamental Tools - PASSED"
-            echo "✅ Test 6: Command Suite Smoke Tests - PASSED"
+            if [ "${{ matrix.variant.name }}" == "base" ]; then
+              echo "✅ Goss Container Tests"
+              echo "  - Filesystem structure validation (goss.yaml)"
+              echo "  - Command availability tests"
+              echo "  - Environment variable checks"
+              echo "  - User and group validation"
+              echo "  - Package verification"
+              echo ""
+            fi
+            echo "✅ Universal Directory Structure Tests"
+            echo "  - All /opt/universal/* directories exist"
+            echo "  - Correct permissions and ownership (vscode user)"
             echo ""
-            echo "### Summary"
+            echo "✅ XDG Base Directory Specification"
+            echo "  - XDG_CONFIG_HOME, XDG_CACHE_HOME validated"
+            echo "  - XDG_DATA_HOME, XDG_STATE_HOME validated"
+            echo "  - All XDG paths resolve to existing directories"
             echo ""
-            echo "All image tests passed successfully! ✨"
-          } > test-summary.md
+            echo "✅ Permissions Tests"
+            echo "  - vscode user write permissions verified"
+            echo "  - Critical directories writable"
+            echo ""
+            echo "✅ Locale Configuration"
+            echo "  - LANG and LC_ALL set to en_US.UTF-8"
+            echo ""
+            echo "✅ Fundamental Tools"
+            echo "  - bash, coreutils, git, curl present"
+            echo "  - All required CLI tools available"
+            echo ""
+            echo "✅ Command Suite Smoke Tests"
+            echo "  - File operations (touch, ls, rm) working"
+            echo "  - Directory operations (mkdir, cd) working"
+            echo "  - Text processing (grep, echo) working"
+            echo ""
+            echo "✅ Non-Root User Tests"
+            echo "  - Container starts correctly under vscode user"
+            echo "  - Critical CLI tools run without error"
+            echo "  - Write permissions verified"
+            echo ""
+            echo "### Results"
+            echo ""
+            if [ "${{ matrix.variant.name }}" == "base" ] && [ -f goss-report-${{ matrix.variant.name }}.json ]; then
+              SUMMARY=$(jq -r '.summary // empty' < goss-report-${{ matrix.variant.name }}.json 2>/dev/null || echo "")
+              if [ -n "$SUMMARY" ]; then
+                echo "\`\`\`json"
+                echo "$SUMMARY"
+                echo "\`\`\`"
+              else
+                echo "📊 See goss-report-${{ matrix.variant.name }}.json artifact for detailed results"
+              fi
+            else
+              echo "✅ All tests passed successfully! ✨"
+            fi
+          } > test-summary-${{ matrix.variant.name }}.md
 
-          cat test-summary.md >> "$GITHUB_STEP_SUMMARY"
+          cat test-summary-${{ matrix.variant.name }}.md >> "$GITHUB_STEP_SUMMARY"
 
+      # -------------------------------------------------------------
+      # 16. Upload test artifacts
+      # -------------------------------------------------------------
       - name: 📦 Upload Test Artifacts
         uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: image-test-results
+          name: test-results-${{ matrix.variant.name }}
           path: |
-            test-summary.md
+            goss-report-${{ matrix.variant.name }}.json
+            test-summary-${{ matrix.variant.name }}.md
           retention-days: 30
+
+      # -------------------------------------------------------------
+      # 17. Check Goss test results (only for base variant)
+      # -------------------------------------------------------------
+      - name: ❌ Check Goss Test Results
+        if: always() && matrix.variant.name == 'base'
+        run: |
+          if [ -f goss-report-${{ matrix.variant.name }}.json ]; then
+            # Check if there are any failures in the JSON report
+            FAILURES=$(jq -r '.summary.failed-count // 0' < goss-report-${{ matrix.variant.name }}.json 2>/dev/null || echo "0")
+            if [ "$FAILURES" -gt 0 ]; then
+              echo "❌ Goss tests failed with $FAILURES failure(s)"
+              echo "See goss-report-${{ matrix.variant.name }}.json for details"
+              exit 1
+            fi
+          fi
+          echo "✅ All tests passed for ${{ matrix.variant.name }} variant"

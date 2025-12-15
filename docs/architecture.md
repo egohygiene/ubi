@@ -175,10 +175,12 @@ graph LR
    - Scans for CVEs in base image and dependencies
    - Uploads results to GitHub Security tab
 
-4. **`test-image.yml`**: Image validation
-   - Tests container functionality
-   - Validates environment variables
-   - Checks directory structure
+4. **`test-unified.yml`**: Unified container testing
+   - Comprehensive Goss validation for base variant
+   - Multi-variant testing (base, minimal, python, node, full)
+   - Validates environment variables and directory structure
+   - Tests permissions, locale, and fundamental tools
+   - Structured test reports with JSON output
 
 ---
 

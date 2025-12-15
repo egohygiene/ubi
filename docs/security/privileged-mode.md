@@ -69,7 +69,7 @@ This effectively removes the security boundaries that containers are designed to
 
 ### 2. CI/CD Architecture
 
-The GitHub Actions workflows (`.github/workflows/publish.yml`, `.github/workflows/test-image.yml`) build and test the UBI image using:
+The GitHub Actions workflows (`.github/workflows/publish.yml`, `.github/workflows/test-unified.yml`) build and test the UBI image using:
 
 - Docker Buildx on the GitHub Actions runner (host)
 - Standard Docker build commands

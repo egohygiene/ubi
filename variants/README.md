@@ -83,7 +83,7 @@ docker run --rm ubi:full bash -c 'python3 --version && node --version'
 All variants are automatically built and published by the GitHub Actions workflows:
 
 - **Build & Publish:** `.github/workflows/publish.yml`
-- **Testing:** `.github/workflows/test-image.yml`
+- **Testing:** `.github/workflows/test-unified.yml`
 
 Each variant is built for multiple architectures (linux/amd64, linux/arm64) and published to GHCR with appropriate tags.
 

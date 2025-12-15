@@ -471,11 +471,14 @@ The publish workflow uses [Syft](https://github.com/anchore/syft) to generate SB
    Download pre-generated SBOMs from any release:
 
    ```bash
+   # Set your desired version
+   VERSION="0.1.5"
+   
    # Download SBOM for base variant
-   curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-base-sbom-0.1.5.spdx.json
+   curl -L -O "https://github.com/egohygiene/ubi/releases/download/${VERSION}/ubi-base-sbom-${VERSION}.spdx.json"
    
    # Download SBOM for python variant
-   curl -L -O https://github.com/egohygiene/ubi/releases/download/0.1.5/ubi-python-sbom-0.1.5.spdx.json
+   curl -L -O "https://github.com/egohygiene/ubi/releases/download/${VERSION}/ubi-python-sbom-${VERSION}.spdx.json"
    ```
 
    **Benefits:**
@@ -496,11 +499,14 @@ The publish workflow uses [Syft](https://github.com/anchore/syft) to generate SB
    # or
    curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
+   # Set your desired version
+   VERSION="0.1.5"
+
    # Generate SBOM for base variant
-   syft ghcr.io/egohygiene/ubi:0.1.5 -o spdx-json > ubi-base-sbom.json
+   syft "ghcr.io/egohygiene/ubi:${VERSION}" -o spdx-json > "ubi-base-sbom-${VERSION}.json"
 
    # Generate SBOM for python variant
-   syft ghcr.io/egohygiene/ubi:0.1.5-python -o spdx-json > ubi-python-sbom.json
+   syft "ghcr.io/egohygiene/ubi:${VERSION}-python" -o spdx-json > "ubi-python-sbom-${VERSION}.json"
    ```
 
 ### SBOM Use Cases

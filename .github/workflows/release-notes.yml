@@ -180,6 +180,8 @@ jobs:
           mkdir -p ./release-assets
 
           # Check for each variant SBOM and copy to release assets
+          # NOTE: This list should match the variant matrix in publish.yml
+          # TODO: Consider extracting to a shared configuration file
           for variant in base minimal python node full; do
             SBOM_FILE="./sbom-artifacts/ubi-${variant}-sbom.spdx.json"
             if [ -f "$SBOM_FILE" ]; then

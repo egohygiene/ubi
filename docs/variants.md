@@ -225,7 +225,7 @@ To add a new variant or update existing ones:
 
 1. Create or modify Dockerfile in `variants/<name>/Dockerfile`
 2. Update the publish workflow (`.github/workflows/publish.yml`)
-3. Update the test workflow (`.github/workflows/test-image.yml`)
+3. Update the test workflow (`.github/workflows/test-unified.yml`)
 4. Update this documentation
 5. Test locally before submitting PR
 

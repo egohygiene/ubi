@@ -153,13 +153,14 @@ Validates that required packages are installed:
 
 ## CI/CD Integration
 
-Tests are automatically run in GitHub Actions via the `.github/workflows/goss-test.yml` workflow:
+Tests are automatically run in GitHub Actions via the `.github/workflows/test-unified.yml` workflow:
 
 - Triggered on PRs and pushes to main/master branches
-- Builds the UBI image
-- Runs all Goss tests
+- Builds the UBI image for all variants
+- Runs Goss tests on the base variant
+- Runs additional sanity tests on all variants
 - Fails the build if any test fails
-- Generates a test report artifact
+- Generates structured test reports (JSON + Markdown) as artifacts
 
 ## Troubleshooting
 

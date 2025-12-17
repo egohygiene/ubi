@@ -199,7 +199,7 @@ See `audit/` directory for reports and scripts.
 
 ## Version History
 
-- **2025-12-17**: Initial version created during documentation consolidation effort
+- **Initial version**: Created during documentation consolidation effort
 - See [CHANGELOG.md](../CHANGELOG.md) for project version history
 
 ---
@@ -207,8 +207,8 @@ See `audit/` directory for reports and scripts.
 ## Related Documentation
 
 - [Contributing Guide](../CONTRIBUTING.md) - How to contribute to UBI
-- [Release Process](release-process.md) - How versions and releases work
-- [Architecture](architecture.md) - Overall project structure and design
+- [Release Process](../release-process.md) - How versions and releases work
+- [Architecture](../architecture.md) - Overall project structure and design
 
 ---
 

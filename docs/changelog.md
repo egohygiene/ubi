@@ -17,10 +17,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Current Version
-
-**Version**: 0.1.5
-
 ## Quick Links
 
 - **[📄 Full Changelog](https://github.com/egohygiene/ubi/blob/main/CHANGELOG.md)** - Complete version history

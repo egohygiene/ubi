@@ -126,6 +126,7 @@ nav:
   - Contributing:
       - Contributing Guide: contributing/README.md
       - Best Practices: best-practices/README.md
+      - Source of Truth Guidelines: source-of-truth.md
   - About:
       - Changelog: changelog.md
       - License: license.md

@@ -7,10 +7,10 @@ on:
     branches:
       - main
       - master
-  push:
-    branches:
-      - main
-      - master
+  workflow_run:
+    workflows: ["🧪 Unified Container Testing"]
+    types:
+      - completed
   schedule:
     # Run weekly vulnerability scans every Monday at 00:00 UTC
     - cron: "0 0 * * 1"
@@ -25,6 +25,14 @@ jobs:
   trivy-scan:
     name: "🔍 Scan UBI Image for Vulnerabilities"
     runs-on: ubuntu-latest
+    # Only run if:
+    # - For workflow_run: triggering workflow succeeded AND ran on main/master
+    # - For other trigger types: always run
+    if: |
+      github.event_name != 'workflow_run' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')
+      )
 
     steps:
       # -------------------------------------------------------------

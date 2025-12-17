@@ -970,6 +970,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#workflow-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#triggers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1273,6 +1284,28 @@
     <span class="md-ellipsis">
       
         Release Missing SBOMs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publish-workflow-not-triggered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publish Workflow Not Triggered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests-or-security-scan-failing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests or Security Scan Failing
       
     </span>
   </a>
@@ -1998,6 +2031,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#workflow-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#triggers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2307,6 +2351,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#publish-workflow-not-triggered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publish Workflow Not Triggered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests-or-security-scan-failing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests or Security Scan Failing
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2488,9 +2554,17 @@
     B --&gt; C[Commit with version changes]
     C --&gt; D[Create Git Tag]
     D --&gt; E[Push to GitHub]
-    E --&gt; F[Auto-trigger Publish Workflow]
-    E --&gt; K[Auto-trigger Release Notes Workflow]
-    F --&gt; G[Build Multi-Platform Image]
+    E --&gt; F[🧪 Unified Container Testing]
+    E --&gt; K[📝 Create GitHub Release]
+    F --&gt; O[Run Tests on All Variants]
+    O --&gt; P{Tests Pass?}
+    P --&gt;|Yes| Q[🔒 Container Vulnerability Scan]
+    P --&gt;|No| R[Block Pipeline]
+    Q --&gt; S[Scan for Security Issues]
+    S --&gt; T{Scan Pass?}
+    T --&gt;|Yes| U[🚀 Publish UBI Image]
+    T --&gt;|No| R
+    U --&gt; G[Build Multi-Platform Image]
     G --&gt; H[Generate SBOM]
     H --&gt; I[Push to GHCR]
     I --&gt; J[Tag: latest, version, sha-XXX]
@@ -2503,6 +2577,7 @@
 <li>Automated synchronization across files</li>
 <li>Git tags trigger image publishing</li>
 <li>Semantic versioning (SemVer) enforced</li>
+<li><strong>Quality gates</strong>: Tests and security scans must pass before publishing</li>
 </ul>
 <hr />
 <h2 id="version-file-rules">VERSION File Rules<a class="headerlink" href="#version-file-rules" title="Permanent link">&para;</a></h2>
@@ -2705,12 +2780,46 @@
 <hr />
 <h2 id="publish-pipeline">Publish Pipeline<a class="headerlink" href="#publish-pipeline" title="Permanent link">&para;</a></h2>
 <p>The <code>publish.yml</code> workflow builds and publishes the UBI image to GHCR.</p>
+<h3 id="workflow-dependencies">Workflow Dependencies<a class="headerlink" href="#workflow-dependencies" title="Permanent link">&para;</a></h3>
+<p>UBI implements a <strong>chained CI/CD pipeline</strong> with quality gates to ensure only tested and secure images are published:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>test-unified.yml → trivy-scan.yml → publish.yml
+</span></code></pre></div>
+<p><strong>Pipeline Flow:</strong></p>
+<ol>
+<li><strong>🧪 Unified Container Testing</strong> (<code>test-unified.yml</code>)</li>
+<li>Runs comprehensive tests on all variants</li>
+<li>Validates directory structure, environment variables, permissions</li>
+<li>
+<p>Executes Goss container tests</p>
+</li>
+<li>
+<p><strong>🔒 Container Vulnerability Scan</strong> (<code>trivy-scan.yml</code>)</p>
+</li>
+<li><strong>Dependency</strong>: Only runs after tests pass</li>
+<li>Scans image for security vulnerabilities</li>
+<li>
+<p>Fails on CRITICAL or HIGH severity issues</p>
+</li>
+<li>
+<p><strong>🚀 Publish UBI Image</strong> (<code>publish.yml</code>)</p>
+</li>
+<li><strong>Dependency</strong>: Only runs after security scan passes</li>
+<li>Builds and publishes multi-platform images</li>
+<li>Generates SBOM and signs images with Cosign</li>
+</ol>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>✅ Prevents publishing broken images</li>
+<li>✅ Prevents publishing insecure images</li>
+<li>✅ Automated quality assurance</li>
+<li>✅ Reduced risk in production</li>
+</ul>
 <h3 id="triggers">Triggers<a class="headerlink" href="#triggers" title="Permanent link">&para;</a></h3>
 <p>The publish workflow runs automatically on:</p>
 <ul>
-<li><strong>Push to main branch</strong> (after version bump commit)</li>
-<li><strong>Tag creation</strong> (after version bump workflow)</li>
-<li><strong>Manual trigger</strong> (workflow_dispatch)</li>
+<li><strong>Successful completion of security scan</strong> (workflow_run after 🔒 Container Vulnerability Scan succeeds)</li>
+<li><strong>Tag creation</strong> (direct trigger for tagged releases)</li>
+<li><strong>Manual trigger</strong> (workflow_dispatch for emergency publishes)</li>
 </ul>
 <h3 id="build-process">Build Process<a class="headerlink" href="#build-process" title="Permanent link">&para;</a></h3>
 <ol>
@@ -2721,7 +2830,7 @@
 <p><strong>Read VERSION file:</strong></p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>VERSION<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="k">)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>VERSION<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="k">)</span>
 </span></code></pre></div>
 <ol>
 <li><strong>Set up build environment:</strong></li>
@@ -2733,15 +2842,15 @@
 <p><strong>Authenticate to GHCR:</strong></p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$GITHUB_TOKEN</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span>login<span class="w"> </span>ghcr.io<span class="w"> </span>-u<span class="w"> </span><span class="si">${</span><span class="p">{ github.repository_owner </span><span class="si">}</span><span class="o">}</span><span class="w"> </span>--password-stdin
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$GITHUB_TOKEN</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span>login<span class="w"> </span>ghcr.io<span class="w"> </span>-u<span class="w"> </span><span class="si">${</span><span class="p">{ github.repository_owner </span><span class="si">}</span><span class="o">}</span><span class="w"> </span>--password-stdin
 </span></code></pre></div>
 <ol>
 <li><strong>Generate metadata (tags and labels):</strong></li>
 </ol>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="no">type=raw,value=latest</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="no">type=raw,value=${{ VERSION }}</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="no">type=sha</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="no">type=raw,value=latest</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="no">type=raw,value=${{ VERSION }}</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="no">type=sha</span>
 </span></code></pre></div>
 <ol>
 <li><strong>Build multi-platform image:</strong></li>
@@ -2754,9 +2863,9 @@
 <p><strong>Push to GHCR with multiple tags:</strong></p>
 </li>
 </ol>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ghcr.io/egohygiene/ubi:latest
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>ghcr.io/egohygiene/ubi:0.1.5
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>ghcr.io/egohygiene/ubi:sha-abc123
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ghcr.io/egohygiene/ubi:latest
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>ghcr.io/egohygiene/ubi:0.1.5
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>ghcr.io/egohygiene/ubi:sha-abc123
 </span></code></pre></div>
 <h3 id="published-tags">Published Tags<a class="headerlink" href="#published-tags" title="Permanent link">&para;</a></h3>
 <p>Every release creates three tags:</p>
@@ -2809,8 +2918,8 @@
 <p><strong>Extract version from tag:</strong></p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nv">TAG_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GITHUB_REF</span><span class="p">#refs/tags/</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">TAG_NAME</span><span class="p">#v</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">  </span><span class="c1"># Remove &#39;v&#39; prefix if present</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nv">TAG_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GITHUB_REF</span><span class="p">#refs/tags/</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">TAG_NAME</span><span class="p">#v</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">  </span><span class="c1"># Remove &#39;v&#39; prefix if present</span>
 </span></code></pre></div>
 <ol>
 <li><strong>Extract changelog section for this version:</strong></li>
@@ -2891,12 +3000,12 @@
 </ul>
 <h3 id="generation-process">Generation Process<a class="headerlink" href="#generation-process" title="Permanent link">&para;</a></h3>
 <p>The publish workflow uses <a href="https://github.com/anchore/syft">Syft</a> to generate SBOMs for each variant:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Generate SBOM with Syft</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anchore/sbom-action@v0</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/egohygiene/ubi:${{ VERSION }}${{ variant.suffix }}</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">spdx-json</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="nt">output-file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-${{ variant.name }}-sbom.spdx.json</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Generate SBOM with Syft</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anchore/sbom-action@v0</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/egohygiene/ubi:${{ VERSION }}${{ variant.suffix }}</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">spdx-json</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="nt">output-file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubi-${{ variant.name }}-sbom.spdx.json</span>
 </span></code></pre></div>
 <p><strong>Variants:</strong>
 - <strong>base</strong> - Base UBI image (no suffix)
@@ -2915,14 +3024,14 @@
 <li><strong>GitHub Release Assets (Recommended):</strong></li>
 </ol>
 <p>Download pre-generated SBOMs from any release:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Set your desired version</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># Download SBOM for base variant</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Download SBOM for python variant</span>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Set your desired version</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Download SBOM for base variant</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="c1"># Download SBOM for python variant</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/egohygiene/ubi/releases/download/</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">/ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.spdx.json&quot;</span>
 </span></code></pre></div>
 <p><strong>Benefits:</strong>
    - Permanently archived with each release
@@ -2939,19 +3048,19 @@
 <p><strong>Generate Locally:</strong></p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Install Syft</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>brew<span class="w"> </span>install<span class="w"> </span>syft<span class="w">  </span><span class="c1"># macOS</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="c1"># or</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>curl<span class="w"> </span>-sSfL<span class="w"> </span>https://raw.githubusercontent.com/anchore/syft/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>-b<span class="w"> </span>/usr/local/bin
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
-</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1"># Set your desired version</span>
-</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
-</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
-</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="c1"># Generate SBOM for base variant</span>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.json&quot;</span>
-</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
-</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="c1"># Generate SBOM for python variant</span>
-</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">-python&quot;</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.json&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Install Syft</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>brew<span class="w"> </span>install<span class="w"> </span>syft<span class="w">  </span><span class="c1"># macOS</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># or</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>curl<span class="w"> </span>-sSfL<span class="w"> </span>https://raw.githubusercontent.com/anchore/syft/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>-b<span class="w"> </span>/usr/local/bin
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="c1"># Set your desired version</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="nv">VERSION</span><span class="o">=</span><span class="s2">&quot;0.1.5&quot;</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="c1"># Generate SBOM for base variant</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-base-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.json&quot;</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="c1"># Generate SBOM for python variant</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>syft<span class="w"> </span><span class="s2">&quot;ghcr.io/egohygiene/ubi:</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">-python&quot;</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;ubi-python-sbom-</span><span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span><span class="s2">.json&quot;</span>
 </span></code></pre></div>
 <h3 id="sbom-use-cases">SBOM Use Cases<a class="headerlink" href="#sbom-use-cases" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2979,7 +3088,11 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Trigger "🔼 Bump UBI Version" workflow with correct type</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify workflow completes successfully</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Confirm commit and tag created in repository</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Wait for "🚀 Publish UBI Image" workflow to trigger</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Wait for "🧪 Unified Container Testing" workflow to trigger</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify all tests pass across all variants</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Wait for "🔒 Container Vulnerability Scan" workflow to trigger (after tests pass)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify security scan passes with no critical/high vulnerabilities</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Wait for "🚀 Publish UBI Image" workflow to trigger (after scan passes)</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify publish workflow completes successfully</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Wait for "📝 Create GitHub Release" workflow to trigger</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify GitHub Release is created with correct notes and SBOM</li>
@@ -2988,13 +3101,13 @@
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify image available on GHCR:</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/egohygiene/ubi:latest
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/egohygiene/ubi:X.Y.Z
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/egohygiene/ubi:latest
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/egohygiene/ubi:X.Y.Z
 </span></code></pre></div>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Test pulled image:</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>ghcr.io/egohygiene/ubi:X.Y.Z<span class="w"> </span>bash
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>ghcr.io/egohygiene/ubi:X.Y.Z<span class="w"> </span>bash
 </span></code></pre></div>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Verify SBOM artifacts uploaded for all variants</li>
@@ -3029,8 +3142,8 @@
 <li>Verify you're bumping the correct version component</li>
 <li>Delete tag if needed:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>git<span class="w"> </span>tag<span class="w"> </span>-d<span class="w"> </span>X.Y.Z
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>:refs/tags/X.Y.Z
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>git<span class="w"> </span>tag<span class="w"> </span>-d<span class="w"> </span>X.Y.Z
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>:refs/tags/X.Y.Z
 </span></code></pre></div>
 <ol>
 <li>Re-run bump workflow</li>
@@ -3066,58 +3179,99 @@
 <li>Verify SBOM artifacts were uploaded in publish workflow (check for all 5 variants)</li>
 <li>Check release-notes workflow logs for artifact download steps</li>
 <li>Download SBOMs from publish workflow artifacts and manually attach to release:
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Download each variant SBOM from workflow artifacts</span>
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="c1"># Then attach to release via GitHub UI</span>
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Download each variant SBOM from workflow artifacts</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="c1"># Then attach to release via GitHub UI</span>
 </span></code></pre></div></li>
+</ol>
+<h3 id="publish-workflow-not-triggered">Publish Workflow Not Triggered<a class="headerlink" href="#publish-workflow-not-triggered" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Tests and security scans pass but publish workflow doesn't run</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>Verify the triggering workflow (trivy-scan.yml) completed successfully</li>
+<li>Check that the branch is <code>main</code> or <code>master</code> (workflow_run triggers are branch-specific)</li>
+<li>Review GitHub Actions logs for workflow_run trigger events</li>
+<li>Manually trigger publish workflow using workflow_dispatch:</li>
+<li>Go to: <a href="https://github.com/egohygiene/ubi/actions/workflows/publish.yml">https://github.com/egohygiene/ubi/actions/workflows/publish.yml</a></li>
+<li>Click "Run workflow"</li>
+<li>Select branch and run</li>
+</ol>
+<h3 id="tests-or-security-scan-failing">Tests or Security Scan Failing<a class="headerlink" href="#tests-or-security-scan-failing" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Pipeline blocked because tests or security scan failed</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><strong>For test failures:</strong></li>
+<li>Review test-unified.yml workflow logs</li>
+<li>Identify which variant or test is failing</li>
+<li>Fix the issue in code</li>
+<li>
+<p>Push fix to trigger new test run</p>
+</li>
+<li>
+<p><strong>For security scan failures:</strong></p>
+</li>
+<li>Review trivy-scan.yml workflow logs</li>
+<li>Check SARIF report in GitHub Security tab</li>
+<li>Address CRITICAL or HIGH vulnerabilities</li>
+<li>Update base image or dependencies</li>
+<li>
+<p>Push fix to trigger new scan</p>
+</li>
+<li>
+<p><strong>Emergency publish</strong> (use with caution):</p>
+</li>
+<li>Only if fix will take significant time</li>
+<li>Use workflow_dispatch to manually trigger publish</li>
+<li>Document known issues in release notes</li>
+<li>Create follow-up issue to fix properly</li>
 </ol>
 <hr />
 <h2 id="manual-release-emergency">Manual Release (Emergency)<a class="headerlink" href="#manual-release-emergency" title="Permanent link">&para;</a></h2>
 <p>In case automated workflows fail, you can perform a manual release:</p>
 <h3 id="1-manual-version-bump">1. Manual Version Bump<a class="headerlink" href="#1-manual-version-bump" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Update VERSION file</span>
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;0.1.6&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>VERSION
-</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
-</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="c1"># Update pyproject.toml manually</span>
-</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="c1"># Edit [tool.poetry] version and [tool.bumpversion] current_version</span>
-</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
-</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="c1"># Update CHANGELOG.md (add new section at top)</span>
-</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>
-</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="c1"># Commit</span>
-</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>git<span class="w"> </span>add<span class="w"> </span>VERSION<span class="w"> </span>pyproject.toml<span class="w"> </span>CHANGELOG.md
-</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore: bump version to 0.1.6&quot;</span>
-</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>
-</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="c1"># Tag</span>
-</span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>git<span class="w"> </span>tag<span class="w"> </span><span class="m">0</span>.1.6
-</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>
-</span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="c1"># Push</span>
-</span><span id="__span-23-17"><a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
-</span><span id="__span-23-18"><a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span><span class="m">0</span>.1.6
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Update VERSION file</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;0.1.6&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>VERSION
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Update pyproject.toml manually</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="c1"># Edit [tool.poetry] version and [tool.bumpversion] current_version</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="c1"># Update CHANGELOG.md (add new section at top)</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="c1"># Commit</span>
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>git<span class="w"> </span>add<span class="w"> </span>VERSION<span class="w"> </span>pyproject.toml<span class="w"> </span>CHANGELOG.md
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore: bump version to 0.1.6&quot;</span>
+</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>
+</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="c1"># Tag</span>
+</span><span id="__span-24-14"><a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>git<span class="w"> </span>tag<span class="w"> </span><span class="m">0</span>.1.6
+</span><span id="__span-24-15"><a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>
+</span><span id="__span-24-16"><a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a><span class="c1"># Push</span>
+</span><span id="__span-24-17"><a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+</span><span id="__span-24-18"><a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span><span class="m">0</span>.1.6
 </span></code></pre></div>
 <h3 id="2-manual-image-build-and-push">2. Manual Image Build and Push<a class="headerlink" href="#2-manual-image-build-and-push" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Read version</span>
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>VERSION<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="k">)</span>
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
-</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Login to GHCR</span>
-</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$GITHUB_TOKEN</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span>login<span class="w"> </span>ghcr.io<span class="w"> </span>-u<span class="w"> </span>USERNAME<span class="w"> </span>--password-stdin
-</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
-</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="c1"># Build multi-platform</span>
-</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="w">  </span>--platform<span class="w"> </span>linux/amd64,linux/arm64<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="w">  </span>--file<span class="w"> </span>.devcontainer/Dockerfile<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="w">  </span>--tag<span class="w"> </span>ghcr.io/egohygiene/ubi:latest<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="w">  </span>--tag<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="w">  </span>--push<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-14"><a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a><span class="w">  </span>.
-</span></code></pre></div>
-<h3 id="3-manual-sbom-generation">3. Manual SBOM Generation<a class="headerlink" href="#3-manual-sbom-generation" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Generate SBOMs for all variants</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Read version</span>
 </span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>VERSION<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="k">)</span>
 </span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-base-sbom-<span class="nv">$VERSION</span>.spdx.json
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-minimal<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-minimal-sbom-<span class="nv">$VERSION</span>.spdx.json
-</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-python<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-python-sbom-<span class="nv">$VERSION</span>.spdx.json
-</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-node<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-node-sbom-<span class="nv">$VERSION</span>.spdx.json
-</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-full<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-full-sbom-<span class="nv">$VERSION</span>.spdx.json
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Login to GHCR</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$GITHUB_TOKEN</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span>login<span class="w"> </span>ghcr.io<span class="w"> </span>-u<span class="w"> </span>USERNAME<span class="w"> </span>--password-stdin
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="c1"># Build multi-platform</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">  </span>--platform<span class="w"> </span>linux/amd64,linux/arm64<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">  </span>--file<span class="w"> </span>.devcontainer/Dockerfile<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">  </span>--tag<span class="w"> </span>ghcr.io/egohygiene/ubi:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="w">  </span>--tag<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="w">  </span>--push<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-14"><a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a><span class="w">  </span>.
+</span></code></pre></div>
+<h3 id="3-manual-sbom-generation">3. Manual SBOM Generation<a class="headerlink" href="#3-manual-sbom-generation" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Generate SBOMs for all variants</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>VERSION<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;[:space:]&#39;</span><span class="k">)</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span><span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-base-sbom-<span class="nv">$VERSION</span>.spdx.json
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-minimal<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-minimal-sbom-<span class="nv">$VERSION</span>.spdx.json
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-python<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-python-sbom-<span class="nv">$VERSION</span>.spdx.json
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-node<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-node-sbom-<span class="nv">$VERSION</span>.spdx.json
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>syft<span class="w"> </span>ghcr.io/egohygiene/ubi:<span class="nv">$VERSION</span>-full<span class="w"> </span>-o<span class="w"> </span>spdx-json<span class="w"> </span>&gt;<span class="w"> </span>ubi-full-sbom-<span class="nv">$VERSION</span>.spdx.json
 </span></code></pre></div>
 <hr />
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
@@ -3130,6 +3284,8 @@
 <li><strong>Keep VERSION file clean</strong> (no extra whitespace)</li>
 <li><strong>Document breaking changes</strong> prominently in CHANGELOG</li>
 <li><strong>Use specific tags</strong> in production, not <code>latest</code></li>
+<li><strong>Monitor the full pipeline</strong> - ensure all quality gates pass</li>
+<li><strong>Don't bypass quality gates</strong> - use manual publish only in emergencies</li>
 </ol>
 <hr />
 <h2 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">&para;</a></h2>

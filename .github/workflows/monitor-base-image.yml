@@ -223,7 +223,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 🔀 Create Pull Request
         if: steps.compare.outputs.update_available == 'true' && steps.update.outputs.changes_made == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.update.outputs.branch }}

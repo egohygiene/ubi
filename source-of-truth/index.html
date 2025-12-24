@@ -12,13 +12,13 @@
         <meta name="author" content="Ego Hygiene">
       
       
-        <link rel="canonical" href="https://egohygiene.github.io/ubi/contributing/">
+        <link rel="canonical" href="https://egohygiene.github.io/ubi/source-of-truth/">
       
       
-        <link rel="prev" href="../security/privileged-mode/">
+        <link rel="prev" href="../best-practices/">
       
       
-        <link rel="next" href="../best-practices/">
+        <link rel="next" href="../changelog/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Contributing Guide - UBI Documentation</title>
+        <title>Source of Truth Guidelines - UBI Documentation</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#contributing-documentation" class="md-skip">
+        <a href="#documentation-source-of-truth-guidelines" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Contributing Guide
+              Source of Truth Guidelines
             
           </span>
         </div>
@@ -340,7 +340,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../contributing/" class="md-tabs__link">
           
   
   
@@ -932,7 +932,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../contributing/" class="md-nav__link ">
               
   
   
@@ -950,7 +950,7 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_6" id="__nav_6_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -1001,10 +1001,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../source-of-truth/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source of Truth Guidelines
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1020,6 +1047,354 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#canonical-documentation-locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canonical Documentation Locations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canonical Documentation Locations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-project-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Project Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation-site-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Site Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why This Matters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why This Matters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problems-with-duplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problems with Duplication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#our-solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Our Solution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guidelines-for-contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guidelines for Contributors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Guidelines for Contributors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-adding-new-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Adding New Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-updating-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Updating Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-referencing-canonical-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Referencing Canonical Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Automated Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bump-my-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bump-my-version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mkdocs-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MkDocs Build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-organization-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Organization Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File Organization Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#root-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docs Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-for-duplicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking for Duplicates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checking for Duplicates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-audits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Audits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Scenarios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-want-to-add-a-new-feature-to-the-changelog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I want to add a new feature to the changelog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-want-to-update-the-license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I want to update the license
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-want-to-add-documentation-about-a-new-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I want to add documentation about a new feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-found-duplicated-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I found duplicated content
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version History
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1182,10 +1557,316 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#planned-content" class="md-nav__link">
+  <a href="#canonical-documentation-locations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Planned Content
+        Canonical Documentation Locations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canonical Documentation Locations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-project-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Project Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation-site-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Site Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why This Matters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why This Matters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problems-with-duplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problems with Duplication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#our-solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Our Solution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#guidelines-for-contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Guidelines for Contributors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Guidelines for Contributors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-adding-new-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Adding New Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-updating-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Updating Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-referencing-canonical-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Referencing Canonical Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automated-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Automated Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bump-my-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bump-my-version
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mkdocs-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MkDocs Build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-organization-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Organization Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File Organization Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#root-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docs Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-for-duplicates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking for Duplicates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checking for Duplicates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-audits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Audits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Scenarios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-want-to-add-a-new-feature-to-the-changelog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I want to add a new feature to the changelog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-want-to-update-the-license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I want to update the license
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-want-to-add-documentation-about-a-new-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I want to add documentation about a new feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-i-found-duplicated-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: I found duplicated content
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version History
       
     </span>
   </a>
@@ -1193,10 +1874,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#current-contributing-guide" class="md-nav__link">
+  <a href="#related-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Contributing Guide
+        Related Documentation
       
     </span>
   </a>
@@ -1246,7 +1927,7 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../contributing/" class="md-path__link">
           
   <span class="md-ellipsis">
     Contributing
@@ -1268,7 +1949,7 @@
 
 
   
-    <a href="https://github.com/egohygiene/ubi/edit/main/docs/contributing/README.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/egohygiene/ubi/edit/main/docs/source-of-truth.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
     </a>
@@ -1277,27 +1958,254 @@
     
       
     
-    <a href="https://github.com/egohygiene/ubi/raw/main/docs/contributing/README.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/egohygiene/ubi/raw/main/docs/source-of-truth.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"/></svg>
     </a>
   
 
 
-<h1 id="contributing-documentation">Contributing Documentation<a class="headerlink" href="#contributing-documentation" title="Permanent link">&para;</a></h1>
-<p>This directory will contain detailed contributing guidelines and development workflows.</p>
-<h2 id="planned-content">Planned Content<a class="headerlink" href="#planned-content" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Development Setup</strong>: Local development environment configuration</li>
-<li><strong>Code Style Guide</strong>: Coding standards and conventions</li>
-<li><strong>PR Process</strong>: Pull request workflow and review guidelines</li>
-<li><strong>Testing Guide</strong>: How to write and run tests</li>
-<li><strong>Documentation Standards</strong>: How to write and maintain documentation</li>
-</ul>
-<h2 id="current-contributing-guide">Current Contributing Guide<a class="headerlink" href="#current-contributing-guide" title="Permanent link">&para;</a></h2>
-<p>For now, please refer to the main <a href="../../CONTRIBUTING.md">CONTRIBUTING.md</a> in the repository root.</p>
+<h1 id="documentation-source-of-truth-guidelines">Documentation Source of Truth Guidelines<a class="headerlink" href="#documentation-source-of-truth-guidelines" title="Permanent link">&para;</a></h1>
+<p>This document defines the canonical locations for all documentation in the UBI repository to prevent drift and duplication.</p>
 <hr />
-<p><em>This section is under construction and will be expanded in future releases.</em></p>
+<h2 id="canonical-documentation-locations">Canonical Documentation Locations<a class="headerlink" href="#canonical-documentation-locations" title="Permanent link">&para;</a></h2>
+<h3 id="core-project-files">Core Project Files<a class="headerlink" href="#core-project-files" title="Permanent link">&para;</a></h3>
+<p>These files are the <strong>single source of truth</strong> and must never be duplicated:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Location</th>
+<th>Purpose</th>
+<th>Automated?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CHANGELOG</strong></td>
+<td><code>/CHANGELOG.md</code></td>
+<td>Version history and release notes</td>
+<td>✅ Yes (bump-my-version)</td>
+</tr>
+<tr>
+<td><strong>LICENSE</strong></td>
+<td><code>/LICENSE</code></td>
+<td>MIT License full text</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td><strong>README</strong></td>
+<td><code>/README.md</code></td>
+<td>Project overview and quick start</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td><strong>VERSION</strong></td>
+<td><code>/VERSION</code></td>
+<td>Current semantic version</td>
+<td>✅ Yes (bump-my-version)</td>
+</tr>
+<tr>
+<td><strong>CONTRIBUTING</strong></td>
+<td><code>/CONTRIBUTING.md</code></td>
+<td>Contribution guidelines</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td><strong>SECURITY</strong></td>
+<td><code>/SECURITY.md</code></td>
+<td>Security policy and reporting</td>
+<td>❌ No</td>
+</tr>
+</tbody>
+</table>
+<h3 id="documentation-site-files">Documentation Site Files<a class="headerlink" href="#documentation-site-files" title="Permanent link">&para;</a></h3>
+<p>Documentation in the <code>docs/</code> directory may <strong>reference</strong> canonical files but should not duplicate their content:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Location</th>
+<th>Type</th>
+<th>References</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Changelog</td>
+<td><code>/docs/changelog.md</code></td>
+<td>Reference page</td>
+<td>→ <code>/CHANGELOG.md</code></td>
+</tr>
+<tr>
+<td>License</td>
+<td><code>/docs/license.md</code></td>
+<td>Reference page</td>
+<td>→ <code>/LICENSE</code></td>
+</tr>
+<tr>
+<td>Index</td>
+<td><code>/docs/index.md</code></td>
+<td>Landing page</td>
+<td>Multiple</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td><code>/docs/architecture.md</code></td>
+<td>Standalone</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>Troubleshooting</td>
+<td><code>/docs/troubleshooting.md</code></td>
+<td>Standalone</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="why-this-matters">Why This Matters<a class="headerlink" href="#why-this-matters" title="Permanent link">&para;</a></h2>
+<h3 id="problems-with-duplication">Problems with Duplication<a class="headerlink" href="#problems-with-duplication" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Content Drift</strong>: Duplicated files inevitably diverge over time</li>
+<li><strong>Confusion</strong>: Contributors don't know which file to edit</li>
+<li><strong>Maintenance Burden</strong>: Multiple files need updates for single changes</li>
+<li><strong>Automation Conflicts</strong>: Automated tools (like bump-my-version) can't update duplicates</li>
+<li><strong>Inconsistency</strong>: Users see different information depending on where they look</li>
+</ol>
+<h3 id="our-solution">Our Solution<a class="headerlink" href="#our-solution" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>One canonical source</strong> for each piece of information</li>
+<li><strong>Reference pages</strong> that link to canonical sources (not copy content)</li>
+<li><strong>Clear documentation</strong> about where each file lives</li>
+<li><strong>Automation-friendly</strong> structure that tools can reliably update</li>
+</ul>
+<hr />
+<h2 id="guidelines-for-contributors">Guidelines for Contributors<a class="headerlink" href="#guidelines-for-contributors" title="Permanent link">&para;</a></h2>
+<h3 id="when-adding-new-documentation">When Adding New Documentation<a class="headerlink" href="#when-adding-new-documentation" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Check if it exists</strong>: Search for existing documentation on the topic</li>
+<li><strong>Choose the right location</strong>:</li>
+<li>Root-level files (e.g., <code>README.md</code>) for essential project info</li>
+<li><code>docs/</code> directory for detailed guides and references</li>
+<li><strong>Avoid duplication</strong>: Link to existing content rather than copying</li>
+<li><strong>Update navigation</strong>: Add new docs to <code>mkdocs.yml</code> if needed</li>
+</ol>
+<h3 id="when-updating-documentation">When Updating Documentation<a class="headerlink" href="#when-updating-documentation" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Find the canonical source</strong>: Check this guide for the authoritative location</li>
+<li><strong>Edit only the canonical file</strong>: Never edit reference/pointer pages</li>
+<li><strong>Update references if needed</strong>: If you change structure, update links</li>
+<li><strong>Test your changes</strong>: Build docs locally with <code>mkdocs serve</code></li>
+</ol>
+<h3 id="when-referencing-canonical-files">When Referencing Canonical Files<a class="headerlink" href="#when-referencing-canonical-files" title="Permanent link">&para;</a></h3>
+<p>Use clear language to indicate you're referencing, not duplicating:</p>
+<p>✅ <strong>Good - Clear Reference</strong>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>!!! info &quot;Canonical Source&quot;
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    For the complete changelog, see [<span class="nt">CHANGELOG.md</span>](<span class="na">../CHANGELOG.md</span>)
+</span></code></pre></div></p>
+<p>❌ <strong>Bad - Copying Content</strong>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="gu">## Changelog</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="gu">### Version 0.1.5</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">-</span><span class="w"> </span>Fixed version synchronization
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>...
+</span></code></pre></div></p>
+<hr />
+<h2 id="automated-documentation">Automated Documentation<a class="headerlink" href="#automated-documentation" title="Permanent link">&para;</a></h2>
+<p>Some documentation is automatically generated or updated:</p>
+<h3 id="bump-my-version">bump-my-version<a class="headerlink" href="#bump-my-version" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Updates</strong>: <code>/CHANGELOG.md</code> and <code>/VERSION</code></li>
+<li><strong>Configuration</strong>: <code>pyproject.toml</code> ([tool.bumpversion] section)</li>
+<li><strong>Trigger</strong>: Manual bump or GitHub Actions workflow</li>
+<li><strong>⚠️ Never manually edit</strong>: These files during version bumps</li>
+</ul>
+<h3 id="mkdocs-build">MkDocs Build<a class="headerlink" href="#mkdocs-build" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Generates</strong>: Static site from <code>docs/</code> directory</li>
+<li><strong>Configuration</strong>: <code>mkdocs.yml</code></li>
+<li><strong>Output</strong>: <code>site/</code> directory (not committed)</li>
+<li><strong>Deployment</strong>: GitHub Actions to GitHub Pages</li>
+</ul>
+<hr />
+<h2 id="file-organization-principles">File Organization Principles<a class="headerlink" href="#file-organization-principles" title="Permanent link">&para;</a></h2>
+<h3 id="root-directory">Root Directory<a class="headerlink" href="#root-directory" title="Permanent link">&para;</a></h3>
+<p>Files in the root directory should be:</p>
+<ul>
+<li>Essential project metadata (README, LICENSE, etc.)</li>
+<li>Version control files (.gitignore, .editorconfig)</li>
+<li>Build configuration (Dockerfile, pyproject.toml, etc.)</li>
+<li>CI/CD configuration (.github/)</li>
+</ul>
+<p><strong>Keep it minimal</strong> - move detailed docs to <code>docs/</code></p>
+<h3 id="docs-directory">Docs Directory<a class="headerlink" href="#docs-directory" title="Permanent link">&para;</a></h3>
+<p>Files in <code>docs/</code> should be:</p>
+<ul>
+<li>Detailed guides and tutorials</li>
+<li>Architecture and design documentation</li>
+<li>Reference material</li>
+<li>Contributing and development guides</li>
+</ul>
+<p><strong>Organize by topic</strong> - use subdirectories for related content</p>
+<hr />
+<h2 id="checking-for-duplicates">Checking for Duplicates<a class="headerlink" href="#checking-for-duplicates" title="Permanent link">&para;</a></h2>
+<h3 id="manual-check">Manual Check<a class="headerlink" href="#manual-check" title="Permanent link">&para;</a></h3>
+<p>Periodically search for potential duplicates:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Find files with similar names</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>find<span class="w"> </span>.<span class="w"> </span>-name<span class="w"> </span><span class="s2">&quot;*changelog*&quot;</span><span class="w"> </span>-o<span class="w"> </span>-name<span class="w"> </span><span class="s2">&quot;*license*&quot;</span><span class="w"> </span>-o<span class="w"> </span>-name<span class="w"> </span><span class="s2">&quot;*readme*&quot;</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Search for duplicated content</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>grep<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;specific unique phrase&quot;</span><span class="w"> </span>.
+</span></code></pre></div>
+<h3 id="automated-audits">Automated Audits<a class="headerlink" href="#automated-audits" title="Permanent link">&para;</a></h3>
+<p>The repository includes audit scripts that check for:</p>
+<ul>
+<li>Duplicate file names</li>
+<li>Inconsistent version numbers</li>
+<li>Broken documentation links</li>
+<li>Missing source of truth references</li>
+</ul>
+<p>See <code>audit/</code> directory for reports and scripts.</p>
+<hr />
+<h2 id="common-scenarios">Common Scenarios<a class="headerlink" href="#common-scenarios" title="Permanent link">&para;</a></h2>
+<h3 id="scenario-i-want-to-add-a-new-feature-to-the-changelog">Scenario: I want to add a new feature to the changelog<a class="headerlink" href="#scenario-i-want-to-add-a-new-feature-to-the-changelog" title="Permanent link">&para;</a></h3>
+<p><strong>Answer</strong>: You don't! The changelog is automatically updated by bump-my-version. Instead:</p>
+<ol>
+<li>Make your changes</li>
+<li>Create a PR with good description</li>
+<li>Use bump-my-version to create a new version</li>
+<li>The changelog is updated automatically</li>
+</ol>
+<h3 id="scenario-i-want-to-update-the-license">Scenario: I want to update the license<a class="headerlink" href="#scenario-i-want-to-update-the-license" title="Permanent link">&para;</a></h3>
+<p><strong>Answer</strong>: Edit <code>/LICENSE</code> in the root directory. The docs reference page will automatically link to the updated version.</p>
+<h3 id="scenario-i-want-to-add-documentation-about-a-new-feature">Scenario: I want to add documentation about a new feature<a class="headerlink" href="#scenario-i-want-to-add-documentation-about-a-new-feature" title="Permanent link">&para;</a></h3>
+<p><strong>Answer</strong>: 
+1. Create a new file in <code>docs/</code> (e.g., <code>docs/new-feature.md</code>)
+2. Add it to <code>mkdocs.yml</code> navigation
+3. Link to it from relevant places (README, index.md, etc.)
+4. Do NOT duplicate information already in other docs</p>
+<h3 id="scenario-i-found-duplicated-content">Scenario: I found duplicated content<a class="headerlink" href="#scenario-i-found-duplicated-content" title="Permanent link">&para;</a></h3>
+<p><strong>Answer</strong>:
+1. Identify the canonical source (use this guide)
+2. Replace duplicates with references/links
+3. Update any navigation or links
+4. Submit a PR with the consolidation</p>
+<hr />
+<h2 id="version-history">Version History<a class="headerlink" href="#version-history" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Initial version</strong>: Created during documentation consolidation effort</li>
+<li>See <a href="../CHANGELOG.md">CHANGELOG.md</a> for project version history</li>
+</ul>
+<hr />
+<h2 id="related-documentation">Related Documentation<a class="headerlink" href="#related-documentation" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../CONTRIBUTING.md">Contributing Guide</a> - How to contribute to UBI</li>
+<li><a href="../release-process.md">Release Process</a> - How versions and releases work</li>
+<li><a href="../architecture.md">Architecture</a> - Overall project structure and design</li>
+</ul>
+<hr />
+<p><strong>Remember</strong>: When in doubt, link to the canonical source rather than copying content. This keeps our documentation maintainable and trustworthy.</p>
 
 
 
@@ -1333,7 +2241,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../security/privileged-mode/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Privileged Mode Analysis">
+          <a href="../best-practices/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Best Practices">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1343,20 +2251,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Privileged Mode Analysis
+                Best Practices
               </div>
             </div>
           </a>
         
         
           
-          <a href="../best-practices/" class="md-footer__link md-footer__link--next" aria-label="Next: Best Practices">
+          <a href="../changelog/" class="md-footer__link md-footer__link--next" aria-label="Next: Changelog">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Best Practices
+                Changelog
               </div>
             </div>
             <div class="md-footer__button md-icon">

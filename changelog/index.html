@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://egohygiene.github.io/ubi/changelog/">
       
       
-        <link rel="prev" href="../best-practices/">
+        <link rel="prev" href="../source-of-truth/">
       
       
         <link rel="next" href="../license/">
@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -908,6 +908,8 @@
       
         
       
+        
+      
     
     
     
@@ -979,6 +981,34 @@
     
   
     Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../source-of-truth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source of Truth Guidelines
   
 
     
@@ -1129,10 +1159,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#latest-version" class="md-nav__link">
+  <a href="#about-versioning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Latest Version
+        About Versioning
       
     </span>
   </a>
@@ -1140,49 +1170,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#version-history" class="md-nav__link">
+  <a href="#quick-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Version History
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Version History">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#015-2025-12-13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        [0.1.5] - 2025-12-13
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Contributing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#release-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Release Process
+        Quick Links
       
     </span>
   </a>
@@ -1260,10 +1251,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#latest-version" class="md-nav__link">
+  <a href="#about-versioning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Latest Version
+        About Versioning
       
     </span>
   </a>
@@ -1271,49 +1262,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#version-history" class="md-nav__link">
+  <a href="#quick-links" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Version History
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Version History">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#015-2025-12-13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        [0.1.5] - 2025-12-13
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Contributing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#release-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Release Process
+        Quick Links
       
     </span>
   </a>
@@ -1402,23 +1354,31 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<p>All notable changes to the UBI (Universal Base Image) project are documented here.</p>
-<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
-and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<div class="admonition info">
+<p class="admonition-title">Canonical Source</p>
+<p>This page references the canonical changelog maintained in the repository root.</p>
+<p><strong>📄 <a href="https://github.com/egohygiene/ubi/blob/main/CHANGELOG.md">View the full CHANGELOG.md →</a></strong></p>
+</div>
+<p>All notable changes to the UBI (Universal Base Image) project are documented in the root <code>CHANGELOG.md</code> file, which is automatically updated by the version bump process.</p>
+<h2 id="about-versioning">About Versioning<a class="headerlink" href="#about-versioning" title="Permanent link">&para;</a></h2>
+<p>This project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>:</p>
+<ul>
+<li><strong>MAJOR</strong>: Breaking changes to environment or filesystem structure</li>
+<li><strong>MINOR</strong>: New features, tools, or non-breaking enhancements  </li>
+<li><strong>PATCH</strong>: Bug fixes and minor updates</li>
+</ul>
+<p>The changelog format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>.</p>
+<h2 id="quick-links">Quick Links<a class="headerlink" href="#quick-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><a href="https://github.com/egohygiene/ubi/blob/main/CHANGELOG.md">📄 Full Changelog</a></strong> - Complete version history</li>
+<li><strong><a href="../release-process/">📋 Release Process</a></strong> - How releases are managed</li>
+<li><strong><a href="../contributing/">🤝 Contributing Guide</a></strong> - How to contribute</li>
+</ul>
 <hr />
-<p>For the complete and authoritative changelog, please see the <a href="https://github.com/egohygiene/ubi/blob/main/CHANGELOG.md">CHANGELOG.md</a> file in the repository root.</p>
-<h2 id="latest-version">Latest Version<a class="headerlink" href="#latest-version" title="Permanent link">&para;</a></h2>
-<p><strong>Current Version</strong>: 0.1.5</p>
-<hr />
-<h2 id="version-history">Version History<a class="headerlink" href="#version-history" title="Permanent link">&para;</a></h2>
-<h3 id="015-2025-12-13">[0.1.5] - 2025-12-13<a class="headerlink" href="#015-2025-12-13" title="Permanent link">&para;</a></h3>
-<p>See the <a href="https://github.com/egohygiene/ubi/blob/main/CHANGELOG.md">full changelog</a> for details.</p>
-<hr />
-<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h2>
-<p>To contribute to UBI, please see our <a href="../contributing/">Contributing Guide</a>.</p>
-<hr />
-<h2 id="release-process">Release Process<a class="headerlink" href="#release-process" title="Permanent link">&para;</a></h2>
-<p>For information about how releases are managed, see the <a href="../release-process/">Release Process</a> documentation.</p>
+<div class="admonition note">
+<p class="admonition-title">Documentation Source of Truth</p>
+<p>See <a href="../source-of-truth/">Documentation Source of Truth Guidelines</a> for information about canonical documentation locations.</p>
+</div>
 
 
 
@@ -1454,7 +1414,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../best-practices/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Best Practices">
+          <a href="../source-of-truth/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Source of Truth Guidelines">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1464,7 +1424,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
                 Previous
               </span>
               <div class="md-ellipsis">
-                Best Practices
+                Source of Truth Guidelines
               </div>
             </div>
           </a>
@@ -1528,10 +1488,10 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.path", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.path", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

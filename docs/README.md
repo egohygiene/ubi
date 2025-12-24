@@ -94,12 +94,16 @@ Recommendations for using UBI effectively *(coming soon)*
 ### Project Resources
 
 - [Main README](../README.md) - Project overview and getting started
-- [Changelog](../CHANGELOG.md) - Version history and release notes
+- [Changelog](../CHANGELOG.md) - Version history and release notes (canonical source)
 - [Security Policy](../SECURITY.md) - Security vulnerability reporting
 - [Contributing Guidelines](../CONTRIBUTING.md) - How to contribute
 - [DevContainer Configuration](../.devcontainer/) - Development environment setup
 - [Metrics Documentation](../metrics/README.md) - Build metrics and observability
 - [Benchmarks Documentation](../benchmarks/README.md) - Performance benchmarking
+
+### Documentation Guidelines
+
+- [Source of Truth Guidelines](source-of-truth.md) - Canonical documentation locations and anti-duplication rules
 
 ### External Links
 

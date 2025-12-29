@@ -1,4 +1,12 @@
-/** @type {import('@commitlint/types').UserConfig} */
+/**
+ * @file commitlint.config.cjs
+ * @description Configuration for Commitlint with conventional commit rules and custom prompts.
+ * Includes emoji support and detailed prompts for enhanced developer experience.
+ *
+ * @docs https://commitlint.js.org/#/
+ *
+ * @type {import('@commitlint/types').UserConfig}
+ */
 const RE_CONVENTIONAL_COMMIT =
   /^(\w+)(?:\(([\w$\.\*/-]+)\))?:\s+((?::\w+:|[\p{Emoji}\uFE0F]+))\s+(.+)$/u;
 

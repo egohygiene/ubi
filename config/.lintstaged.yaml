@@ -1,0 +1,27 @@
+# ==============================================
+# Lint-Staged Configuration (.lintstagedrc.yaml)
+# ==============================================
+# This file defines the configuration for lint-staged, a tool that runs linters
+# and formatters on staged files during pre-commit hooks.
+#
+# - Only the staged files are linted/formatted, ensuring faster performance.
+# - Tasks are defined for different file types (e.g., JavaScript, TypeScript, JSON).
+#
+# For more details, visit:
+# https://github.com/okonet/lint-staged
+#
+# ==============================================
+
+# Configuration for lint-staged
+"*.{js,jsx,ts,tsx}":  # Match JavaScript/TypeScript files
+  # - "eslint --fix"    # Run ESLint to fix linting issues
+  - "prettier --write" # Format the files with Prettier
+
+"*.json":             # Match JSON files
+  - "prettier --write" # Format JSON files with Prettier
+
+"*.md":               # Match Markdown files
+  - "markdownlint --fix" # Fix Markdown linting issues
+  - "prettier --write"   # Format Markdown files with Prettier
+
+# Add more file patterns and tasks as needed for your project.

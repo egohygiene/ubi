@@ -1,0 +1,24 @@
+# ======================================================================
+#  .dockerignore
+#  Prevent unnecessary files from being sent to the Docker build context.
+# ======================================================================
+
+# Node.js dependencies
+node_modules
+*.log
+
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose-local.yml
+
+# Editor and OS-specific files
+.vscode
+.idea
+.DS_Store
+*.swp

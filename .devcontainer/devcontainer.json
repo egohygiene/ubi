@@ -790,76 +790,53 @@
       // automatically installed in the container.
       // ------------------------------------------------------------
       "extensions": [
-        // ----------------------------------------------------------
-        // Language Support
-        // ----------------------------------------------------------
-        // Python development essentials
-        "ms-python.python",              // Python IntelliSense, debugging, linting
-        "ms-python.vscode-pylance",      // Fast Python language server
-        "ms-python.black-formatter",     // Black code formatter
-        "ms-python.isort",               // Import sorting
-
-        // Node.js and JavaScript
-        "dbaeumer.vscode-eslint",        // ESLint integration
-        "esbenp.prettier-vscode",        // Prettier code formatter
-
-        // Shell scripting
-        "timonwong.shellcheck",          // ShellCheck linting
-        "foxundermoon.shell-format",     // Shell script formatting
-
-        // Markup and data formats
-        "redhat.vscode-yaml",            // YAML language support with schema validation
-        "tamasfe.even-better-toml",      // TOML language support
-        "DavidAnson.vscode-markdownlint", // Markdown linting
-
-        // ----------------------------------------------------------
-        // Container and DevOps Tools
-        // ----------------------------------------------------------
-        "ms-azuretools.vscode-docker",   // Docker support (Dockerfiles, compose)
-        "ms-vscode-remote.remote-containers", // Dev Containers extension
-        "github.vscode-github-actions",  // GitHub Actions workflow support
-
-        // ----------------------------------------------------------
-        // Code Quality and Linting
-        // ----------------------------------------------------------
-        "streetsidesoftware.code-spell-checker", // Spell checking in code/comments
-        "editorconfig.editorconfig",     // EditorConfig support
-
-        // ----------------------------------------------------------
-        // Git and Version Control
-        // ----------------------------------------------------------
-        "donjayamanne.githistory",       // Git history visualization
-        "eamodio.gitlens",               // Advanced Git integration (optional)
-
-        // ----------------------------------------------------------
-        // Productivity and UI
-        // ----------------------------------------------------------
-        "johnpapa.vscode-peacock",       // Workspace color theming
-        "wmaurer.change-case",           // Quick case conversion
-        "usernamehw.errorlens",          // Inline error highlighting
-        "xyz.local-history",             // Local file history
-
-        // ----------------------------------------------------------
-        // Testing and Debugging
-        // ----------------------------------------------------------
-        "hbenl.vscode-test-explorer",    // Test Explorer UI
-        "littlefoxteam.vscode-python-test-adapter", // Python test adapter
-
-        // ----------------------------------------------------------
-        // Schema and Validation
-        // ----------------------------------------------------------
-        "remcohaszing.schemastore",      // JSON Schema Store integration
-
-        // ----------------------------------------------------------
-        // Task and Automation
-        // ----------------------------------------------------------
-        "task.vscode-task",              // Task runner support
-
-        // ----------------------------------------------------------
-        // Additional Tools
-        // ----------------------------------------------------------
-        "irongeek.vscode-env",           // .env file support
-        "codezombiech.gitignore"         // .gitignore file support
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "DavidAnson.vscode-markdownlint",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers",
+        "github.vscode-github-actions",
+        "streetsidesoftware.code-spell-checker",
+        "editorconfig.editorconfig",
+        "donjayamanne.githistory",
+        "eamodio.gitlens",
+        "johnpapa.vscode-peacock",
+        "wmaurer.change-case",
+        "usernamehw.errorlens",
+        "xyz.local-history",
+        "hbenl.vscode-test-explorer",
+        "littlefoxteam.vscode-python-test-adapter",
+        "remcohaszing.schemastore",
+        "task.vscode-task",
+        "irongeek.vscode-env",
+        "codezombiech.gitignore",
+        "mikeburgh.xml-format",
+        "coolbear.systemd-unit-file",
+        "josetr.cmake-language-support-vscode",
+        "twxs.cmake",
+        "xaver.clang-format",
+        "ivory-lab.jenkinsfile-support",
+        "HTMLHint.vscode-htmlhint",
+        "redhat.ansible",
+        "James-Yu.latex-workshop",
+        "stoplight.spectral",
+        "richterger.perl",
+        "SanjulaGanepola.github-local-actions",
+        "GitHub.copilot-chat",
+        "GitHub.copilot",
+        "ms-windows-ai-studio.windows-ai-studio",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-vscode.cmake-tools",
+        "openai.chatgpt",
+        "biomejs.biome"
       ],
 
       // ------------------------------------------------------------
@@ -909,7 +886,8 @@
 
         // Terminal behavior
         "terminal.integrated.scrollback": 10000,
-        "terminal.integrated.enableBell": false,
+        "terminal.integrated.enableVisualBell": false,
+        "accessibility.signals.terminalBell": {},
         "terminal.integrated.cursorBlinking": true,
         "terminal.integrated.cursorStyle": "line",
 

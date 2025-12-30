@@ -52,6 +52,17 @@ ARG LANGUAGE=en_US:en
 ARG LC_ALL=en_US.UTF-8
 ARG TZ=UTC
 
+# User and group configuration (build-time)
+ARG UBI_USER=vscode
+ARG UBI_GROUP=vscode
+ARG UBI_UID=1000
+ARG UBI_GID=1000
+
+ENV UBI_USER="${UBI_USER}" \
+    UBI_GROUP="${UBI_GROUP}" \
+    UBI_UID="${UBI_UID}" \
+    UBI_GID="${UBI_GID}"
+
 # UX Preferences
 ARG EDITOR=code
 ARG VISUAL=code
@@ -89,6 +100,8 @@ ARG PYTHONHASHSEED=random
 ARG PYTHONUNBUFFERED=1
 ARG PYTHONUTF8=1
 ARG PYTHONIOENCODING=UTF-8
+ARG PYTHONDONTWRITEBYTECODE=1
+ARG PYTHONNOUSERSITE=1
 ARG PIP_DEFAULT_TIMEOUT=200
 ARG PIP_DISABLE_PIP_VERSION_CHECK=on
 ARG PIP_NO_CACHE_DIR=1
@@ -148,6 +161,8 @@ ENV \
     PYTHONHASHSEED=${PYTHONHASHSEED} \
     PYTHONFAULTHANDLER=${PYTHONFAULTHANDLER} \
     PYTHONWARNINGS=${PYTHONWARNINGS} \
+    PYTHONDONTWRITEBYTECODE=${PYTHONDONTWRITEBYTECODE} \
+    PYTHONNOUSERSITE=${PYTHONNOUSERSITE} \
     PIP_NO_CACHE_DIR=${PIP_NO_CACHE_DIR} \
     PIP_DISABLE_PIP_VERSION_CHECK=${PIP_DISABLE_PIP_VERSION_CHECK} \
     PIP_NO_WARN_SCRIPT_LOCATION=${PIP_NO_WARN_SCRIPT_LOCATION} \
@@ -197,6 +212,18 @@ ENV \
     XDG_DATA_DIRS="${UNIVERSAL_APPS}:/usr/local/share:/usr/share"
 
 ######################################################################
+# Nix Bootstrap Environment Overrides
+#
+# WHY:
+# - Docker Desktop (macOS) does not fully support seccomp BPF
+# - Nix installer runs nix-env internally before nix.conf is honored
+# - These must be set at install-time, not runtime
+######################################################################
+ENV \
+    NIX_CONF_DIR="${XDG_CONFIG_HOME}/nix" \
+    NIX_DISABLE_SECCOMP="1"
+
+######################################################################
 # CREATE UNIVERSAL DIRECTORIES
 ######################################################################
 RUN mkdir -p \
@@ -211,9 +238,97 @@ RUN mkdir -p \
     ${UNIVERSAL_RUNTIME} \
     ${UNIVERSAL_APPS} \
     ${UNIVERSAL_REPORTS} \
-  && chown -R vscode:vscode ${UNIVERSAL_HOME}
+  && chown -R ${UBI_USER}:${UBI_GROUP} ${UNIVERSAL_HOME}
 
+######################################################################
+# Adjust system UID/GID limits for Nix build users
+#
+# WHY:
+# - Nix creates nixbld users with high UIDs
+# - Ubuntu enforces SYS_UID_MAX / SYS_GID_MAX defaults
+# - This matches devcontainer feature behavior
+######################################################################
+RUN sed -i 's/^SYS_UID_MAX.*/SYS_UID_MAX 65535/' /etc/login.defs && \
+    sed -i 's/^SYS_GID_MAX.*/SYS_GID_MAX 65535/' /etc/login.defs
+
+######################################################################
+# NIX INSTALLATION (MULTI-USER / DAEMON MODE)
+#
+# WHY:
+# - Works for any user (VS Code switches users dynamically)
+# - Avoids UID / home directory coupling
+# - Matches devcontainer feature behavior
+# - Enables reproducible, pinned tooling via flakes
+######################################################################
+
+FROM environment AS nix
+
+######################################################################
+# Nix Version Pinning
+######################################################################
+ARG NIX_VERSION=2.33.0
+ENV NIX_VERSION="${NIX_VERSION}"
+
+######################################################################
+# Copy Nix subsystem (owned by this repo)
+######################################################################
+######################################################################
+# Nix Subsystem
+######################################################################
+COPY nix /opt/nix
+
+######################################################################
+# Install Nix (multi-user daemon mode)
+#
+# IMPORTANT:
+# - nix.conf must exist BEFORE the installer runs
+# - installer invokes nix-env internally
+######################################################################
+RUN mkdir -p ${NIX_CONF_DIR} && \
+    cp /opt/nix/nix.conf ${NIX_CONF_DIR}/nix.conf && \
+    chmod +x \
+        /opt/nix/install-nix.sh \
+        /opt/nix/entrypoint.sh && \
+    /opt/nix/install-nix.sh
+
+######################################################################
+# Install pinned Nix toolchain (flake)
+######################################################################
+RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
+    nix \
+      --extra-experimental-features "nix-command flakes" \
+      --option sandbox false \
+      --option filter-syscalls false \
+      profile add /opt/nix
+
+######################################################################
+# FINAL IMAGE
+######################################################################
 FROM environment AS final
+
+######################################################################
+# Nix Runtime Integration
+#
+# Copies the fully-initialized Nix store and configuration from the
+# build stage. No installer runs at runtime.
+######################################################################
+COPY --from=nix /nix /nix
+COPY --from=nix /etc/nix /etc/nix
+# COPY --from=nix /etc/profile.d/nix-daemon.sh /etc/profile.d/nix-daemon.sh
+COPY --from=nix /opt/nix/entrypoint.sh /opt/nix/entrypoint.sh
+
+######################################################################
+# Shell Environment Activation
+#
+# VS Code uses non-login shells, so we must source Nix explicitly.
+######################################################################
+RUN echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> /etc/bash.bashrc && \
+    echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> /etc/zsh/zshrc
+
+######################################################################
+# PATH Configuration
+######################################################################
+ENV PATH="/nix/var/nix/profiles/default/bin:${PATH}"
 
 ######################################################################
 # HEALTHCHECK
@@ -226,4 +341,9 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 ######################################################################
 # Final container command
 ######################################################################
-CMD ["bash", "-lc", "sleep infinity"]
+# CMD ["bash", "-lc", "sleep infinity"]
+
+######################################################################
+# Nix Daemon Entrypoint
+######################################################################
+ENTRYPOINT ["/opt/nix/entrypoint.sh"]

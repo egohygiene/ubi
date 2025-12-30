@@ -7,109 +7,131 @@
 
   outputs = { self, nixpkgs }:
   let
-    system = "x86_64-linux";
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
 
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
-  in {
-    packages.${system}.default = pkgs.buildEnv {
-      name = "universal-toolchain";
+    forAllSystems = f:
+      builtins.listToAttrs (map (system: {
+        name = system;
+        value = f system;
+      }) systems);
+  in
+  {
+    ##########################################################################
+    # Development shells (PRIMARY ENTRYPOINT)
+    ##########################################################################
+    devShells = forAllSystems (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        default = pkgs.mkShell {
+          name = "universal-devcontainer-shell";
 
-      paths = with pkgs; [
-        ##################################################################
-        # Core CLI / UX
-        ##################################################################
-        bash
-        coreutils
-        curl
-        wget
-        git
-        gh
-        jq
-        yq
-        ripgrep
-        fd
-        tree
-        unzip
-        zip
-        gnupg
-        less
-        which
+          packages = with pkgs; [
+            ##################################################################
+            # Core CLI / UX
+            ##################################################################
+            bash
+            coreutils
+            curl
+            wget
+            git
+            gh
+            jq
+            yq
+            ripgrep
+            fd
+            tree
+            unzip
+            zip
+            gnupg
+            less
+            which
 
-        ##################################################################
-        # Build essentials (fixes most native build errors)
-        ##################################################################
-        gcc
-        gnumake
-        cmake
-        pkg-config
-        autoconf
-        automake
-        libtool
-        patchelf
-        binutils
+            ##################################################################
+            # Build essentials
+            ##################################################################
+            gcc
+            gnumake
+            cmake
+            pkg-config
+            autoconf
+            automake
+            libtool
+            patchelf
+            binutils
 
-        ##################################################################
-        # Compression / common C libraries
-        ##################################################################
-        zlib
-        zlib.dev
-        bzip2
-        bzip2.dev
-        xz
-        xz.dev
-        zstd
-        zstd.dev
+            ##################################################################
+            # Compression / common libs
+            ##################################################################
+            zlib
+            bzip2
+            xz
+            zstd
 
-        ##################################################################
-        # SSL / crypto (Python + Rust native deps)
-        ##################################################################
-        openssl
-        openssl.dev
-        libssh2
-        libssh2.dev
-        libsodium
-        libsodium.dev
+            ##################################################################
+            # SSL / crypto
+            ##################################################################
+            openssl
+            libssh2
+            libsodium
 
-        ##################################################################
-        # Python (pip / poetry / native extensions)
-        ##################################################################
-        python311
-        python311Packages.pip
-        python311Packages.virtualenv
-        python311Packages.setuptools
-        python311Packages.wheel
-        python311Packages.cffi
-        python311Packages.pyopenssl
+            ##################################################################
+            # Python
+            ##################################################################
+            python311
+            python311Packages.pip
+            python311Packages.virtualenv
+            python311Packages.setuptools
+            python311Packages.wheel
+            python311Packages.cffi
+            python311Packages.pyopenssl
 
-        ##################################################################
-        # Rust
-        ##################################################################
-        cargo
-        rustc
+            ##################################################################
+            # Rust
+            ##################################################################
+            rustc
+            cargo
 
-        ##################################################################
-        # Node / native addons
-        ##################################################################
-        nodejs_20
-        yarn
-        pnpm
-        nodePackages.node-gyp
+            ##################################################################
+            # Node
+            ##################################################################
+            nodejs_20
+            yarn
+            pnpm
+            nodePackages.node-gyp
 
-        ##################################################################
-        # Databases / common headers
-        ##################################################################
-        sqlite
-        sqlite.dev
-        ncurses
-        ncurses.dev
-        readline
-        readline.dev
-        libffi
-        libffi.dev
-      ];
-    };
+            ##################################################################
+            # Databases / headers
+            ##################################################################
+            sqlite
+            ncurses
+            readline
+            libffi
+          ];
+
+          shellHook = ''
+            echo "🔧 Universal Devcontainer Toolchain ready"
+            echo "📦 System: ${system}"
+          '';
+        };
+      }
+    );
+
+    ##########################################################################
+    # Optional: keep a package output if you really want one
+    ##########################################################################
+    packages = forAllSystems (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        default = pkgs.buildEnv {
+          name = "universal-toolchain";
+          paths = self.devShells.${system}.default.packages;
+        };
+      }
+    );
   };
 }

@@ -12,8 +12,8 @@
 # Define common labels for Docker objects
 x-labels: &labels
   labels:
-    app.name: ${PROJECT_NAME:-profile}-development
-    app.scope: ${PROJECT_NAME:-profile}-development
+    app.name: ${PROJECT_NAME:-ubi}-development
+    app.scope: ${PROJECT_NAME:-ubi}-development
 
 # Shared settings for all services
 x-settings: &settings # Restart containers unless stopped manually
@@ -35,7 +35,7 @@ x-settings: &settings # Restart containers unless stopped manually
   networks:
     default:
       aliases:
-        - ${PROJECT_NAME:-profile}-development-network
+        - ${PROJECT_NAME:-ubi}-development-network
   # Use a specific platform for compatibility
   platform: linux/amd64
   # Apply the common labels to all services
@@ -45,7 +45,7 @@ x-settings: &settings # Restart containers unless stopped manually
 networks:
   default:
     # Name of the Docker network, based on the project name
-    name: ${PROJECT_NAME:-profile}-development-network
+    name: ${PROJECT_NAME:-ubi}-development-network
     # Use the bridge driver for the network (https://docs.docker.com/compose/networking/)
     driver: bridge
     # Allows containers to manually attach to this network
@@ -64,8 +64,8 @@ networks:
 
 services:
   development:
-    container_name: ${PROJECT_NAME:-profile}-development
-    hostname: ${PROJECT_NAME:-profile}-development
+    container_name: ${PROJECT_NAME:-ubi}-development
+    hostname: ${PROJECT_NAME:-ubi}-development
     build:
       context: ..
       target: final

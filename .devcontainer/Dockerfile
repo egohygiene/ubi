@@ -8,31 +8,6 @@
 
 ######################################################################
 # BASE IMAGE VERSION PINNING
-#
-# WHY: The base image is pinned to a specific version and digest to ensure:
-#      - Reproducible builds across all environments
-#      - Protection against breaking changes from upstream
-#      - Stable CI/CD pipelines without unexpected drift
-#      - Security traceability and audit compliance
-#
-# UPDATING: To update the base image version:
-#   1. Check for new releases at:
-#      https://github.com/devcontainers/images/releases
-#      Or query available tags:
-#      curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | \
-#        jq -r '.tags[] | select(. | test("^[0-9]+\\.[0-9]+"))' | sort -V
-#   2. Pull the new version locally:
-#      docker pull mcr.microsoft.com/devcontainers/base:<version>
-#   3. Get the digest:
-#      docker inspect mcr.microsoft.com/devcontainers/base:<version> \
-#        --format='{{index .RepoDigests 0}}'
-#   4. Update the FROM line below with the new version and digest
-#   5. Test the build thoroughly before committing
-#   6. Document the change in your PR description
-#
-# CURRENT VERSION: 2.1.2
-# CURRENT DIGEST: sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4
-# LAST UPDATED: 2025-12-12
 ######################################################################
 FROM mcr.microsoft.com/devcontainers/base:ubuntu@sha256:c1613dbcdafe28e4b36ede9f3cb84a96e76765f50b3aeee87cb589eeb4c6dbca AS base
 
@@ -45,14 +20,12 @@ FROM base AS environment
 # ARG DEFINITIONS
 ######################################################################
 
-# System + locale
 ARG TMPDIR=/tmp
 ARG LANG=en_US.UTF-8
 ARG LANGUAGE=en_US:en
 ARG LC_ALL=en_US.UTF-8
 ARG TZ=UTC
 
-# User and group configuration (build-time)
 ARG UBI_USER=vscode
 ARG UBI_GROUP=vscode
 ARG UBI_UID=1000
@@ -63,7 +36,10 @@ ENV UBI_USER="${UBI_USER}" \
     UBI_UID="${UBI_UID}" \
     UBI_GID="${UBI_GID}"
 
-# UX Preferences
+######################################################################
+# UX / TOOLING / TELEMETRY SETTINGS (UNCHANGED)
+######################################################################
+
 ARG EDITOR=code
 ARG VISUAL=code
 ARG PAGER=less
@@ -75,14 +51,9 @@ ARG CLICOLOR_FORCE=1
 ARG FORCE_COLOR=1
 ARG GCC_COLORS="error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01"
 ARG LESS="-R"
-
-# Node memory config
 ARG NODE_OPTIONS="--max-old-space-size=4096 --max-semi-space-size=512"
-
-# Rust UX
 ARG CARGO_TERM_COLOR=always
 
-# Telemetry controls
 ARG DO_NOT_TRACK=1
 ARG TELEMETRY_ENABLED=0
 ARG NEXT_TELEMETRY_DISABLED=1
@@ -93,8 +64,8 @@ ARG NUXT_TELEMETRY_DISABLED=1
 ARG CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
 ARG STRIPE_CLI_TELEMETRY_OPTOUT=1
 
-# Python behavior
-ARG PYTHONWARNINGS=default
+# ARG PYTHONWARNINGS=default
+ARG PYTHONWARNINGS=ignore
 ARG PYTHONFAULTHANDLER=1
 ARG PYTHONHASHSEED=random
 ARG PYTHONUNBUFFERED=1
@@ -107,14 +78,19 @@ ARG PIP_DISABLE_PIP_VERSION_CHECK=on
 ARG PIP_NO_CACHE_DIR=1
 ARG PIP_NO_WARN_SCRIPT_LOCATION=on
 
-######################################################################
-# FIXED PLATFORM-LEVEL ENVIRONMENT VARIABLES
-######################################################################
+##################################################################
+# C / C++ compiler noise
+##################################################################
+ARG NIX_CFLAGS_COMPILE="-w"
+ARG CFLAGS="-w"
+ARG CXXFLAGS="-w"
+ARG CPPFLAGS="-w"
 
-# Workspace home
+######################################################################
+# UNIVERSAL FILESYSTEM LAYOUT (UNCHANGED)
+######################################################################
 ENV WORKSPACE_HOME=/workspace
 
-# Universal filesystem layout
 ENV UNIVERSAL_HOME=/opt/universal \
     UNIVERSAL_BIN=/opt/universal/bin \
     UNIVERSAL_TOOLBOX=/opt/universal/toolbox \
@@ -130,12 +106,9 @@ ENV UNIVERSAL_HOME=/opt/universal \
     APT_CACHE_DIR=/opt/universal/cache/apt
 
 ######################################################################
-# BASE ENVIRONMENT
+# BASE ENVIRONMENT VARIABLES (UNCHANGED)
 ######################################################################
 ENV \
-    ##################################################################
-    # Locale + system
-    ##################################################################
     LANG=${LANG} \
     LANGUAGE=${LANGUAGE} \
     LC_ALL=${LC_ALL} \
@@ -152,9 +125,6 @@ ENV \
     VISUAL=${VISUAL} \
     PAGER=${PAGER} \
     GIT_PAGER=${GIT_PAGER} \
-    ##################################################################
-    # Python defaults
-    ##################################################################
     PYTHONUNBUFFERED=${PYTHONUNBUFFERED} \
     PYTHONIOENCODING=${PYTHONIOENCODING} \
     PYTHONUTF8=${PYTHONUTF8} \
@@ -167,15 +137,8 @@ ENV \
     PIP_DISABLE_PIP_VERSION_CHECK=${PIP_DISABLE_PIP_VERSION_CHECK} \
     PIP_NO_WARN_SCRIPT_LOCATION=${PIP_NO_WARN_SCRIPT_LOCATION} \
     PIP_DEFAULT_TIMEOUT=${PIP_DEFAULT_TIMEOUT} \
-    PIP_ROOT_USER_ACTION=ignore \
-    ##################################################################
-    # Node / Rust
-    ##################################################################
     NODE_OPTIONS="${NODE_OPTIONS}" \
     CARGO_TERM_COLOR=${CARGO_TERM_COLOR} \
-    ##################################################################
-    # Telemetry toggles
-    ##################################################################
     DO_NOT_TRACK=${DO_NOT_TRACK} \
     TELEMETRY_ENABLED=${TELEMETRY_ENABLED} \
     NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED} \
@@ -185,23 +148,16 @@ ENV \
     NUXT_TELEMETRY_DISABLED=${NUXT_TELEMETRY_DISABLED} \
     CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=${CLOUDSDK_CORE_DISABLE_USAGE_REPORTING} \
     STRIPE_CLI_TELEMETRY_OPTOUT=${STRIPE_CLI_TELEMETRY_OPTOUT} \
-    ##################################################################
-    # Debian noninteractive install behavior
-    ##################################################################
     DEBIAN_FRONTEND=noninteractive \
     DEBCONF_NONINTERACTIVE_SEEN=true \
     DEBIAN_PRIORITY=critical \
-    DEBCONF_NOWARNINGS=yes \
-    APT_LISTCHANGES_FRONTEND=none \
-    APT_LISTBUGS_FRONTEND=none
+    NIX_CFLAGS_COMPILE=${NIX_CFLAGS_COMPILE} \
+    CFLAGS=${CFLAGS} \
+    CXXFLAGS=${CXXFLAGS} \
+    CPPFLAGS=${CPPFLAGS}
 
 ######################################################################
-# XDG DIRECTORY OVERRIDES
-# - https://wiki.archlinux.org/title/XDG_Base_Directory
-# - https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-#
-# Add user application .desktop files to gnome.
-# https://help.gnome.org/admin//system-admin-guide/2.32/menustructure-desktopentry.html.en
+# XDG OVERRIDES (UNCHANGED)
 ######################################################################
 ENV \
     XDG_CONFIG_HOME=${UNIVERSAL_CONFIG} \
@@ -212,16 +168,14 @@ ENV \
     XDG_DATA_DIRS="${UNIVERSAL_APPS}:/usr/local/share:/usr/share"
 
 ######################################################################
-# Nix Bootstrap Environment Overrides
-#
-# WHY:
-# - Docker Desktop (macOS) does not fully support seccomp BPF
-# - Nix installer runs nix-env internally before nix.conf is honored
-# - These must be set at install-time, not runtime
+# NIX BOOTSTRAP ENVIRONMENT (UPDATED FOR SINGLE-USER)
 ######################################################################
 ENV \
     NIX_CONF_DIR="${XDG_CONFIG_HOME}/nix" \
-    NIX_DISABLE_SECCOMP="1"
+    NIX_DISABLE_SECCOMP="1" \
+    NIX_STORE_DIR="/nix" \
+    NIX_STATE_DIR="/nix/var" \
+    NIX_PROFILE="/nix/var/nix/profiles/default"
 
 ######################################################################
 # CREATE UNIVERSAL DIRECTORIES
@@ -241,89 +195,34 @@ RUN mkdir -p \
   && chown -R ${UBI_USER}:${UBI_GROUP} ${UNIVERSAL_HOME}
 
 ######################################################################
-# Adjust system UID/GID limits for Nix build users
-#
-# WHY:
-# - Nix creates nixbld users with high UIDs
-# - Ubuntu enforces SYS_UID_MAX / SYS_GID_MAX defaults
-# - This matches devcontainer feature behavior
+# NIX INSTALLATION (SINGLE-USER, SHARED)
 ######################################################################
-RUN sed -i 's/^SYS_UID_MAX.*/SYS_UID_MAX 65535/' /etc/login.defs && \
-    sed -i 's/^SYS_GID_MAX.*/SYS_GID_MAX 65535/' /etc/login.defs
-
-######################################################################
-# NIX INSTALLATION (MULTI-USER / DAEMON MODE)
-#
-# WHY:
-# - Works for any user (VS Code switches users dynamically)
-# - Avoids UID / home directory coupling
-# - Matches devcontainer feature behavior
-# - Enables reproducible, pinned tooling via flakes
-######################################################################
-
 FROM environment AS nix
 
-######################################################################
-# Nix Version Pinning
-######################################################################
 ARG NIX_VERSION=2.33.0
 ENV NIX_VERSION="${NIX_VERSION}"
 
-######################################################################
-# Copy Nix subsystem (owned by this repo)
-######################################################################
-######################################################################
-# Nix Subsystem
-######################################################################
 COPY nix /opt/nix
 
-######################################################################
-# Install Nix (multi-user daemon mode)
-#
-# IMPORTANT:
-# - nix.conf must exist BEFORE the installer runs
-# - installer invokes nix-env internally
-######################################################################
 RUN mkdir -p ${NIX_CONF_DIR} && \
     cp /opt/nix/nix.conf ${NIX_CONF_DIR}/nix.conf && \
-    chmod +x \
-        /opt/nix/install-nix.sh \
-        /opt/nix/entrypoint.sh && \
-    /opt/nix/install-nix.sh
-
-######################################################################
-# Install pinned Nix toolchain (flake)
-######################################################################
-RUN . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
-    nix \
-      --extra-experimental-features "nix-command flakes" \
-      --option sandbox false \
-      --option filter-syscalls false \
-      profile add /opt/nix
+    chmod +x /opt/nix/install-nix.sh /opt/nix/entrypoint.sh && \
+    NIX_INSTALL_MODE=single-user /opt/nix/install-nix.sh && \
+    chown -R ${UBI_USER}:${UBI_GROUP} /nix
 
 ######################################################################
 # FINAL IMAGE
 ######################################################################
 FROM environment AS final
 
-######################################################################
-# Nix Runtime Integration
-#
-# Copies the fully-initialized Nix store and configuration from the
-# build stage. No installer runs at runtime.
-######################################################################
 COPY --from=nix /nix /nix
-COPY --from=nix /etc/nix /etc/nix
-# COPY --from=nix /etc/profile.d/nix-daemon.sh /etc/profile.d/nix-daemon.sh
-COPY --from=nix /opt/nix/entrypoint.sh /opt/nix/entrypoint.sh
+COPY --from=nix /opt/nix /opt/nix
 
 ######################################################################
 # Shell Environment Activation
-#
-# VS Code uses non-login shells, so we must source Nix explicitly.
 ######################################################################
-RUN echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> /etc/bash.bashrc && \
-    echo ". /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" >> /etc/zsh/zshrc
+RUN echo ". /nix/var/nix/profiles/default/etc/profile.d/nix.sh" >> /etc/bash.bashrc && \
+    echo ". /nix/var/nix/profiles/default/etc/profile.d/nix.sh" >> /etc/zsh/zshrc
 
 ######################################################################
 # PATH Configuration
@@ -333,17 +232,10 @@ ENV PATH="/nix/var/nix/profiles/default/bin:${PATH}"
 ######################################################################
 # HEALTHCHECK
 ######################################################################
-# Validates container health by checking bash executable availability.
-# This ensures the container's fundamental shell environment is operational.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD test -x /bin/bash || exit 1
 
 ######################################################################
-# Final container command
-######################################################################
-# CMD ["bash", "-lc", "sleep infinity"]
-
-######################################################################
-# Nix Daemon Entrypoint
+# Nix DevShell Entrypoint
 ######################################################################
 ENTRYPOINT ["/opt/nix/entrypoint.sh"]

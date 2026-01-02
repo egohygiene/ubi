@@ -213,7 +213,53 @@ RUN mkdir -p \
     ${UNIVERSAL_REPORTS} \
   && chown -R vscode:vscode ${UNIVERSAL_HOME}
 
-FROM environment AS final
+FROM environment AS nix-setup
+
+######################################################################
+# INSTALL NIX PACKAGE MANAGER (SINGLE-USER MODE)
+######################################################################
+# Install Nix in single-user mode for the vscode user.
+# Single-user mode is appropriate for devcontainers where:
+# - Only one user (vscode) needs access to Nix
+# - We want to avoid the complexity of the Nix daemon
+# - File ownership needs to be clear and simple
+#
+# Reference: https://nixos.org/download.html#nix-install-linux
+######################################################################
+
+# Install dependencies for Nix installer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    xz-utils \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# Create /nix directory and set ownership to vscode user
+RUN mkdir -p /nix \
+  && chown -R vscode:vscode /nix
+
+# Switch to vscode user to install Nix in single-user mode
+USER vscode
+
+# Download and run Nix installer in single-user mode
+RUN curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+
+# Add Nix to PATH for all shells
+RUN echo 'if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi' >> ~/.bashrc \
+  && echo 'if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi' >> ~/.profile
+
+# Switch back to root for final setup
+USER root
+
+# Ensure /nix ownership is correct after installation
+# This is critical because:
+# 1. The Nix installer creates subdirectories under /nix
+# 2. If the vscode user's UID changes (via updateRemoteUserUID), ownership must be fixed
+# 3. This ensures Nix commands can write to the store
+RUN chown -R vscode:vscode /nix
+
+FROM nix-setup AS final
 
 ######################################################################
 # HEALTHCHECK

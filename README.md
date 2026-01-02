@@ -702,8 +702,35 @@ Comprehensive documentation is also available in the [docs/](./docs/) directory:
 - **[Troubleshooting](./docs/troubleshooting.md)** - Common issues and solutions
 - **[Release Process](./docs/release-process.md)** - Version management and publishing workflow
 - **[Security Overview](./docs/security-overview.md)** - Security practices, scanning, and SBOM
+- **[Copilot Environment](./docs/dev/copilot-environment.md)** - GitHub Copilot Agent automation setup
 
 See the [Documentation Index](./docs/README.md) for a complete overview.
+
+---
+
+## 🤖 Copilot Agent Automation
+
+UBI is optimized for GitHub Copilot Agents with a pre-configured environment that enables automated workflows like PR fixes, code reviews, security audits, and refactoring tasks.
+
+### How It Works
+
+The repository includes a specialized setup workflow (`.github/workflows/copilot-setup-steps.yml`) that installs all required tools before Copilot's firewall activates. This ensures Copilot Agents can perform tasks without network access errors.
+
+### Configured Features
+
+- **Automated PR Fixes**: Linting, formatting, and code quality improvements
+- **Security Scanning**: Trivy vulnerability detection and remediation
+- **Container Testing**: Goss-based validation
+- **Documentation**: Automated updates and consistency checks
+
+### For Repository Admins
+
+To enable full Copilot Agent functionality:
+
+1. Configure the [domain allowlist](./.github/COPILOT_ALLOWLIST.md) in repository settings
+2. Review the [Copilot environment documentation](./docs/dev/copilot-environment.md)
+
+📖 **[See the full Copilot Agent documentation →](./docs/dev/copilot-environment.md)**
 
 ---
 

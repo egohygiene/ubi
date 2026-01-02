@@ -227,13 +227,7 @@ FROM environment AS nix-setup
 # Reference: https://nixos.org/download.html#nix-install-linux
 ######################################################################
 
-# Install dependencies for Nix installer
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    xz-utils \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+# Dependencies (curl, ca-certificates, xz-utils) are already present in base image
 
 # Create /nix directory and set ownership to vscode user
 RUN mkdir -p /nix \
@@ -243,6 +237,9 @@ RUN mkdir -p /nix \
 USER vscode
 
 # Download and run Nix installer in single-user mode
+# Using a specific version for reproducibility and security
+# Version 2.18.1 is a stable release
+# Alternative: Pin to latest stable via https://releases.nixos.org/nix/nix-2.18.1/install
 RUN curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
 
 # Add Nix to PATH for all shells

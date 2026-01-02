@@ -257,6 +257,36 @@
 
       // NVM (Node Version Manager) version to install
       "nvmVersion": "latest"
+    },
+
+    // --------------------------------------------------------------
+    // Nix Package Manager
+    // --------------------------------------------------------------
+    // Installs the Nix package manager in single-user mode.
+    // This allows the vscode user to manage packages with Nix.
+    // Useful for:
+    // - Reproducible development environments
+    // - Installing packages from nixpkgs
+    // - Using Nix flakes for project configuration
+    //
+    // Note: Single-user mode is used to avoid permission issues
+    // with the Nix store (/nix) in a devcontainer environment.
+    //
+    // Reference: https://github.com/devcontainers/features/tree/main/src/nix
+    // --------------------------------------------------------------
+    "ghcr.io/devcontainers/features/nix:1": {
+      // Nix version to install
+      "version": "latest",
+
+      // Use single-user installation mode
+      // This installs Nix for the current user (vscode) only
+      "multiUser": false,
+
+      // Optional packages to install
+      "packages": "",
+
+      // Optional Nix configuration
+      "extraNixConfig": ""
     }
   },
 
@@ -368,14 +398,10 @@
   // Choose one based on your workflow preference.
   // --------------------------------------------------------------
   "postCreateCommand": {
-    // Example: Install Python dependencies with Poetry
-    // "install-python-deps": ["poetry", "install", "--no-root"],
-
-    // Example: Install Node.js dependencies
-    // "install-node-deps": ["npm", "install"],
-
-    // Example: Run database migrations
-    // "migrate-db": ["python", "manage.py", "migrate"]
+    // Fix Nix store permissions for single-user installation
+    // The Nix feature installs in single-user mode, but we need to
+    // ensure the /nix directory is owned by the vscode user
+    "fix-nix-permissions": "sudo chown -R vscode:vscode /nix 2>/dev/null || true"
   },
 
   // --------------------------------------------------------------

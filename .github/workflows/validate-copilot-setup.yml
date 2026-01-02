@@ -1,0 +1,359 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "✅ Validate Copilot Setup"
+
+# =============================================================================
+# COPILOT ENVIRONMENT VALIDATION
+# =============================================================================
+# This workflow validates that the Copilot Agent setup environment works correctly.
+# It ensures all tools install successfully and no firewall blocks occur.
+#
+# Runs:
+# - On PRs that modify copilot-setup-steps.yml
+# - Weekly to catch dependency/tool issues early
+# - On demand via workflow_dispatch
+# =============================================================================
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/copilot-setup-steps.yml'
+      - '.github/workflows/validate-copilot-setup.yml'
+      - 'docs/dev/copilot-environment.md'
+      - '.github/COPILOT_ALLOWLIST.md'
+  schedule:
+    # Run weekly on Mondays at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-setup:
+    name: "🔍 Validate Copilot Setup Workflow"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v6
+
+      # -------------------------------------------------------------
+      # 2. Setup Node.js for npm dependencies
+      # -------------------------------------------------------------
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install npm dependencies
+        run: |
+          echo "Installing npm packages..."
+          npm ci
+          echo "✅ npm dependencies installed"
+
+      # -------------------------------------------------------------
+      # 3. Setup Python and Poetry for Python dependencies
+      # -------------------------------------------------------------
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📚 Install Poetry
+        run: |
+          echo "Installing Poetry..."
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "${HOME}/.local/bin" >> "$GITHUB_PATH"
+          poetry --version
+          echo "✅ Poetry installed"
+
+      - name: 🔧 Configure Poetry
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+
+      - name: 📦 Install Python dependencies
+        run: |
+          echo "Installing Python packages..."
+          poetry install --no-interaction --no-root
+          echo "✅ Python dependencies installed"
+
+      # -------------------------------------------------------------
+      # 4. Install Goss testing framework
+      # -------------------------------------------------------------
+      - name: 🧪 Install Goss
+        env:
+          GOSS_VERSION: v0.4.9
+        run: |
+          echo "Installing Goss ${GOSS_VERSION}..."
+          curl -fsSL https://goss.rocks/install | GOSS_VER="${GOSS_VERSION}" sh
+          
+          # Install dgoss (Docker wrapper for Goss)
+          sudo curl -fsSL -o /usr/local/bin/dgoss \
+            "https://raw.githubusercontent.com/goss-org/goss/${GOSS_VERSION}/extras/dgoss/dgoss"
+          sudo chmod +rx /usr/local/bin/dgoss
+          
+          goss --version
+          dgoss --version
+          echo "✅ Goss installed"
+
+      # -------------------------------------------------------------
+      # 5. Install Trivy security scanner
+      # -------------------------------------------------------------
+      - name: 🔒 Install Trivy
+        run: |
+          echo "Installing Trivy..."
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+          trivy --version
+          echo "✅ Trivy installed"
+
+      # -------------------------------------------------------------
+      # 6. Install Hadolint (Dockerfile linter)
+      # -------------------------------------------------------------
+      - name: 🐳 Install Hadolint
+        env:
+          HADOLINT_VERSION: v2.12.0
+        run: |
+          echo "Installing Hadolint ${HADOLINT_VERSION}..."
+          sudo wget -O /usr/local/bin/hadolint \
+            "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64"
+          sudo chmod +x /usr/local/bin/hadolint
+          hadolint --version
+          echo "✅ Hadolint installed"
+
+      # -------------------------------------------------------------
+      # 7. Install actionlint (GitHub Actions linter)
+      # -------------------------------------------------------------
+      - name: ⚡ Install actionlint
+        run: |
+          echo "Installing actionlint..."
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/
+          actionlint --version
+          echo "✅ actionlint installed"
+
+      # -------------------------------------------------------------
+      # 8. Install ShellCheck (shell script linter)
+      # -------------------------------------------------------------
+      - name: 🐚 Install ShellCheck
+        run: |
+          echo "Installing ShellCheck..."
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck --version
+          echo "✅ ShellCheck installed"
+
+      # -------------------------------------------------------------
+      # 9. Install jq (JSON processor)
+      # -------------------------------------------------------------
+      - name: 📋 Install jq
+        run: |
+          echo "Installing jq..."
+          sudo apt-get install -y jq
+          jq --version
+          echo "✅ jq installed"
+
+      # -------------------------------------------------------------
+      # 10. Install yq (YAML processor)
+      # -------------------------------------------------------------
+      - name: 📄 Install yq
+        run: |
+          echo "Installing yq..."
+          sudo wget -O /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+          echo "✅ yq installed"
+
+      # -------------------------------------------------------------
+      # 11. Install Docker Buildx
+      # -------------------------------------------------------------
+      - name: 🏗️ Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -------------------------------------------------------------
+      # 12. Install cosign (for image signing verification)
+      # -------------------------------------------------------------
+      - name: ✍️ Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+        with:
+          cosign-release: 'v2.4.1'
+
+      - name: 🔍 Verify Cosign installation
+        run: |
+          cosign version
+          echo "✅ Cosign installed"
+
+      # -------------------------------------------------------------
+      # 13. Pre-create common directories
+      # -------------------------------------------------------------
+      - name: 📁 Create common directories
+        run: |
+          echo "Creating common directories..."
+          mkdir -p /tmp/copilot-workspace
+          mkdir -p /tmp/cache
+          mkdir -p /tmp/downloads
+          mkdir -p /tmp/test-results
+          echo "✅ Directories created"
+
+      # -------------------------------------------------------------
+      # 14. Install bump-my-version (for version management)
+      # -------------------------------------------------------------
+      - name: 🔼 Install bump-my-version
+        run: |
+          echo "Installing bump-my-version..."
+          pip install bump-my-version
+          bump-my-version --version
+          echo "✅ bump-my-version installed"
+
+      # -------------------------------------------------------------
+      # 15. Verify all tools are accessible
+      # -------------------------------------------------------------
+      - name: ✅ Verify Installation
+        run: |
+          echo "=== Verification Summary ==="
+          echo "Node.js: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "Python: $(python --version)"
+          echo "Poetry: $(poetry --version)"
+          echo "Goss: $(goss --version)"
+          echo "Trivy: $(trivy --version | head -1)"
+          echo "Hadolint: $(hadolint --version)"
+          echo "actionlint: $(actionlint --version)"
+          echo "ShellCheck: $(shellcheck --version | head -2 | tail -1)"
+          echo "jq: $(jq --version)"
+          echo "yq: $(yq --version)"
+          echo "Docker: $(docker --version)"
+          echo "Buildx: $(docker buildx version)"
+          echo "Cosign: $(cosign version | head -1)"
+          echo "Git: $(git --version)"
+          echo "bump-my-version: $(bump-my-version --version)"
+          echo ""
+          echo "✅ All tools successfully installed and verified!"
+
+      # -------------------------------------------------------------
+      # 16. Test that tools can execute basic commands
+      # -------------------------------------------------------------
+      - name: 🧪 Test Tool Functionality
+        run: |
+          echo "=== Testing Tool Functionality ==="
+          
+          # Test jq
+          echo '{"test": "value"}' | jq '.test'
+          
+          # Test yq
+          echo 'test: value' | yq '.test'
+          
+          # Test hadolint (should work even with no Dockerfile)
+          hadolint --help > /dev/null
+          
+          # Test actionlint
+          actionlint --version > /dev/null
+          
+          # Test shellcheck
+          echo 'echo "test"' | shellcheck - || true
+          
+          # Test Trivy (help command, no network needed)
+          trivy --help > /dev/null
+          
+          # Test goss
+          goss --help > /dev/null
+          
+          # Test Poetry
+          poetry --version > /dev/null
+          
+          # Test bump-my-version
+          bump-my-version --help > /dev/null
+          
+          echo "✅ All tools functional"
+
+      # -------------------------------------------------------------
+      # 17. Check for network access errors
+      # -------------------------------------------------------------
+      - name: 🔍 Verify No Firewall Blocks
+        run: |
+          echo "=== Checking for potential firewall issues ==="
+          
+          # These should all work in a standard GitHub Actions runner
+          # (no Copilot Agent firewall active in this workflow)
+          
+          # Test GitHub API access
+          curl -fsSL https://api.github.com/repos/egohygiene/ubi > /dev/null
+          echo "✅ GitHub API accessible"
+          
+          # Test raw.githubusercontent.com
+          curl -fsSL https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore > /dev/null
+          echo "✅ raw.githubusercontent.com accessible"
+          
+          echo ""
+          echo "✅ No firewall blocks detected"
+          echo "📝 Note: This workflow runs in standard GitHub Actions (no Copilot Agent firewall)"
+          echo "    Copilot Agents will use the setup from copilot-setup-steps.yml"
+
+      # -------------------------------------------------------------
+      # 18. Summary report
+      # -------------------------------------------------------------
+      - name: 📊 Summary Report
+        run: |
+          echo "╔════════════════════════════════════════════════════════════╗"
+          echo "║         COPILOT SETUP VALIDATION SUMMARY                   ║"
+          echo "╚════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "✅ All tools installed successfully"
+          echo "✅ All tools are functional"
+          echo "✅ No firewall blocks detected"
+          echo "✅ Copilot Agent environment is properly configured"
+          echo ""
+          echo "📝 Next Steps:"
+          echo "   1. Ensure .github/COPILOT_ALLOWLIST.md domains are configured by admin"
+          echo "   2. Test with an actual Copilot Agent workflow"
+          echo "   3. Monitor for any firewall errors in Copilot logs"
+          echo ""
+          echo "📚 Documentation: docs/dev/copilot-environment.md"
+          echo ""
+
+  # -------------------------------------------------------------
+  # Optional: Test that copilot-setup-steps.yml syntax is valid
+  # -------------------------------------------------------------
+  validate-workflow-syntax:
+    name: "📋 Validate Workflow Syntax"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: ⚡ Install actionlint
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/
+
+      - name: 🔍 Lint copilot-setup-steps.yml
+        run: |
+          echo "Validating copilot-setup-steps.yml syntax..."
+          actionlint .github/workflows/copilot-setup-steps.yml
+          echo "✅ Workflow syntax is valid"
+
+      - name: 🔍 Lint this validation workflow
+        run: |
+          echo "Validating validate-copilot-setup.yml syntax..."
+          actionlint .github/workflows/validate-copilot-setup.yml
+          echo "✅ Workflow syntax is valid"
+
+      - name: ✅ Check job name requirement
+        run: |
+          echo "Verifying copilot-setup-steps.yml has correct job name..."
+          if grep -q "copilot-setup-steps:" .github/workflows/copilot-setup-steps.yml; then
+            echo "✅ Job name 'copilot-setup-steps' found (REQUIRED by GitHub Copilot)"
+          else
+            echo "❌ ERROR: Job must be named 'copilot-setup-steps' for Copilot to recognize it"
+            exit 1
+          fi

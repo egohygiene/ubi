@@ -72,7 +72,7 @@ jobs:
         run: |
           echo "Installing Poetry..."
           curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "${HOME}/.local/bin" >> "$GITHUB_PATH"
           poetry --version
           echo "✅ Poetry installed"
 
@@ -95,11 +95,11 @@ jobs:
           GOSS_VERSION: v0.4.9
         run: |
           echo "Installing Goss ${GOSS_VERSION}..."
-          curl -fsSL https://goss.rocks/install | GOSS_VER=${GOSS_VERSION} sh
+          curl -fsSL https://goss.rocks/install | GOSS_VER="${GOSS_VERSION}" sh
           
           # Install dgoss (Docker wrapper for Goss)
           sudo curl -fsSL -o /usr/local/bin/dgoss \
-            https://raw.githubusercontent.com/goss-org/goss/${GOSS_VERSION}/extras/dgoss/dgoss
+            "https://raw.githubusercontent.com/goss-org/goss/${GOSS_VERSION}/extras/dgoss/dgoss"
           sudo chmod +rx /usr/local/bin/dgoss
           
           goss --version
@@ -128,7 +128,7 @@ jobs:
         run: |
           echo "Installing Hadolint ${HADOLINT_VERSION}..."
           sudo wget -O /usr/local/bin/hadolint \
-            https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64
+            "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64"
           sudo chmod +x /usr/local/bin/hadolint
           hadolint --version
           echo "✅ Hadolint installed"

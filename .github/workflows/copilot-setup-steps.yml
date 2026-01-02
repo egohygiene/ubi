@@ -1,0 +1,261 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: "🤖 Copilot Setup Steps"
+
+# =============================================================================
+# COPILOT AGENT ENVIRONMENT SETUP
+# =============================================================================
+# This workflow is specifically designed for GitHub Copilot Agents.
+# It MUST contain a job named "copilot-setup-steps" for Copilot to recognize it.
+#
+# Purpose:
+# - Install all dependencies BEFORE the Copilot Agent firewall activates
+# - Pre-cache tools, binaries, and packages needed during agent execution
+# - Ensure deterministic, reproducible environment for all Copilot tasks
+#
+# GitHub Docs:
+# https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+# =============================================================================
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  copilot-setup-steps:
+    name: "🔧 Setup Copilot Agent Environment"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------------
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Full git history for better context
+
+      # -------------------------------------------------------------
+      # 2. Setup Node.js for npm dependencies
+      # -------------------------------------------------------------
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install npm dependencies
+        run: |
+          echo "Installing npm packages..."
+          npm ci
+          echo "✅ npm dependencies installed"
+
+      # -------------------------------------------------------------
+      # 3. Setup Python and Poetry for Python dependencies
+      # -------------------------------------------------------------
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📚 Install Poetry
+        run: |
+          echo "Installing Poetry..."
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry --version
+          echo "✅ Poetry installed"
+
+      - name: 🔧 Configure Poetry
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.create true
+
+      - name: 📦 Install Python dependencies
+        run: |
+          echo "Installing Python packages..."
+          poetry install --no-interaction --no-root
+          echo "✅ Python dependencies installed"
+
+      # -------------------------------------------------------------
+      # 4. Install Goss testing framework
+      # -------------------------------------------------------------
+      - name: 🧪 Install Goss
+        env:
+          GOSS_VERSION: v0.4.9
+        run: |
+          echo "Installing Goss ${GOSS_VERSION}..."
+          curl -fsSL https://goss.rocks/install | GOSS_VER=${GOSS_VERSION} sh
+          
+          # Install dgoss (Docker wrapper for Goss)
+          sudo curl -fsSL -o /usr/local/bin/dgoss \
+            https://raw.githubusercontent.com/goss-org/goss/${GOSS_VERSION}/extras/dgoss/dgoss
+          sudo chmod +rx /usr/local/bin/dgoss
+          
+          goss --version
+          dgoss --version
+          echo "✅ Goss installed"
+
+      # -------------------------------------------------------------
+      # 5. Install Trivy security scanner
+      # -------------------------------------------------------------
+      - name: 🔒 Install Trivy
+        run: |
+          echo "Installing Trivy..."
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+          trivy --version
+          echo "✅ Trivy installed"
+
+      # -------------------------------------------------------------
+      # 6. Install Hadolint (Dockerfile linter)
+      # -------------------------------------------------------------
+      - name: 🐳 Install Hadolint
+        env:
+          HADOLINT_VERSION: v2.12.0
+        run: |
+          echo "Installing Hadolint ${HADOLINT_VERSION}..."
+          sudo wget -O /usr/local/bin/hadolint \
+            https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
+          hadolint --version
+          echo "✅ Hadolint installed"
+
+      # -------------------------------------------------------------
+      # 7. Install actionlint (GitHub Actions linter)
+      # -------------------------------------------------------------
+      - name: ⚡ Install actionlint
+        run: |
+          echo "Installing actionlint..."
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/
+          actionlint --version
+          echo "✅ actionlint installed"
+
+      # -------------------------------------------------------------
+      # 8. Install ShellCheck (shell script linter)
+      # -------------------------------------------------------------
+      - name: 🐚 Install ShellCheck
+        run: |
+          echo "Installing ShellCheck..."
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck --version
+          echo "✅ ShellCheck installed"
+
+      # -------------------------------------------------------------
+      # 9. Install jq (JSON processor)
+      # -------------------------------------------------------------
+      - name: 📋 Install jq
+        run: |
+          echo "Installing jq..."
+          sudo apt-get install -y jq
+          jq --version
+          echo "✅ jq installed"
+
+      # -------------------------------------------------------------
+      # 10. Install yq (YAML processor)
+      # -------------------------------------------------------------
+      - name: 📄 Install yq
+        run: |
+          echo "Installing yq..."
+          sudo wget -O /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+          echo "✅ yq installed"
+
+      # -------------------------------------------------------------
+      # 11. Install Docker Buildx
+      # -------------------------------------------------------------
+      - name: 🏗️ Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # -------------------------------------------------------------
+      # 12. Install cosign (for image signing verification)
+      # -------------------------------------------------------------
+      - name: ✍️ Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+        with:
+          cosign-release: 'v2.4.1'
+
+      - name: 🔍 Verify Cosign installation
+        run: |
+          cosign version
+          echo "✅ Cosign installed"
+
+      # -------------------------------------------------------------
+      # 13. Pre-create common directories
+      # -------------------------------------------------------------
+      - name: 📁 Create common directories
+        run: |
+          echo "Creating common directories..."
+          mkdir -p /tmp/copilot-workspace
+          mkdir -p /tmp/cache
+          mkdir -p /tmp/downloads
+          mkdir -p /tmp/test-results
+          echo "✅ Directories created"
+
+      # -------------------------------------------------------------
+      # 14. Install bump-my-version (for version management)
+      # -------------------------------------------------------------
+      - name: 🔼 Install bump-my-version
+        run: |
+          echo "Installing bump-my-version..."
+          pip install bump-my-version
+          bump-my-version --version
+          echo "✅ bump-my-version installed"
+
+      # -------------------------------------------------------------
+      # 15. Verify all tools are accessible
+      # -------------------------------------------------------------
+      - name: ✅ Verify Installation
+        run: |
+          echo "=== Verification Summary ==="
+          echo "Node.js: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "Python: $(python --version)"
+          echo "Poetry: $(poetry --version)"
+          echo "Goss: $(goss --version)"
+          echo "Trivy: $(trivy --version | head -1)"
+          echo "Hadolint: $(hadolint --version)"
+          echo "actionlint: $(actionlint --version)"
+          echo "ShellCheck: $(shellcheck --version | head -2 | tail -1)"
+          echo "jq: $(jq --version)"
+          echo "yq: $(yq --version)"
+          echo "Docker: $(docker --version)"
+          echo "Buildx: $(docker buildx version)"
+          echo "Cosign: $(cosign version | head -1)"
+          echo "Git: $(git --version)"
+          echo "bump-my-version: $(bump-my-version --version)"
+          echo ""
+          echo "✅ All tools successfully installed and verified!"
+          echo "🤖 Copilot Agent environment is ready"
+
+      # -------------------------------------------------------------
+      # 16. Display environment info
+      # -------------------------------------------------------------
+      - name: 🔍 Environment Information
+        run: |
+          echo "=== Environment Variables ==="
+          echo "HOME: $HOME"
+          echo "PATH: $PATH"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo ""
+          echo "=== Disk Space ==="
+          df -h
+          echo ""
+          echo "=== Available Memory ==="
+          free -h

@@ -71,6 +71,21 @@ Security-related documentation, audits, and decisions:
 
 ---
 
+## Development & Automation
+
+### [Copilot Agent Environment](./dev/copilot-environment.md)
+
+GitHub Copilot Agent configuration for automated workflows:
+
+- Copilot Agent architecture and lifecycle
+- Pre-installation workflow setup
+- Allowlist configuration for external domains
+- Tool installation and caching strategy
+- Security considerations
+- Troubleshooting guide
+
+---
+
 ## Future Documentation (Under Construction)
 
 The following sections are placeholders for future expansion:

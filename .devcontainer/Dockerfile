@@ -237,14 +237,15 @@ RUN mkdir -p /nix \
 USER vscode
 
 # Download and run Nix installer in single-user mode
-# Using a specific version for reproducibility and security
-# Version 2.18.1 is a stable release
-# Alternative: Pin to latest stable via https://releases.nixos.org/nix/nix-2.18.1/install
-RUN curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+# Pin to a specific version for reproducibility and security
+# Using version 2.24.10 (latest stable as of Dec 2024)
+RUN curl -L https://releases.nixos.org/nix/nix-2.24.10/install | sh -s -- --no-daemon
 
 # Add Nix to PATH for all shells
-RUN echo 'if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi' >> ~/.bashrc \
-  && echo 'if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi' >> ~/.profile
+# Define the sourcing snippet once to avoid duplication
+RUN NIX_PROFILE_SCRIPT='if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi' \
+  && echo "$NIX_PROFILE_SCRIPT" >> ~/.bashrc \
+  && echo "$NIX_PROFILE_SCRIPT" >> ~/.profile
 
 # Switch back to root for final setup
 USER root

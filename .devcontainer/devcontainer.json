@@ -121,28 +121,28 @@
     // Included tools: zsh, git, curl, wget, jq, vim, nano, etc.
     // Reference: https://github.com/devcontainers/features/tree/main/src/common-utils
     // --------------------------------------------------------------
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      // Install zsh as an alternative shell
-      "installZsh": true,
+    // "ghcr.io/devcontainers/features/common-utils:2": {
+    //   // Install zsh as an alternative shell
+    //   "installZsh": true,
 
-      // Don't install Oh My Zsh (we manage shell configs separately)
-      "installOhMyZsh": false,
+    //   // Don't install Oh My Zsh (we manage shell configs separately)
+    //   "installOhMyZsh": false,
 
-      // Don't upgrade packages automatically (reproducibility)
-      "upgradePackages": false,
+    //   // Don't upgrade packages automatically (reproducibility)
+    //   "upgradePackages": false,
 
-      // Use 'vscode' user (matches our Dockerfile)
-      "username": "vscode",
+    //   // Use 'vscode' user (matches our Dockerfile)
+    //   "username": "vscode",
 
-      // User UID (matches base image default)
-      "userUid": "automatic",
+    //   // User UID (matches base image default)
+    //   "userUid": "automatic",
 
-      // User GID (matches base image default)
-      "userGid": "automatic",
+    //   // User GID (matches base image default)
+    //   "userGid": "automatic",
 
-      // Configure git to use the VS Code credential helper
-      "configureZshAsDefaultShell": false
-    },
+    //   // Configure git to use the VS Code credential helper
+    //   "configureZshAsDefaultShell": false
+    // },
 
     // --------------------------------------------------------------
     // Docker-in-Docker (DinD)
@@ -163,25 +163,25 @@
     //
     // Reference: https://github.com/devcontainers/features/tree/main/src/docker-in-docker
     // --------------------------------------------------------------
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      // Docker version to install (or "latest")
-      "version": "latest",
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    //   // Docker version to install (or "latest")
+    //   "version": "latest",
 
-      // Install Docker Compose plugin
-      "dockerDashComposeVersion": "v2",
+    //   // Install Docker Compose plugin
+    //   "dockerDashComposeVersion": "v2",
 
-      // Install Docker Buildx plugin (for multi-platform builds)
-      "installDockerBuildx": true,
+    //   // Install Docker Buildx plugin (for multi-platform builds)
+    //   "installDockerBuildx": true,
 
-      // Install Docker Compose Switch (compatibility wrapper)
-      "installDockerComposeSwitch": true,
+    //   // Install Docker Compose Switch (compatibility wrapper)
+    //   "installDockerComposeSwitch": true,
 
-      // Configure Docker to start automatically
-      "moby": true,
+    //   // Configure Docker to start automatically
+    //   "moby": true,
 
-      // Enable BuildKit by default (modern Docker builder)
-      "enableNonRootDocker": true
-    },
+    //   // Enable BuildKit by default (modern Docker builder)
+    //   "enableNonRootDocker": true
+    // },
 
     // --------------------------------------------------------------
     // Git (Version Control System)
@@ -194,13 +194,13 @@
     //
     // Reference: https://github.com/devcontainers/features/tree/main/src/git
     // --------------------------------------------------------------
-    "ghcr.io/devcontainers/features/git:1": {
-      // Git version to install
-      "version": "latest",
+    // "ghcr.io/devcontainers/features/git:1": {
+    //   // Git version to install
+    //   "version": "latest",
 
-      // Install Git LFS for large file support
-      "ppa": true
-    },
+    //   // Install Git LFS for large file support
+    //   "ppa": true
+    // },
 
     // --------------------------------------------------------------
     // Python Development Environment
@@ -214,25 +214,25 @@
     //
     // Reference: https://github.com/devcontainers/features/tree/main/src/python
     // --------------------------------------------------------------
-    "ghcr.io/devcontainers/features/python:1": {
-      // Python version (or "latest", "3.12", etc.)
-      "version": "3.12",
+    // "ghcr.io/devcontainers/features/python:1": {
+    //   // Python version (or "latest", "3.12", etc.)
+    //   "version": "3.12",
 
-      // Install pip and setuptools
-      "installTools": true,
+    //   // Install pip and setuptools
+    //   "installTools": true,
 
-      // Optimize Python for development (enable assertions, etc.)
-      "optimize": false,
+    //   // Optimize Python for development (enable assertions, etc.)
+    //   "optimize": false,
 
-      // Enable Python user site-packages directory
-      "enableShared": false,
+    //   // Enable Python user site-packages directory
+    //   "enableShared": false,
 
-      // Install common Python tools: black, mypy, pylint, etc.
-      "installJupyterlab": false,
+    //   // Install common Python tools: black, mypy, pylint, etc.
+    //   "installJupyterlab": false,
 
-      // Configure default Python version
-      "configureGitSafeDirectory": true
-    },
+    //   // Configure default Python version
+    //   "configureGitSafeDirectory": true
+    // },
 
     // --------------------------------------------------------------
     // Node.js & npm Development Environment
@@ -248,16 +248,16 @@
     //
     // Reference: https://github.com/devcontainers/features/tree/main/src/node
     // --------------------------------------------------------------
-    "ghcr.io/devcontainers/features/node:1": {
-      // Node.js version ("lts", "latest", "18", etc.)
-      "version": "lts",
+    // "ghcr.io/devcontainers/features/node:1": {
+    //   // Node.js version ("lts", "latest", "18", etc.)
+    //   "version": "lts",
 
-      // Install Yarn package manager
-      "installYarnUsingApt": true,
+    //   // Install Yarn package manager
+    //   "installYarnUsingApt": true,
 
-      // NVM (Node Version Manager) version to install
-      "nvmVersion": "latest"
-    }
+    //   // NVM (Node Version Manager) version to install
+    //   "nvmVersion": "latest"
+    // }
   },
 
   // ==================================================================
@@ -836,7 +836,8 @@
         "ms-dotnettools.vscode-dotnet-runtime",
         "ms-vscode.cmake-tools",
         "openai.chatgpt",
-        "biomejs.biome"
+        "biomejs.biome",
+        "ms-vscode.cpptools"
       ],
 
       // ------------------------------------------------------------

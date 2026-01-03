@@ -37,7 +37,7 @@ ENV UBI_USER="${UBI_USER}" \
     UBI_GID="${UBI_GID}"
 
 ######################################################################
-# UX / TOOLING / TELEMETRY SETTINGS (UNCHANGED)
+# UX / TOOLING / TELEMETRY SETTINGS
 ######################################################################
 
 ARG EDITOR=code
@@ -64,7 +64,6 @@ ARG NUXT_TELEMETRY_DISABLED=1
 ARG CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
 ARG STRIPE_CLI_TELEMETRY_OPTOUT=1
 
-# ARG PYTHONWARNINGS=default
 ARG PYTHONWARNINGS=ignore
 ARG PYTHONFAULTHANDLER=1
 ARG PYTHONHASHSEED=random
@@ -87,7 +86,7 @@ ARG CXXFLAGS="-w"
 ARG CPPFLAGS="-w"
 
 ######################################################################
-# UNIVERSAL FILESYSTEM LAYOUT (UNCHANGED)
+# UNIVERSAL FILESYSTEM LAYOUT
 ######################################################################
 ENV WORKSPACE_HOME=/workspace
 
@@ -106,7 +105,7 @@ ENV UNIVERSAL_HOME=/opt/universal \
     APT_CACHE_DIR=/opt/universal/cache/apt
 
 ######################################################################
-# BASE ENVIRONMENT VARIABLES (UNCHANGED)
+# BASE ENVIRONMENT VARIABLES
 ######################################################################
 ENV \
     LANG=${LANG} \
@@ -157,7 +156,7 @@ ENV \
     CPPFLAGS=${CPPFLAGS}
 
 ######################################################################
-# XDG OVERRIDES (UNCHANGED)
+# XDG OVERRIDES
 ######################################################################
 ENV \
     XDG_CONFIG_HOME=${UNIVERSAL_CONFIG} \
@@ -168,14 +167,10 @@ ENV \
     XDG_DATA_DIRS="${UNIVERSAL_APPS}:/usr/local/share:/usr/share"
 
 ######################################################################
-# NIX BOOTSTRAP ENVIRONMENT (UPDATED FOR SINGLE-USER)
+# NIX BOOTSTRAP ENVIRONMENT
 ######################################################################
-ENV \
-    NIX_CONF_DIR="${XDG_CONFIG_HOME}/nix" \
-    NIX_DISABLE_SECCOMP="1" \
-    NIX_STORE_DIR="/nix" \
-    NIX_STATE_DIR="/nix/var" \
-    NIX_PROFILE="/nix/var/nix/profiles/default"
+ENV NIX_CONF_DIR="${XDG_CONFIG_HOME}/nix" \
+    NIX_DISABLE_SECCOMP="1"
 
 ######################################################################
 # CREATE UNIVERSAL DIRECTORIES
@@ -195,47 +190,75 @@ RUN mkdir -p \
   && chown -R ${UBI_USER}:${UBI_GROUP} ${UNIVERSAL_HOME}
 
 ######################################################################
-# NIX INSTALLATION (SINGLE-USER, SHARED)
+# NIX INSTALLATION STAGE (single-user, correct ownership)
 ######################################################################
 FROM environment AS nix
 
-ARG NIX_VERSION=2.33.0
-ENV NIX_VERSION="${NIX_VERSION}"
+# Install prerequisites
+USER root
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends \
+        ca-certificates \
+        curl \
+        xz-utils && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY nix /opt/nix
+# Prepare /nix so installer won't fail
+RUN mkdir -p /nix && chown ${UBI_UID}:${UBI_GID} /nix
 
-RUN mkdir -p ${NIX_CONF_DIR} && \
-    cp /opt/nix/nix.conf ${NIX_CONF_DIR}/nix.conf && \
-    chmod +x /opt/nix/install-nix.sh /opt/nix/entrypoint.sh && \
-    NIX_INSTALL_MODE=single-user /opt/nix/install-nix.sh && \
-    chown -R ${UBI_USER}:${UBI_GROUP} /nix
+# Copy your repo-provided nix config folder
+COPY --chown=${UBI_UID}:${UBI_GID} nix /opt/nix
+
+# Install Nix (Determinate Systems Installer — safer & stable in Docker)
+USER ${UBI_USER}
+
+RUN curl --proto '=https' --tlsv1.2 --silent --show-error --location \
+      https://install.determinate.systems/nix \
+    | sh -s -- install linux \
+        --init none \
+        --no-confirm \
+        --extra-conf "sandbox = false" \
+        --extra-conf "filter-syscalls = false"
+
+# Apply your custom nix.conf overrides
+RUN mkdir -p "${NIX_CONF_DIR}" && \
+    cp /opt/nix/nix.conf "${NIX_CONF_DIR}/nix.conf"
+
 
 ######################################################################
-# FINAL IMAGE
+# FINAL IMAGE — this is what the devcontainer will run inside
 ######################################################################
 FROM environment AS final
 
+# Bring the initialized Nix store + installation forward
 COPY --from=nix /nix /nix
 COPY --from=nix /opt/nix /opt/nix
 
-######################################################################
-# Shell Environment Activation
-######################################################################
+# FIX 1 — give your UBI user full ownership of the store
+RUN chown -R ${UBI_UID}:${UBI_GID} /nix
+
+# Remove incorrect directory if it exists, Nix requires a symlink
+RUN rm -rf /home/${UBI_USER}/.nix-profile && \
+    mkdir -p /nix/var/nix/profiles/per-user/${UBI_USER} && \
+    ln -s /nix/var/nix/profiles/per-user/${UBI_USER}/profile /home/${UBI_USER}/.nix-profile && \
+    chown -h ${UBI_UID}:${UBI_GID} /home/${UBI_USER}/.nix-profile && \
+    chown -R ${UBI_UID}:${UBI_GID} /nix/var/nix/profiles/per-user/${UBI_USER}
+
+# FIX 3 — activate Nix in all main shells (bash + zsh)
 RUN echo ". /nix/var/nix/profiles/default/etc/profile.d/nix.sh" >> /etc/bash.bashrc && \
     echo ". /nix/var/nix/profiles/default/etc/profile.d/nix.sh" >> /etc/zsh/zshrc
 
-######################################################################
-# PATH Configuration
-######################################################################
-ENV PATH="/nix/var/nix/profiles/default/bin:${PATH}"
+# FIX 4 — correct PATH (default profile + user profile)
+ENV PATH="/nix/var/nix/profiles/default/bin:/home/${UBI_USER}/.nix-profile/bin:${PATH}"
 
 ######################################################################
-# HEALTHCHECK
+# HEALTHCHECK (lightweight)
 ######################################################################
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD test -x /bin/bash || exit 1
 
 ######################################################################
-# Nix DevShell Entrypoint
+# Default command for devcontainer
 ######################################################################
-ENTRYPOINT ["/opt/nix/entrypoint.sh"]
+USER ${UBI_USER}
+CMD ["sleep", "infinity"]

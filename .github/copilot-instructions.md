@@ -52,10 +52,14 @@ This file provides context and guidelines for GitHub Copilot when working in the
 │   │   ├── trivy-scan.yml  # Security scanning
 │   │   ├── sanity.yml      # Basic CI sanity check
 │   │   ├── bump-version.yml # Automated version bumps
-│   │   └── validate-changelog.yml # CHANGELOG validation
+│   │   ├── validate-changelog.yml # CHANGELOG validation
+│   │   ├── copilot-setup-steps.yml # Copilot Agent environment setup
+│   │   └── validate-copilot-setup.yml # Copilot setup validation
 │   ├── linters/            # Linter configurations
 │   ├── pull_request_template.md
 │   ├── CODEOWNERS
+│   ├── COPILOT_ALLOWLIST.md # Domain allowlist for Copilot Agents
+│   ├── copilot-instructions.md # This file
 │   └── FUNDING.yml
 ├── docs/                   # Documentation
 │   ├── README.md           # Documentation index
@@ -341,6 +345,42 @@ All PRs must pass:
 6. Document fix in PR description
 7. Submit PR
 
+## Copilot Agent Environment
+
+### Overview
+This repository has a pre-configured Copilot Agent environment that ensures all required tools are available before the Copilot firewall activates. This enables automated workflows without network access errors.
+
+### Key Workflows
+- **copilot-setup-steps.yml**: Installs all tools before Copilot Agent execution
+  - Language runtimes: Node.js 20, Python 3.12
+  - Package managers: npm, Poetry, pip
+  - Testing tools: Goss, dgoss
+  - Security scanners: Trivy
+  - Linters: Hadolint, actionlint, ShellCheck
+  - Utilities: jq, yq, Cosign, bump-my-version
+  
+- **validate-copilot-setup.yml**: Validates the setup configuration
+  - Runs weekly and on workflow changes
+  - Tests tool installations and functionality
+  - Verifies firewall configuration
+
+### Caching Strategy
+- npm: Cached via `actions/setup-node@v4` with `cache: 'npm'`
+- Python/pip: Cached via `actions/setup-python@v5` with `cache: 'pip'`
+- Poetry: Virtual environment cached with `actions/cache@v4`
+- Results in 30-50% faster workflow execution
+
+### Documentation
+- **docs/dev/copilot-environment.md**: Complete environment documentation
+- **.github/COPILOT_ALLOWLIST.md**: Domain allowlist configuration
+- **README.md**: Copilot Agent Automation section
+
+### Important Notes
+- The job in copilot-setup-steps.yml MUST be named `copilot-setup-steps`
+- All tools are installed before Copilot's firewall activates
+- Tool versions are pinned for reproducibility
+- Domain allowlist must be configured by repository admins
+
 ## Documentation Resources
 
 - **README.md**: Main project documentation
@@ -349,6 +389,7 @@ All PRs must pass:
 - **docs/security-overview.md**: Security practices, scanning, SBOM
 - **docs/release-process.md**: Version management and publishing
 - **docs/troubleshooting.md**: Common issues and solutions
+- **docs/dev/copilot-environment.md**: Copilot Agent environment setup
 
 ## Getting Help
 

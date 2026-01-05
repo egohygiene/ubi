@@ -39,7 +39,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 🧹 MegaLinter Auto-Fix
         id: ml
-        uses: oxsecurity/megalinter@v9.2.0
+        uses: oxsecurity/megalinter@v9.3.0
         env:
           # Apply all formatters and linters
           APPLY_FIXES: ${{ inputs.apply-fixes || 'all' }}

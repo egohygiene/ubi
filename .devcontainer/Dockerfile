@@ -63,6 +63,7 @@ ENV \
   UNIVERSAL_RUNTIME="/opt/universal/runtime" \
   UNIVERSAL_APPS="/opt/universal/apps" \
   UNIVERSAL_REPORTS="/opt/universal/reports" \
+  UNIVERSAL_SHELL="/opt/universal/shell" \
   UBI_HOME="/home/${UBI_USER}"
 
 ######################################################################
@@ -147,6 +148,7 @@ RUN mkdir -p \
     "${UNIVERSAL_RUNTIME}" \
     "${UNIVERSAL_APPS}" \
     "${UNIVERSAL_REPORTS}" \
+    "${UNIVERSAL_SHELL}" \
     "${MAGICK_CACHE_PATH}" \
     "${MAGICK_TEMPORARY_PATH}" \
  && chown -R "${UBI_UID}:${UBI_GID}" "${UNIVERSAL_HOME}"

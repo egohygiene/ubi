@@ -1,0 +1,58 @@
+######################################################################
+# Global Git configuration (policy-only)
+#
+# This file defines shared Git behavior and best practices.
+# User identity (name/email) should be set separately per user.
+#
+# Location (runtime):
+#   /opt/universal/config/git/gitconfig
+#
+# Loaded via:
+#   git config --global include.path <this file>
+######################################################################
+
+[core]
+    editor = nano
+    fileMode = false
+    autocrlf = input
+    color = auto
+
+[alias]
+    st = status
+    co = checkout
+    ci = commit
+    br = branch
+    lg = log --oneline --graph --decorate --all
+
+[merge]
+    tool = vimdiff
+    conflictstyle = diff3
+
+[diff]
+    tool = vimdiff
+    algorithm = patience
+
+[push]
+    default = simple
+
+[fetch]
+    prune = true
+
+[pull]
+    rebase = false
+
+[rebase]
+    autoStash = true
+
+[log]
+    decorate = short
+    date = relative
+
+[status]
+    showUntrackedFiles = all
+
+[advice]
+    detachedHead = false
+
+[diff "custom"]
+    command = diff --color=always

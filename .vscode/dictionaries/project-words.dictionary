@@ -70,6 +70,8 @@ cookiecutter
 coolbear
 syscalls
 attrset
+vimdiff
+conflictstyle
 substituters
 nixpkgs
 nixos

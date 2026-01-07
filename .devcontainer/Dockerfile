@@ -131,7 +131,9 @@ ENV \
   MAGICK_HOME="${UNIVERSAL_LIB}/ImageMagick" \
   MAGICK_CACHE_PATH="${UNIVERSAL_CACHE}/imagemagick" \
   MAGICK_CONFIGURE_PATH="${UNIVERSAL_CONFIG}/imagemagick" \
-  MAGICK_TEMPORARY_PATH="${UNIVERSAL_RUNTIME}/imagemagick"
+  MAGICK_TEMPORARY_PATH="${UNIVERSAL_RUNTIME}/imagemagick" \
+  GIT_CONFIG_GLOBAL="${UNIVERSAL_CONFIG}/git/gitconfig" \
+  GIT_GLOBAL_IGNORE_FILE="${UNIVERSAL_CONFIG}/git/gitignore"
 
 ######################################################################
 # CREATE UNIVERSAL DIRECTORIES (authoritative runtime state)
@@ -157,6 +159,11 @@ RUN mkdir -p \
 # IMAGE MAGICK POLICY (explicit, user-owned)
 ######################################################################
 COPY --chown=${UBI_UID}:${UBI_GID} config/imagemagick/ "${UNIVERSAL_CONFIG}/imagemagick/"
+
+######################################################################
+# GIT GLOBAL CONFIGURATION (policy-owned)
+######################################################################
+COPY --chown=${UBI_UID}:${UBI_GID} config/git/ "${UNIVERSAL_CONFIG}/git/"
 
 ######################################################################
 # NIX BOOTSTRAP CONFIGURATION

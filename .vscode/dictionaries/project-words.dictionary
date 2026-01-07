@@ -11,6 +11,8 @@ aidecheck
 aideinit
 ALIBUILD
 ALTUSERXSESSION
+dNOPAUSE
+dNOPROMPT
 anki
 Anson
 Appc
@@ -69,6 +71,17 @@ coolbear
 syscalls
 attrset
 substituters
+nixpkgs
+nixos
+pkgs
+setuptools
+pyopenssl
+cffi
+libssh2
+libsodium
+gnumake
+patchelf
+binutils
 Cordova
 coreutils
 SECCOMP

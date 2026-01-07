@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policymap [
+  <!ELEMENT policymap (policy+)>
+  <!ELEMENT policy (#PCDATA)>
+  <!ATTLIST policy domain CDATA #REQUIRED>
+  <!ATTLIST policy name CDATA #IMPLIED>
+  <!ATTLIST policy pattern CDATA #IMPLIED>
+  <!ATTLIST policy rights CDATA #IMPLIED>
+  <!ATTLIST policy value CDATA #IMPLIED>
+]>
+<policymap>
+
+  <!-- ========================================================= -->
+  <!-- Resource limits (prevent memory / CPU exhaustion)        -->
+  <!-- ========================================================= -->
+  <policy domain="resource" name="memory" value="512MiB"/>
+  <policy domain="resource" name="map" value="512MiB"/>
+  <policy domain="resource" name="disk" value="2GiB"/>
+  <policy domain="resource" name="file" value="768"/>
+  <policy domain="resource" name="thread" value="2"/>
+  <policy domain="resource" name="time" value="60"/>
+
+  <!-- ========================================================= -->
+  <!-- Disable dangerous coders by default                       -->
+  <!-- ========================================================= -->
+  <policy domain="coder" rights="read|write" pattern="PDF"/>
+  <policy domain="coder" rights="none" pattern="PS"/>
+  <policy domain="coder" rights="none" pattern="PS2"/>
+  <policy domain="coder" rights="none" pattern="PS3"/>
+  <policy domain="coder" rights="none" pattern="EPS"/>
+  <policy domain="coder" rights="none" pattern="XPS"/>
+
+  <!-- ========================================================= -->
+  <!-- Allow common safe image formats                           -->
+  <!-- ========================================================= -->
+  <policy domain="coder" rights="read|write" pattern="JPEG"/>
+  <policy domain="coder" rights="read|write" pattern="PNG"/>
+  <policy domain="coder" rights="read|write" pattern="WEBP"/>
+  <policy domain="coder" rights="read|write" pattern="GIF"/>
+  <policy domain="coder" rights="read|write" pattern="TIFF"/>
+  <policy domain="coder" rights="read|write" pattern="BMP"/>
+
+  <!-- ========================================================= -->
+  <!-- Explicitly disable external command execution              -->
+  <!-- ========================================================= -->
+  <policy domain="path" rights="none" pattern="@*"/>
+
+</policymap>

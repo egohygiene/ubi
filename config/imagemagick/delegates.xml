@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE delegatemap [
+  <!ELEMENT delegatemap (delegate+)>
+  <!ELEMENT delegate EMPTY>
+  <!ATTLIST delegate decode CDATA #IMPLIED>
+  <!ATTLIST delegate encode CDATA #IMPLIED>
+  <!ATTLIST delegate command CDATA #REQUIRED>
+]>
+<delegatemap>
+
+  <!-- ========================================================= -->
+  <!-- PDF → raster via Ghostscript (SAFE MODE)                  -->
+  <!-- ========================================================= -->
+  <delegate
+    decode="pdf"
+    command="gs
+      -dSAFER
+      -dBATCH
+      -dNOPAUSE
+      -dNOPROMPT
+      -dQUIET
+      -dMaxBitmap=500000000
+      -dAlignToPixels=0
+      -dGridFitTT=2
+      -sDEVICE=png16m
+      -r300
+      -sOutputFile=%o
+      %i"/>
+
+</delegatemap>

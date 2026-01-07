@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE colormap [
+  <!ELEMENT colormap (color+)>
+  <!ELEMENT color EMPTY>
+  <!ATTLIST color name CDATA #REQUIRED>
+  <!ATTLIST color r CDATA #REQUIRED>
+  <!ATTLIST color g CDATA #REQUIRED>
+  <!ATTLIST color b CDATA #REQUIRED>
+  <!ATTLIST color a CDATA #IMPLIED>
+]>
+<colormap>
+
+  <color name="black" r="0" g="0" b="0"/>
+  <color name="white" r="255" g="255" b="255"/>
+  <color name="red"   r="255" g="0" b="0"/>
+  <color name="green" r="0" g="255" b="0"/>
+  <color name="blue"  r="0" g="0" b="255"/>
+
+</colormap>

@@ -110,6 +110,13 @@
             ncurses
             readline
             libffi
+
+            ##################################################################
+            # Image processing
+            ##################################################################
+            imagemagick
+            ghostscript
+            inkscape
           ];
 
           shellHook = ''

@@ -75,7 +75,7 @@ enter_flake_shell() {
   log "Using Nix flake directory: ${flake_dir}"
   log "Entering Nix devShell"
 
-  exec "${NIX_BIN:-}" develop "${flake_dir}" --command bash
+  exec "${NIX_BIN:-}" develop "${flake_dir}"
 }
 
 ###############################################################################

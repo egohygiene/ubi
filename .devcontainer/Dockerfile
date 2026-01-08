@@ -77,6 +77,8 @@ ENV \
   XDG_CONFIG_DIRS="${UNIVERSAL_CONFIG}:/etc/xdg" \
   XDG_DATA_DIRS="${UNIVERSAL_APPS}:/usr/local/share:/usr/share"
 
+ENV PATH=${UNIVERSAL_BIN}:$PATH
+
 ######################################################################
 # UX / TELEMETRY / TOOLING SANITY
 ######################################################################
@@ -154,6 +156,27 @@ RUN mkdir -p \
     "${MAGICK_CACHE_PATH}" \
     "${MAGICK_TEMPORARY_PATH}" \
  && chown -R "${UBI_UID}:${UBI_GID}" "${UNIVERSAL_HOME}"
+
+USER root
+RUN apt-get update && apt-get install --yes --no-install-recommends \
+      ca-certificates \
+      curl \
+      xz-utils \
+      tzdata \
+      systemd \
+      locales-all \
+      locales \
+      fontconfig \
+      bash-completion \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copy ubi early
+COPY shell/bin/ubi "${UNIVERSAL_BIN}/ubi"
+RUN chmod +x "${UNIVERSAL_BIN}/ubi"
+
+# System invariants (must run as root)
+RUN ubi system timezone && \
+    ubi system locale
 
 ######################################################################
 # IMAGE MAGICK POLICY (explicit, user-owned)
@@ -256,13 +279,13 @@ RUN rm -rf "${NIX_USER_PROFILE_LINK}" \
  && ln -s "${NIX_USER_PROFILE_TARGET}" "${NIX_USER_PROFILE_LINK}" \
  && chown -h "${UBI_UID}:${UBI_GID}" "${NIX_USER_PROFILE_LINK}"
 
+ENV PATH=${NIX_PROFILES_ROOT}/default/bin/:${PATH}
+
 ######################################################################
 # ENTRYPOINT (authoritative activation)
 ######################################################################
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# ENV PATH=${NIX_PROFILES_ROOT}/default/bin/:${PATH}
 
 USER ${UBI_USER}
 WORKDIR "${WORKSPACE_DIR}"

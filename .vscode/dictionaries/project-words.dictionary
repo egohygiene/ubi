@@ -73,7 +73,9 @@ attrset
 vimdiff
 conflictstyle
 substituters
+zoneinfo
 nixpkgs
+localtime
 nixos
 pkgs
 setuptools

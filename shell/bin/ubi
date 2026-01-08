@@ -1,0 +1,372 @@
+#!/usr/bin/env bash
+#
+# ubi — Universal Base Image helper CLI
+#
+# Purpose:
+#   Imperative control-plane for UBI.
+#   Handles system setup, external installs, diagnostics, and helpers
+#   that should NOT live in the interactive shell or in Nix.
+#
+# Design:
+# - Standalone binary (not a shell lib)
+# - Strict mode enabled
+# - Explicit subcommands
+# - Uses UBI shell libs if available
+# - Safe to run in Docker, CI, or locally
+#
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+###############################################################################
+# Constants
+###############################################################################
+
+UBI_BIN_NAME="ubi"
+DEFAULT_UNIVERSAL_SHELL="/opt/universal/shell"
+
+###############################################################################
+# Load UBI shell libraries if available
+###############################################################################
+
+UNIVERSAL_SHELL="${UNIVERSAL_SHELL:-${DEFAULT_UNIVERSAL_SHELL}}"
+
+if [[ -d "${UNIVERSAL_SHELL}/lib" ]]; then
+  # Core libs (order matters)
+  for lib in \
+    guards.sh \
+    terminal.sh \
+    time.sh \
+    utils.sh \
+    logging.sh \
+    bash.sh \
+    os.sh; do
+
+    if [[ -f "${UNIVERSAL_SHELL}/lib/${lib}" ]]; then
+      # shellcheck disable=SC1090
+      . "${UNIVERSAL_SHELL}/lib/${lib}"
+    fi
+  done
+fi
+
+###############################################################################
+# Logging fallbacks (if logging lib not loaded)
+###############################################################################
+
+_ubi_log_info()  { printf "[ubi] %s\n" "$*"; }
+_ubi_log_warn()  { printf "[ubi][warn] %s\n" "$*" >&2; }
+_ubi_log_error() { printf "[ubi][error] %s\n" "$*" >&2; }
+
+log_info()  { command -v log::info  >/dev/null 2>&1 && log::info  "$@" || _ubi_log_info  "$@"; }
+log_warn()  { command -v log::warn  >/dev/null 2>&1 && log::warn  "$@" || _ubi_log_warn  "$@"; }
+log_error() { command -v log::error >/dev/null 2>&1 && log::error "$@" || _ubi_log_error "$@"; }
+
+###############################################################################
+# Usage
+###############################################################################
+
+ubi::usage() {
+  cat <<'EOF'
+ubi — Universal Base Image helper
+
+Usage:
+  ubi <command> [subcommand] [args...]
+
+Commands:
+  install <target>        Install optional components
+  system <subcommand>     Configure system invariants
+  git <subcommand>        Git/GitHub helpers
+  doctor                  Run environment diagnostics
+  info                    Print environment info
+  help                    Show this help
+
+Install targets:
+  fonts                   Install Google Fonts
+
+System subcommands:
+  locale                  Configure system locale
+  timezone                Configure system timezone
+
+Git subcommands:
+  release-commit <repo>
+  release-checksum <repo> --asset <name> [--algo sha256|sha512]
+
+Examples:
+  ubi install fonts
+  ubi system locale
+  ubi system timezone
+  ubi git release-commit https://github.com/google/fonts
+EOF
+}
+
+###############################################################################
+# Install commands
+###############################################################################
+
+ubi::install() {
+  local target="${1:-}"
+  [[ -z "${target}" ]] && { log_error "install requires a target"; return 1; }
+
+  case "${target}" in
+    fonts) ubi::install_fonts ;;
+    *) log_error "Unknown install target: ${target}"; return 1 ;;
+  esac
+}
+
+###############################################################################
+# Google Fonts installer (already upgraded earlier)
+###############################################################################
+
+ubi::install_fonts() {
+  log_info "Installing Google Fonts"
+
+  local fonts_commit="${GOOGLE_FONTS_SHA_COMMIT:-main}"
+  local fonts_sha256="${GOOGLE_FONTS_SHA256:-}"
+
+  local archive_url="https://github.com/google/fonts/archive/${fonts_commit}.zip"
+  local fonts_dir="${UNIVERSAL_FONTS:-/opt/universal/fonts}/google"
+  local cache_dir="${UNIVERSAL_CACHE:-/opt/universal/cache}/fonts"
+  local zip_file="${cache_dir}/google-fonts-${fonts_commit}.zip"
+  local tmp_dir="/tmp/google-fonts"
+
+  for cmd in curl unzip fc-cache; do
+    command -v "${cmd}" >/dev/null 2>&1 || { log_error "Missing dependency: ${cmd}"; return 1; }
+  done
+
+  mkdir -p "${fonts_dir}" "${cache_dir}"
+
+  if [[ ! -f "${zip_file}" ]]; then
+    log_info "Downloading Google Fonts (${fonts_commit})"
+    curl --fail --location --output "${zip_file}" "${archive_url}"
+  fi
+
+  if [[ -n "${fonts_sha256}" ]]; then
+    local actual
+    actual="$(sha256sum "${zip_file}" | awk '{print $1}')"
+    [[ "${actual}" == "${fonts_sha256}" ]] || { log_error "SHA256 mismatch"; return 1; }
+  fi
+
+  rm -rf "${tmp_dir}"
+  unzip -q "${zip_file}" -d "${tmp_dir}"
+
+  local extracted
+  extracted="$(find "${tmp_dir}" -maxdepth 1 -type d -name "fonts-*")"
+
+  find "${extracted}" -type f \( -iname '*.ttf' -o -iname '*.otf' \) \
+    -exec cp --no-preserve=ownership,timestamps {} "${fonts_dir}" \;
+
+  fc-cache --force "${fonts_dir}"
+  rm -rf "${tmp_dir}"
+
+  log_info "Google Fonts installed"
+}
+
+###############################################################################
+# System commands
+###############################################################################
+
+ubi::system() {
+  local sub="${1:-}"
+
+  case "${sub}" in
+    test)
+      ubi::system_test
+      ;;
+    locale)
+      ubi::system_locale
+      ;;
+    timezone)
+      ubi::system_timezone
+      ;;
+    *)
+      log_error "Unknown system subcommand: ${sub}"
+      log_info "Available system commands:"
+      log_info "  locale"
+      log_info "  timezone"
+      log_info "  test"
+      return 1
+      ;;
+  esac
+}
+
+ubi::system_locale() {
+  [[ "$(id -u)" -eq 0 ]] || { log_error "Must run as root"; return 1; }
+
+  local locale="${LANG:-en_US.UTF-8}"
+  local language="${LANGUAGE:-en_US:en}"
+
+  log_info "Configuring locale: ${locale}"
+
+  apt-get update --quiet
+  apt-get install --yes --no-install-recommends locales
+
+  sed -i "s/^# *${locale} UTF-8/${locale} UTF-8/" /etc/locale.gen || true
+  locale-gen "${locale}"
+  update-locale LANG="${locale}" LANGUAGE="${language}"
+  dpkg-reconfigure --frontend=noninteractive locales
+}
+
+ubi::system_timezone() {
+  [[ "$(id -u)" -eq 0 ]] || { log_error "Must run as root"; return 1; }
+
+  local tz="${TZ:-UTC}"
+  [[ -f "/usr/share/zoneinfo/${tz}" ]] || { log_error "Invalid TZ: ${tz}"; return 1; }
+
+  apt-get update --quiet
+  apt-get install --yes --no-install-recommends tzdata
+
+  ln -sf "/usr/share/zoneinfo/${tz}" /etc/localtime
+  printf "%s\n" "${tz}" > /etc/timezone
+  dpkg-reconfigure --frontend=noninteractive tzdata
+}
+
+ubi::system_test() {
+  log_info "Running system locale & timezone checks"
+
+  # ---------------------------------------------------------------------------
+  # Timezone checks
+  # ---------------------------------------------------------------------------
+
+  if [[ -f /etc/timezone ]]; then
+    local tz_file
+    tz_file="$(cat /etc/timezone)"
+    log_info "✓ /etc/timezone = ${tz_file}"
+  else
+    log_warn "✗ /etc/timezone missing"
+  fi
+
+  if [[ -L /etc/localtime ]]; then
+    local tz_link
+    tz_link="$(readlink /etc/localtime)"
+    log_info "✓ /etc/localtime -> ${tz_link}"
+  else
+    log_warn "✗ /etc/localtime is not a symlink"
+  fi
+
+  log_info "✓ runtime date = $(date)"
+
+  # timedatectl is optional in containers
+  if command -v timedatectl >/dev/null 2>&1; then
+    log_info "timedatectl output:"
+    timedatectl status || log_warn "timedatectl failed (non-systemd container?)"
+  else
+    log_info "timedatectl not available (expected in containers)"
+  fi
+
+  # ---------------------------------------------------------------------------
+  # Locale checks
+  # ---------------------------------------------------------------------------
+
+  log_info "Locale environment:"
+  locale || log_warn "locale command failed"
+
+  if locale -a | grep -qi '^en_US\.utf8$'; then
+    log_info "✓ en_US.utf8 is generated"
+  else
+    log_warn "✗ en_US.utf8 not found in locale -a"
+  fi
+
+  if [[ -f /etc/default/locale ]]; then
+    log_info "✓ /etc/default/locale:"
+    sed 's/^/    /' /etc/default/locale
+  else
+    log_warn "✗ /etc/default/locale missing"
+  fi
+
+  log_info "System locale & timezone checks complete"
+}
+
+###############################################################################
+# Git helpers
+###############################################################################
+
+ubi::git() {
+  local sub="${1:-}"
+  shift || true
+
+  case "${sub}" in
+    release-commit) ubi::git_release_commit "$@" ;;
+    release-checksum) ubi::git_release_checksum "$@" ;;
+    *) log_error "Unknown git subcommand: ${sub}"; return 1 ;;
+  esac
+}
+
+ubi::git_release_commit() {
+  local repo="$1"
+  command -v gh >/dev/null 2>&1 || { log_error "gh required"; return 1; }
+  gh release view --repo "${repo}" --json targetCommitish --jq '.targetCommitish'
+}
+
+ubi::git_release_checksum() {
+  local repo="$1"; shift
+  local asset="" algo="sha256"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --asset) asset="$2"; shift 2 ;;
+      --algo) algo="$2"; shift 2 ;;
+      *) return 1 ;;
+    esac
+  done
+
+  [[ -n "${asset}" ]] || return 1
+
+  local tmp
+  tmp="$(mktemp)"
+  gh release download --repo "${repo}" --pattern "${asset}" --output "${tmp}"
+
+  case "${algo}" in
+    sha256) sha256sum "${tmp}" ;;
+    sha512) sha512sum "${tmp}" ;;
+    *) return 1 ;;
+  esac
+
+  rm -f "${tmp}"
+}
+
+###############################################################################
+# Doctor
+###############################################################################
+
+ubi::doctor() {
+  log_info "UBI doctor"
+
+  for cmd in git nix ssh curl unzip; do
+    command -v "${cmd}" >/dev/null 2>&1 \
+      && log_info "✓ ${cmd}" \
+      || log_warn "✗ ${cmd}"
+  done
+}
+
+###############################################################################
+# Info
+###############################################################################
+
+ubi::info() {
+  log_info "UBI info"
+  printf "User: %s\n" "${USER:-unknown}"
+  printf "Shell: %s\n" "${SHELL:-unknown}"
+  printf "PWD: %s\n" "$(pwd)"
+  command -v os::info >/dev/null 2>&1 && printf "OS: %s\n" "$(os::info)"
+}
+
+###############################################################################
+# Main
+###############################################################################
+
+ubi::main() {
+  local cmd="${1:-help}"
+  shift || true
+
+  case "${cmd}" in
+    install) ubi::install "$@" ;;
+    system)  ubi::system  "$@" ;;
+    git)     ubi::git     "$@" ;;
+    doctor)  ubi::doctor  ;;
+    info)    ubi::info    ;;
+    help|-h|--help) ubi::usage ;;
+    *) log_error "Unknown command: ${cmd}"; ubi::usage; return 1 ;;
+  esac
+}
+
+ubi::main "$@"

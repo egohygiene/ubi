@@ -216,7 +216,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
       xz-utils \
  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /nix && chown ${UBI_UID}:${UBI_GID} /nix
+RUN mkdir -p ${NIX_ROOT} && chown ${UBI_UID}:${UBI_GID} ${NIX_ROOT}
 
 # Ensure workspace directory exists
 RUN mkdir -p "${WORKSPACE_DIR}" \
@@ -225,8 +225,8 @@ RUN mkdir -p "${WORKSPACE_DIR}" \
 # Copy flake.nix into workspace
 COPY flake.nix "${WORKSPACE_DIR}/flake.nix"
 
-# # Copy flake.lock only if it exists
-# COPY flake.lock ${WORKSPACE_DIR} # TODO until flake.lock is created
+# Copy flake.lock only if it exists
+COPY flake.lock ${WORKSPACE_DIR}/flake.lock
 
 USER ${UBI_USER}
 

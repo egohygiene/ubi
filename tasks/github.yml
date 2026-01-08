@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+vars:
+  MEGALINTER_IMAGE: ghcr.io/oxsecurity/megalinter:latest
+
+env:
+  PLATFORM: linux/amd64
+  PATH: .
+
+tasks:
+  install:vale:
+    desc: "Install Vale for linting prose"
+    cmds:
+      - bash {{.USER_WORKING_DIR}}/shell/bin/install/install-vale
+    silent: true

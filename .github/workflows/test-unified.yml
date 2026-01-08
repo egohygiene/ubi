@@ -330,8 +330,8 @@ jobs:
             echo "Checking locale environment variables..."
 
             # Expected values
-            EXPECTED_LANG="en_US.UTF-8"
-            EXPECTED_LC_ALL="en_US.UTF-8"
+            EXPECTED_LANG="en_US.utf8"
+            EXPECTED_LC_ALL="en_US.utf"
 
             # Check LANG
             if [ "$LANG" != "$EXPECTED_LANG" ]; then
@@ -480,7 +480,7 @@ jobs:
       - name: 🧪 Test - Variant Inheritance (${{ matrix.variant.name }})
         run: |
           echo "Running variant inheritance tests for ${{ matrix.variant.name }}..."
-          
+
           # Map variant name to test script
           case "${{ matrix.variant.name }}" in
             "base")
@@ -549,54 +549,54 @@ jobs:
       - name: 🏥 Test - Validate HEALTHCHECK Configuration
         run: |
           echo "Validating HEALTHCHECK configuration..."
-          
+
           # Inspect the image to verify HEALTHCHECK is configured
           HEALTHCHECK_CONFIG=$(docker inspect --format='{{json .Config.Healthcheck}}' ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }})
-          
+
           if [ "$HEALTHCHECK_CONFIG" = "null" ] || [ -z "$HEALTHCHECK_CONFIG" ]; then
             echo "❌ FAIL: No HEALTHCHECK configuration found in image"
             exit 1
           fi
-          
+
           echo "✅ PASS: HEALTHCHECK configuration found"
           echo "HEALTHCHECK Config: $HEALTHCHECK_CONFIG"
-          
+
           # Start container in detached mode to test health status
           CONTAINER_ID=$(docker run -d ubi:test-${{ steps.version.outputs.version }}${{ matrix.variant.suffix }})
           echo "Started container: $CONTAINER_ID"
-          
+
           # Wait for container to become healthy (up to 60 seconds)
           echo "Waiting for container to report healthy status..."
           TIMEOUT=60
           ELAPSED=0
           INTERVAL=5
-          
+
           while [ $ELAPSED -lt $TIMEOUT ]; do
             HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$CONTAINER_ID" 2>/dev/null || echo "none")
             echo "Health status after ${ELAPSED}s: $HEALTH_STATUS"
-            
+
             if [ "$HEALTH_STATUS" = "healthy" ]; then
               echo "✅ PASS: Container is healthy"
               docker rm -f "$CONTAINER_ID" >/dev/null 2>&1
               exit 0
             fi
-            
+
             if [ "$HEALTH_STATUS" = "unhealthy" ]; then
               echo "❌ FAIL: Container reported unhealthy status"
               docker logs "$CONTAINER_ID" || true
               docker rm -f "$CONTAINER_ID" >/dev/null 2>&1
               exit 1
             fi
-            
+
             sleep $INTERVAL
             ELAPSED=$((ELAPSED + INTERVAL))
           done
-          
+
           echo "⚠️  Container did not become healthy within ${TIMEOUT} seconds (final status: $HEALTH_STATUS)"
           echo "This may be normal if start-period is not yet complete."
           docker logs "$CONTAINER_ID" || true
           docker rm -f "$CONTAINER_ID" >/dev/null 2>&1
-          
+
           # Don't fail if container is still starting, only fail if explicitly unhealthy
           if [ "$HEALTH_STATUS" != "unhealthy" ]; then
             echo "✅ PASS: Container health check is configured and not reporting unhealthy"
@@ -641,7 +641,7 @@ jobs:
             echo "  - Critical directories writable"
             echo ""
             echo "✅ Locale Configuration"
-            echo "  - LANG and LC_ALL set to en_US.UTF-8"
+            echo "  - LANG and LC_ALL set to en_US.utf8"
             echo ""
             echo "✅ Fundamental Tools"
             echo "  - bash, coreutils, git, curl present"

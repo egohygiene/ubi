@@ -31,9 +31,9 @@ FROM base AS environment
 
 # System + locale
 ARG TMPDIR=/tmp
-ARG LANG=en_US.UTF-8
+ARG LANG=en_US.utf8
 ARG LANGUAGE=en_US:en
-ARG LC_ALL=en_US.UTF-8
+ARG LC_ALL=en_US.utf8
 ARG TZ=UTC
 
 # UX Preferences

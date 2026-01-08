@@ -728,11 +728,11 @@ When a Dependabot PR appears:
    ```bash
    # Check out the Dependabot branch
    gh pr checkout <PR_NUMBER>
-   
+
    # For Docker updates, rebuild and test
    docker build -f .devcontainer/Dockerfile -t ubi:test .
    docker run -it --rm ubi:test bash
-   
+
    # For Python/npm updates, test the affected functionality
    ```
 
@@ -822,7 +822,7 @@ Each Dockerfile update includes:
 Before creating a PR, the workflow performs a comprehensive Trivy security scan on the new base image:
 
 - **Scan coverage**: CRITICAL, HIGH, MEDIUM, and LOW vulnerabilities
-- **Results location**: 
+- **Results location**:
   - GitHub Security tab (SARIF format for code scanning)
   - Workflow artifacts (human-readable table format)
 - **Non-blocking**: The PR is created regardless of findings, but scan results are prominently displayed
@@ -850,11 +850,11 @@ When the monitoring workflow creates a PR:
    ```bash
    # Check out the PR branch
    gh pr checkout <PR_NUMBER>
-   
+
    # Build and test the updated image
    docker build -f .devcontainer/Dockerfile -t ubi:test . --no-cache
    docker run -it --rm ubi:test bash
-   
+
    # Verify environment and directory structure
    ls -la /opt/universal/
    echo $XDG_CONFIG_HOME
@@ -884,7 +884,7 @@ This is useful when:
 The monitoring workflow is configured with:
 
 - **Schedule**: Daily at 00:00 UTC (via cron: `0 0 * * *`)
-- **Permissions**: 
+- **Permissions**:
   - `contents: write` - For creating branches and commits
   - `pull-requests: write` - For creating PRs
   - `security-events: write` - For uploading Trivy SARIF results
@@ -1225,7 +1225,7 @@ docker run -it --rm ghcr.io/egohygiene/ubi:0.1.5 bash
 ```bash
 # Build with custom locale (example)
 docker build -f .devcontainer/Dockerfile -t ubi:custom \
-  --build-arg LANG=de_DE.UTF-8 \
+  --build-arg LANG=de_DE.utf8 \
   .
 ```
 

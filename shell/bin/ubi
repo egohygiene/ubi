@@ -192,7 +192,7 @@ ubi::system() {
 ubi::system_locale() {
   [[ "$(id -u)" -eq 0 ]] || { log_error "Must run as root"; return 1; }
 
-  local locale="${LANG:-en_US.UTF-8}"
+  local locale="${LANG:-en_US.utf8}"
   local language="${LANGUAGE:-en_US:en}"
 
   log_info "Configuring locale: ${locale}"
@@ -200,7 +200,7 @@ ubi::system_locale() {
   apt-get update --quiet
   apt-get install --yes --no-install-recommends locales
 
-  sed -i "s/^# *${locale} UTF-8/${locale} UTF-8/" /etc/locale.gen || true
+  sed -i "s/^# *${locale} utf8/${locale} utf8/" /etc/locale.gen || true
   locale-gen "${locale}"
   update-locale LANG="${locale}" LANGUAGE="${language}"
   dpkg-reconfigure --frontend=noninteractive locales

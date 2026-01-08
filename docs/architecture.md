@@ -226,7 +226,7 @@ UBI supports customization via build arguments:
 
 ```bash
 docker build \
-  --build-arg LANG=en_US.UTF-8 \
+  --build-arg LANG=en_US.utf8 \
   --build-arg TZ=America/New_York \
   --build-arg EDITOR=vim \
   -f .devcontainer/Dockerfile \
@@ -285,8 +285,8 @@ For detailed security information, see [security-overview.md](./security-overvie
 ### Locale and System
 
 ```bash
-LANG=en_US.UTF-8
-LC_ALL=en_US.UTF-8
+LANG=en_US.utf8
+LC_ALL=en_US.utf8
 TZ=UTC
 TERM=xterm-256color
 ```

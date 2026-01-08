@@ -118,8 +118,8 @@ Validates critical environment variables:
   - `XDG_STATE_HOME=/opt/universal/runtime`
 
 - **Locale Configuration**:
-  - `LANG=en_US.UTF-8`
-  - `LC_ALL=en_US.UTF-8`
+  - `LANG=en_US.utf8`
+  - `LC_ALL=en_US.utf8`
 
 - **Telemetry Opt-Out Variables**:
   - `DO_NOT_TRACK=1`

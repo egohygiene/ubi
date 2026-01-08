@@ -16,7 +16,7 @@ check() {
   local test_name="$1"
   local expected="$2"
   local actual="${!3:-NOTSET}"
-  
+
   if [[ "$actual" == "$expected" ]]; then
     echo "✅ $test_name = $expected"
   else
@@ -29,7 +29,7 @@ check_contains() {
   local test_name="$1"
   local pattern="$2"
   local actual="${!3:-NOTSET}"
-  
+
   if [[ "$actual" == *"$pattern"* ]]; then
     echo "✅ $test_name contains $pattern"
   else
@@ -41,7 +41,7 @@ check_contains() {
 check_set() {
   local test_name="$1"
   local varname="$2"
-  
+
   if [[ -n "${!varname:-}" ]]; then
     echo "✅ $test_name is set"
   else
@@ -64,8 +64,8 @@ echo ""
 # Locale Configuration
 # =============================================================================
 echo "🌍 Testing Locale Configuration..."
-check "LANG" "en_US.UTF-8" LANG
-check "LC_ALL" "en_US.UTF-8" LC_ALL
+check "LANG" "en_US.utf8" LANG
+check "LC_ALL" "en_US.utf8" LC_ALL
 check_set "LANGUAGE" LANGUAGE
 echo ""
 

@@ -70,7 +70,7 @@
   //   // Use for build-time customization (versions, features, etc.)
   //   "args": {
   //     // "BUILD_DATE": "${localEnv:BUILD_DATE}",
-  //     // "LANG": "en_US.UTF-8",
+  //     // "LANG": "en_US.utf8",
   //     // "PIP_NO_CACHE_DIR": "1"
   //   },
   //

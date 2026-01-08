@@ -131,12 +131,11 @@ env:
   # Locale Configuration
   LANG:
     contains:
-      - "en_US.UTF-8"
+      - "en_US.utf8"
 
   LC_ALL:
     contains:
-      - "en_US.UTF-8"
-
+      - "en_US.utf8"
   # Telemetry Opt-Out Variables
   DO_NOT_TRACK:
     contains:

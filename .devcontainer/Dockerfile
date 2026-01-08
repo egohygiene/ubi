@@ -29,9 +29,9 @@ ARG UBI_GROUP=vscode
 ARG UBI_UID=1000
 ARG UBI_GID=1000
 
-ARG LANG=en_US.UTF-8
+ARG LANG=en_US.utf8
 ARG LANGUAGE=en_US:en
-ARG LC_ALL=en_US.UTF-8
+# ARG LC_ALL=en_US.utf8
 ARG TZ=UTC
 ARG TMPDIR=/tmp
 
@@ -42,7 +42,7 @@ ENV \
   UBI_GID="${UBI_GID}" \
   LANG="${LANG}" \
   LANGUAGE="${LANGUAGE}" \
-  LC_ALL="${LC_ALL}" \
+  # LC_ALL="${LC_ALL}" \
   TZ="${TZ}" \
   TMPDIR="${TMPDIR}"
 

@@ -20,7 +20,7 @@ FAILURES=0
 check() {
   local test_name="$1"
   shift
-  
+
   if "$@" &>/dev/null; then
     echo "✅ $test_name"
   else
@@ -93,8 +93,8 @@ echo ""
 # TEST: Environment variables are set correctly
 # =============================================================================
 echo "🌍 Testing environment variable inheritance..."
-check "LANG is set to en_US.UTF-8" test "$LANG" = "en_US.UTF-8"
-check "LC_ALL is set to en_US.UTF-8" test "$LC_ALL" = "en_US.UTF-8"
+check "LANG is set to en_US.utf8" test "$LANG" = "en_US.utf8"
+check "LC_ALL is set to en_US.utf8" test "$LC_ALL" = "en_US.utf8"
 check "DO_NOT_TRACK is set to 1" test "$DO_NOT_TRACK" = "1"
 check "TELEMETRY_ENABLED is set to 0" test "$TELEMETRY_ENABLED" = "0"
 echo ""

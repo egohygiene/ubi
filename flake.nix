@@ -312,7 +312,6 @@
           source-han-sans # sourceHanSansPackages.japanese
           fira-code-symbols # for ligatures
           iosevka
-
         ];
 
       in {
@@ -340,7 +339,7 @@
             echo "📁 Repo: $(git rev-parse --show-toplevel 2>/dev/null || echo "n/a")"
             echo "🔖 Rev:  $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
 
-            echo "🌐 Locale: ${LANG:-unknown}"
+            echo "🌐 Locale: $(echo ${LANG})"
             echo "🕒 Timezone: $(cat /etc/timezone 2>/dev/null || echo "unknown")"
 
             for tool in git rg fd jq; do
@@ -357,6 +356,10 @@
 
             if command -v inkscape >/dev/null 2>&1; then
               echo "🎨 Inkscape: $(inkscape --version 2>/dev/null | head -n1)"
+            fi
+
+            if command -v ffmpeg >/dev/null 2>&1; then
+              echo "🔊 ffmpeg: $(ffmpeg -version 2>/dev/null | head -n1)"
             fi
 
             echo "—"

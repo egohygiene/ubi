@@ -20,8 +20,167 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
+        myImagemagick = pkgs.imagemagick.override {
+          bzip2Support = true;
+          djvulibreSupport = true;
+          fontconfigSupport = true;
+          freetypeSupport = true;
+          ghostscriptSupport = true;
+          lcms2Support = true;
+          libX11Support = true;
+          libXtSupport = true;
+          libheifSupport = true;
+          libjpegSupport = true;
+          libjxlSupport = true;
+          liblqr1Support = true;
+          libpngSupport = true;
+          librawSupport = true;
+          librsvgSupport = true;
+          libtiffSupport = true;
+          libwebpSupport = true;
+          libxml2Support = true;
+          openexrSupport = true;
+          openjpegSupport = true;
+          zlibSupport = true;
+        };
+
+        myFFmpeg = pkgs.ffmpeg.override {
+          withAlsa = true;
+          withAom = true;
+          withAppKit = false;
+          withAribcaption = true;
+          withAss = true;
+          withAudioToolbox = false;
+          withAvFoundation = false;
+          withAvisynth = true;
+          withBin = true;
+          withBluray = true;
+          withBs2b = true;
+          withBzlib = true;
+          withCaca = true;
+          withCelt = true;
+          withChromaprint = true;
+          withCodec2 = true;
+          withCoreImage = false;
+          withCuda = true;
+          withCudaLLVM = true;
+          withCuvid = true;
+          withDav1d = true;
+          withDc1394 = true;
+          withDebug = true;
+          withDoc = true;
+          withDocumentation = true;
+          withDrm = true;
+          withDvdnav = true;
+          withDvdread = true;
+          withExtraWarnings = true;
+          withFdkAac = false;
+          withFlite = true;
+          withFontconfig = true;
+          withFreetype = true;
+          withFrei0r = true;
+          withFribidi = true;
+          withGPL = true;
+          withGPLv3 = true;
+          withGme = true;
+          withGnutls = true;
+          withGrayscale = true;
+          withGsm = true;
+          withHardcodedTables = true;
+          withHarfbuzz = true;
+          withHeadlessDeps = true;
+          withHtmlDoc = true;
+          withIconv = true;
+          withJack = true;
+          withJxl = true;
+          withLadspa = true;
+          withLib = true;
+          withLzma = true;
+          withManPages = true;
+          withMfx = false;
+          withModplug = true;
+          withMp3lame = true;
+          withMultithread = true;
+          withMysofa = true;
+          withNetwork = true;
+          withNvcodec = true;
+          withNvdec = true;
+          withNvenc = true;
+          withOgg = true;
+          withOpenal = true;
+          withOpencl = true;
+          withOpencoreAmrnb = true;
+          withOpencoreAmrwb = true;
+          withOpengl = true;
+          withOpenh264 = true;
+          withOpenjpeg = true;
+          withOpenmpt = true;
+          withOptimisations = true;
+          withOpus = true;
+          withPic = true;
+          withPixelutils = true;
+          withPlacebo = true;
+          withPodDoc = true;
+          withPulse = true;
+          withQrencode = true;
+          withQuirc = true;
+          withRav1e = true;
+          withRtmp = true;
+          withRuntimeCPUDetection = true;
+          withSafeBitstreamReader = true;
+          withSamba = true;
+          withSdl2 = true;
+          withShaderc = true;
+          withShared = true;
+          withSmallBuild = true;
+          withSmallDeps = true;
+          withSoxr = true;
+          withSpeex = true;
+          withSrt = true;
+          withSsh = true;
+          withStatic = true;
+          withStripping = true;
+          withSvg = true;
+          withSvtav1 = true;
+          withSwscaleAlpha = true;
+          withTensorflow = true;
+          withTheora = true;
+          withThumb = true;
+          withTxtDoc = true;
+          withUnfree = false;
+          withV4l2 = true;
+          withV4l2M2m = true;
+          withVaapi = true;
+          withVdpau = true;
+          withVersion3 = true;
+          withVidStab = true;
+          withVideoToolbox = false;
+          withVmaf = true;
+          withVoAmrwbenc = true;
+          withVorbis = true;
+          withVpl = true;
+          withVpx = true;
+          withVulkan = true;
+          withWebp = true;
+          withX264 = true;
+          withX265 = true;
+          withXavs = true;
+          withXcb = true;
+          withXcbShape = true;
+          withXcbShm = true;
+          withXcbxfixes = true;
+          withXevd = true;
+          withXeve = true;
+          withXlib = true;
+          withXml2 = true;
+          withXvid = true;
+          withZimg = true;
+          withZlib = true;
+          withZmq = true;
+        };
+
         # ------------------------------------------------------------------
-        # Package groups (this is the key refactor)
+        # Package groups
         # ------------------------------------------------------------------
 
         coreTools = with pkgs; [
@@ -43,6 +202,14 @@
           which
           lsof
           gawk
+          gettext
+          shared-mime-info
+          xdg-utils
+          openssh
+          xdg-terminal-exec
+          rsync
+          cacert
+          tzdata
         ];
 
         buildTools = with pkgs; [
@@ -60,7 +227,6 @@
         devTools = with pkgs; [
           shellcheck
           go-task
-          pandoc
           act
           direnv
         ];
@@ -87,6 +253,11 @@
           nodePackages.node-gyp
         ];
 
+        languageGo = with pkgs; [
+          go
+          gofmt
+        ];
+
         databases = with pkgs; [
           sqlite
           ncurses
@@ -95,17 +266,53 @@
         ];
 
         imageTools = with pkgs; [
-          imagemagick
+          myImagemagick
           ghostscript
           inkscape
           glibcLocales
         ];
 
-        # Example: audio / creative (from the reference)
         audioTools = with pkgs; [
-          ffmpeg
+          myFFmpeg
           sox
           supercollider
+          pulseaudioFull
+        ];
+
+        pdfTools = with pkgs; [
+          evince
+          pandoc
+        ];
+
+        miscTools = with pkgs; [
+          calibre
+        ];
+
+        fontPkgs = with pkgs; [
+          # fonts
+          ubuntu-classic
+          inconsolata # monospace
+
+          # gpt recommended:
+          # Cica	Japanese-focused monospaced font
+          pkgs.myrica # https://myrica.estable.jp/ Balanced monospace font with CJK support
+          pkgs.hackgen-nf-font # HackGen Console	Great for code + Japanese
+          pkgs.source-han-code-jp # Source Han Code JP	From Adobe; fixed-width variant of Source Han Sans
+
+          # cica
+          noto-fonts-cjk-sans # asiatic but double-width by default
+          nerd-fonts.fira-code # otherwise no characters
+          nerd-fonts.droid-sans-mono # otherwise no characters
+
+          # corefonts # microsoft fonts  UNFREE
+          font-awesome_5
+          source-code-pro
+          dejavu_fonts
+          # Adobe Source Han Sans
+          source-han-sans # sourceHanSansPackages.japanese
+          fira-code-symbols # for ligatures
+          iosevka
+
         ];
 
       in {
@@ -121,6 +328,8 @@
             ++ languageNode
             ++ databases
             ++ imageTools
+            ++ pdfTools
+            ++ miscTools
             ++ audioTools;
 
           shellHook = ''

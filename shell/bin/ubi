@@ -324,6 +324,49 @@ ubi::git_release_checksum() {
   rm -f "${tmp}"
 }
 
+ubi::nix_inspect() {
+  local pkg="${1:-}"
+
+  if [[ -z "${pkg}" ]]; then
+    log_error "Usage: ubi nix inspect <package>"
+    return 1
+  fi
+
+  if [[ ! -f flake.nix ]]; then
+    log_error "flake.nix not found in current directory"
+    return 1
+  fi
+
+  log_info "Inspecting Nix package: ${pkg}"
+
+  nix repl --quiet <<EOF
+:lf .
+pkgs = inputs.nixpkgs.legacyPackages.${NIX_SYSTEM:-x86_64-linux}
+
+if pkgs ? ${pkg} then
+  pkgs.${pkg}.override.__functionArgs
+else
+  builtins.throw "Package '${pkg}' not found in pkgs"
+EOF
+}
+
+ubi::nix() {
+  local sub="${1:-}"
+  shift || true
+
+  case "${sub}" in
+    inspect)
+      ubi::nix_inspect "$@"
+      ;;
+    *)
+      log_error "Unknown nix subcommand: ${sub}"
+      log_info "Available nix commands:"
+      log_info "  inspect <package>"
+      return 1
+      ;;
+  esac
+}
+
 ###############################################################################
 # Doctor
 ###############################################################################
@@ -362,8 +405,9 @@ ubi::main() {
     install) ubi::install "$@" ;;
     system)  ubi::system  "$@" ;;
     git)     ubi::git     "$@" ;;
-    doctor)  ubi::doctor  ;;
-    info)    ubi::info    ;;
+    nix)     ubi::nix     "$@" ;;
+    doctor)  ubi::doctor       ;;
+    info)    ubi::info         ;;
     help|-h|--help) ubi::usage ;;
     *) log_error "Unknown command: ${cmd}"; ubi::usage; return 1 ;;
   esac

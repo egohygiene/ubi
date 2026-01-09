@@ -135,7 +135,23 @@ ENV \
   MAGICK_CONFIGURE_PATH="${UNIVERSAL_CONFIG}/imagemagick" \
   MAGICK_TEMPORARY_PATH="${UNIVERSAL_RUNTIME}/imagemagick" \
   GIT_CONFIG_GLOBAL="${UNIVERSAL_CONFIG}/git/gitconfig" \
-  GIT_GLOBAL_IGNORE_FILE="${UNIVERSAL_CONFIG}/git/gitignore"
+  GIT_GLOBAL_IGNORE_FILE="${UNIVERSAL_CONFIG}/git/gitignore" \
+  TEXLIVE_INSTALL_PREFIX="${UNIVERSAL_APPS}/texlive" \
+  TEXMFCONFIG="${UNIVERSAL_CONFIG}/texlive" \
+  TASKFILE_HOME_DIR="${UNIVERSAL_CONFIG}/taskfile" \
+  CALIBRE_SHOW_DEPRECATION_WARNINGS=0 \
+  CALIBRE_CONFIG_DIRECTORY="${UNIVERSAL_CONFIG}/calibre" \
+  CALIBRE_CACHE_DIRECTORY="${UNIVERSAL_CACHE}/calibre" \
+  CALIBRE_TEMP_DIR="${UNIVERSAL_RUNTIME}/calibre" \
+  GEM_HOME="${XDG_DATA_HOME}/ruby/gems" \
+  YARN_GLOBAL_FOLDER="${XDG_DATA_HOME}/yarn" \
+  ANSIBLE_HOME="${XDG_DATA_HOME}/ansible" \
+  FFMPEG_DATADIR="${XDG_DATA_HOME}/ffmpeg" \
+  GOPATH="${XDG_DATA_HOME}/go"
+
+ENV \
+  TEXMFHOME="${TEXLIVE_INSTALL_PREFIX}/texmf" \
+  TEXMFVAR="${TEXLIVE_INSTALL_PREFIX}/.texlive/texmf-var"
 
 ######################################################################
 # CREATE UNIVERSAL DIRECTORIES (authoritative runtime state)
@@ -155,7 +171,7 @@ RUN mkdir -p \
     "${UNIVERSAL_SHELL}" \
     "${MAGICK_CACHE_PATH}" \
     "${MAGICK_TEMPORARY_PATH}" \
- && chown -R "${UBI_UID}:${UBI_GID}" "${UNIVERSAL_HOME}"
+ && chown --recursive "${UBI_UID}:${UBI_GID}" "${UNIVERSAL_HOME}"
 
 USER root
 RUN apt-get update && apt-get install --yes --no-install-recommends \

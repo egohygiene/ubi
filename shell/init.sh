@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # init.sh
 #
 # Universal Shell Framework Entry Point

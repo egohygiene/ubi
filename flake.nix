@@ -185,20 +185,39 @@
 
         coreTools = with pkgs; [
           bash
+          bash-completion
           coreutils
           curl
+          starship
           wget
           git
+          tmuxinator
           gh
           jq
           yq
           ripgrep
           fd
+          vim
+          nano
+          ansible-lint
+          bottom
+          htop
+          ansible
+          btop
+          ncdu
+          tmux
+          entr
+          zoxide
+          fzf
+          eza
+          delta
+          bat
           tree
           unzip
           zip
           gnupg
           less
+          time
           which
           lsof
           gawk
@@ -210,6 +229,19 @@
           rsync
           cacert
           tzdata
+          strace
+          ltrace
+          gdb
+          expat
+          hyperfine
+          openssl
+          age
+          sshpass
+          nmap
+          tcpdump
+          httpie
+          wget
+          curl
         ];
 
         buildTools = with pkgs; [
@@ -226,9 +258,19 @@
 
         devTools = with pkgs; [
           shellcheck
-          go-task
+          bats
+          taskwarrior
+          go-task       # Taskfile runner (you mentioned this!)
+          just
           act
           direnv
+          git
+          gh             # GitHub CLI
+          git-lfs
+          gitui          # terminal UI for git
+          tig            # git browser
+          lazygit        # excellent TUI git client
+          pre-commit
         ];
 
         languagePython = with pkgs; [
@@ -244,6 +286,10 @@
         languageRust = with pkgs; [
           rustc
           cargo
+          rust-analyzer
+          clippy
+          cargo-watch
+          cargo-audit
         ];
 
         languageNode = with pkgs; [
@@ -251,6 +297,10 @@
           yarn
           pnpm
           nodePackages.node-gyp
+          npm-check-updates
+          typescript
+          deno
+          bun
         ];
 
         languageGo = with pkgs; [
@@ -263,12 +313,17 @@
           ncurses
           readline
           libffi
+          postgresql
+          redis
+          duckdb
+          csvkit
         ];
 
         imageTools = with pkgs; [
           myImagemagick
           ghostscript
           inkscape
+          exiftool
           glibcLocales
         ];
 
@@ -282,6 +337,11 @@
         pdfTools = with pkgs; [
           evince
           pandoc
+          mdbook
+          vale
+          ltex-ls
+          asciidoctor
+          texliveFull
         ];
 
         miscTools = with pkgs; [
@@ -289,6 +349,10 @@
         ];
 
         fontPkgs = with pkgs; [
+          fontconfig
+
+          nerd-fonts # many programming fonts patched with extra glyphs
+
           # fonts
           ubuntu-classic
           inconsolata # monospace
@@ -339,7 +403,7 @@
             echo "📁 Repo: $(git rev-parse --show-toplevel 2>/dev/null || echo "n/a")"
             echo "🔖 Rev:  $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
 
-            echo "🌐 Locale: $(echo ${LANG})"
+            echo "🌐 Locale: $LANG"
             echo "🕒 Timezone: $(cat /etc/timezone 2>/dev/null || echo "unknown")"
 
             for tool in git rg fd jq; do
@@ -361,6 +425,30 @@
             if command -v ffmpeg >/dev/null 2>&1; then
               echo "🔊 ffmpeg: $(ffmpeg -version 2>/dev/null | head -n1)"
             fi
+
+            if command -v pdflatex >/dev/null 2>&1; then
+              echo "📄 TeX Live: $(pdflatex --version | head -n1)"
+              echo "    TEXMFHOME:   $(kpsewhich -var-value=TEXMFHOME 2>/dev/null)"
+              echo "    TEXMFVAR:    $(kpsewhich -var-value=TEXMFVAR 2>/dev/null)"
+              echo "    TEXMFCONFIG: $(kpsewhich -var-value=TEXMFCONFIG 2>/dev/null)"
+            else
+              echo "⚠️  TeX Live: not found"
+            fi
+
+            # TeX engines (presence + version only)
+            for engine in lualatex xelatex context; do
+              if command -v "$engine" >/dev/null 2>&1; then
+                printf "📄 %-9s %s\n" "$engine:" "$($engine --version 2>/dev/null | head -n1)"
+              else
+                printf "⚠️  %-9s not found\n" "$engine:"
+              fi
+            done
+
+            for tool in bibtex biber; do
+              if command -v "$tool" >/dev/null 2>&1; then
+                printf "📚 %-9s %s\n" "$tool:" "$($tool --version 2>/dev/null | head -n1)"
+              fi
+            done
 
             echo "—"
           '';

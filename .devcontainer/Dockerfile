@@ -150,8 +150,9 @@ ENV \
   GOPATH="${XDG_DATA_HOME}/go"
 
 ENV \
-  TEXMFHOME="${TEXLIVE_INSTALL_PREFIX}/texmf" \
-  TEXMFVAR="${TEXLIVE_INSTALL_PREFIX}/.texlive/texmf-var"
+  TEXMFHOME="${UNIVERSAL_APPS}/texmf" \
+  TEXMFVAR="${UNIVERSAL_RUNTIME}/texlive/texmf-var" \
+  TEXMFCONFIG="${UNIVERSAL_CONFIG}/texlive/texmf-config"
 
 ######################################################################
 # CREATE UNIVERSAL DIRECTORIES (authoritative runtime state)

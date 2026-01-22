@@ -9,6 +9,7 @@
 # Returns 0 if the command exists, non-zero otherwise.
 # ------------------------------------------------------------------------------
 guard::has_command() {
+  [[ $# -gt 0 ]] || return 1
   command -v "$1" >/dev/null 2>&1
 }
 

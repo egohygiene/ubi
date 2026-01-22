@@ -15,7 +15,7 @@ bash::minor_version() {
 }
 
 bash::is_interactive() {
-  [[ $- == *i* ]]
+  [[ $- == *i* ]] && return 0 || return 1
 }
 
 bash::path() {

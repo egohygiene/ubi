@@ -92,7 +92,7 @@ jobs:
       # 4. Wait for publish workflow to complete
       # -------------------------------------------------------------
       - name: ⏳ Wait for publish workflow
-        uses: lewagon/wait-on-check-action@v1.4.1
+        uses: lewagon/wait-on-check-action@v1.5.0
         with:
           ref: ${{ steps.version.outputs.tag }}
           check-name: "📦 Build & Publish UBI Image"
@@ -105,7 +105,7 @@ jobs:
       # -------------------------------------------------------------
       - name: 📥 Download SBOM artifacts (base)
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v12
         with:
           workflow: publish.yml
           workflow_conclusion: success
@@ -118,7 +118,7 @@ jobs:
 
       - name: 📥 Download SBOM artifacts (minimal)
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v12
         with:
           workflow: publish.yml
           workflow_conclusion: success
@@ -131,7 +131,7 @@ jobs:
 
       - name: 📥 Download SBOM artifacts (python)
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v12
         with:
           workflow: publish.yml
           workflow_conclusion: success
@@ -144,7 +144,7 @@ jobs:
 
       - name: 📥 Download SBOM artifacts (node)
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v12
         with:
           workflow: publish.yml
           workflow_conclusion: success
@@ -157,7 +157,7 @@ jobs:
 
       - name: 📥 Download SBOM artifacts (full)
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v11
+        uses: dawidd6/action-download-artifact@v12
         with:
           workflow: publish.yml
           workflow_conclusion: success

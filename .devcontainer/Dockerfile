@@ -32,9 +32,9 @@
 #
 # CURRENT VERSION: 2.1.2
 # CURRENT DIGEST: sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4
-# LAST UPDATED: 2025-12-12
+# LAST UPDATED: 2026-01-29
 ######################################################################
-FROM mcr.microsoft.com/devcontainers/base:2.1.3@sha256:30b0a0c004ca94d36c323ee993361a7e0ae25ea255ea125201e8a9587501c324 AS base
+FROM mcr.microsoft.com/devcontainers/base:2.1.5@sha256:0fea8c4b6512d8bb1a1419efb9cd0e6585a7a91d76c1cd44494a27849ef730fe AS base
 
 # Safer shell defaults
 SHELL ["/bin/bash", "-o", "errexit", "-o", "errtrace", "-o", "functrace", "-o", "nounset", "-o", "pipefail", "-c"]

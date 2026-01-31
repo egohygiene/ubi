@@ -16,7 +16,7 @@
 #
 # CURRENT VERSION: 2.1.2
 # CURRENT DIGEST: sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4
-# LAST UPDATED: 2025-12-12
+# LAST UPDATED: 2026-01-31
 ######################################################################
 FROM mcr.microsoft.com/devcontainers/base:2.1.2@sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4 AS base
 
